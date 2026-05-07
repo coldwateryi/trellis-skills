@@ -1,6 +1,6 @@
 # Trellis 需求交付技能集
 
-本仓库为 [Codex CLI](https://github.com/anthropics/codex) 提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
+本仓库为 [Codex CLI](https://github.com/anthropics/codex) 以及其他支持skill的cli工具提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
 
 ## 技能概览
 
@@ -123,7 +123,7 @@ skills/
 
 ## 前置条件
 
-- 已安装 [Codex CLI](https://github.com/anthropics/codex)
+- 已安装 [Codex CLI](https://github.com/anthropics/codex)或者其他cli工具
 - 项目中已初始化 Trellis（`.trellis/` 目录存在）
 - 首次使用前运行 `python ./.trellis/scripts/init_developer.py <name>` 设置开发者身份
 
