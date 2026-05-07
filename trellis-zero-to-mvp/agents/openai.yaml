@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis Zero to MVP"
+  short_description: "Turn requirements into MVP task plans"
+  default_prompt: "Use $trellis-zero-to-mvp to turn this requirements document into a Trellis MVP task tree."

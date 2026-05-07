@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis 从 MVP 到交付"
+  short_description: "审计 MVP 并规划完整交付"
+  default_prompt: "Use $trellis-mvp-to-delivery-zh to audit this MVP against the requirements and plan final delivery tasks."

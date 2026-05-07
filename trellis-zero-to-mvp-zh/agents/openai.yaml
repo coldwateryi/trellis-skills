@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis 从 0 到 MVP"
+  short_description: "将需求文档拆成 MVP 任务计划"
+  default_prompt: "Use $trellis-zero-to-mvp-zh to turn this requirements document into a Trellis MVP task tree."
