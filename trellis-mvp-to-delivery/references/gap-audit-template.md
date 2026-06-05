@@ -38,9 +38,15 @@ List only questions that block implementation. Do not ask questions answerable f
 
 ## Task Plan
 
-| Order | Task Slug | Title | Requirement IDs | Depends On | Acceptance Criteria | Automated Tests Required | Priority |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 |  |  |  |  |  |  | P0 |
+| Order | Task Slug | Title | Requirement IDs | Depends On | Acceptance Criteria | Automated Tests Required | Priority | Complexity |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 |  |  |  |  |  |  | P0 | low |
+
+Complexity (assessed against the execution model's capability; drives split granularity and PRD detail):
+
+- `low`: standard CRUD, config, an existing example to copy. A weak model can do it independently.
+- `medium`: some business validation or cross-table logic; needs explicit implementation steps. A weak model can do it with a detailed PRD.
+- `high`: complex transactions, concurrency, cross-module consistency, heavy implicit domain knowledge. A weak model cannot do it independently — split further, or pin every step in the PRD until no reasoning is needed.
 
 Task planning rules:
 

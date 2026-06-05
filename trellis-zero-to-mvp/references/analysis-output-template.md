@@ -28,11 +28,17 @@ Allowed statuses:
 
 ## Task Split
 
-| Task ID | Title | Goal | Type | Depends On | Priority | Parallelizable | Acceptance Criteria | Likely Areas |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T0 |  |  | docs | none | P0 | no |  |  |
+| Task ID | Title | Goal | Type | Depends On | Priority | Complexity | Parallelizable | Acceptance Criteria | Likely Areas |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| T0 |  |  | docs | none | P0 | low | no |  |  |
 
 Allowed task types: `backend`, `frontend`, `fullstack`, `docs`, `test`, `infra`.
+
+Complexity (assessed against the execution model's capability; drives split granularity and PRD detail):
+
+- `low`: standard CRUD, config, an existing example to copy. A weak model can do it independently.
+- `medium`: some business validation or cross-table logic; needs explicit implementation steps. A weak model can do it with a detailed PRD.
+- `high`: complex transactions, concurrency, cross-module consistency, heavy implicit domain knowledge. A weak model cannot do it independently — split further into low/medium, or pin every step in the PRD until no reasoning is needed.
 
 Priority rules:
 

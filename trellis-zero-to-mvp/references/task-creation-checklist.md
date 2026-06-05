@@ -11,6 +11,10 @@ Use this checklist after the user confirms the read-only analysis.
 - [ ] Every child task has acceptance criteria.
 - [ ] Every child task has required tests.
 - [ ] Dependencies are explicit.
+- [ ] Every child task is annotated with complexity (low/medium/high); high-complexity tasks are split further or have every step pinned down in the PRD.
+- [ ] Every `<...>` placeholder in each child PRD is replaced with a concrete value; no "TBD / depends".
+- [ ] Each child PRD includes reference implementation paths, a file manifest, ordered implementation steps, and self-check commands.
+- [ ] Acceptance criteria are written as machine-checkable or individually tickable assertions.
 
 ## Commands
 
