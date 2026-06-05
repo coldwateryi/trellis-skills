@@ -28,7 +28,7 @@
 - ✅ **成本可控** - ROI > 5:1（规划多花 45k tokens，执行少花 200k tokens）
 - ✅ **效果显著** - 执行成功率提升 30%-50%
 
-详见：[优化提案](OPTIMIZATION_PROPOSAL.md) 和 [实施总结](FINAL_SUMMARY.md)
+详见：[优化提案](doc/OPTIMIZATION_PROPOSAL.md) 和 [实施总结](doc/FINAL_SUMMARY.md)
 
 ## 推荐工作流
 
