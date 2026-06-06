@@ -17,6 +17,7 @@ Move an existing MVP toward complete delivery by returning to the source require
 - Do not mix unrelated gaps into one task.
 - Size tasks to the execution model's capability: if the execution phase may use a capability-limited local model (e.g. offline qwen), split finer and annotate complexity.
 - A delivery task PRD is an execution spec the execution model copies from. During planning, replace every `<...>` placeholder with a concrete value (exact file paths, copyable existing examples, ordered implementation steps, machine-checkable acceptance assertions, self-check commands). Never leave reasoning — including which branch a bug fix takes — to the execution phase.
+- For Trellis 0.6 beta projects, treat `.trellis/workflow.md` as the active local workflow contract when present. Preserve and extend `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` artifacts if existing tasks use them.
 - Do not put all testing into a final catch-all task. Each feature task must include its own basic tests.
 - Create a final validation task only after functional gap tasks are planned.
 - If a bug does not block the current requirement acceptance, classify it and create or propose a separate bug task.
@@ -32,6 +33,9 @@ Locate and read:
 - Existing `.trellis/tasks/`, especially completed or active tasks.
 - Existing requirement IDs, traceability matrices, and acceptance notes if present.
 - Relevant `.trellis/spec/` indexes for affected packages.
+- Trellis 0.6 beta workflow metadata when present: `.trellis/workflow.md`, `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, and `.trellis/workspace/`.
+
+Before planning gap-closing work, check whether `.trellis/spec/` and existing task artifacts are fresh enough to explain current behavior. If they are stale or too generic, add a spec-refresh/bootstrap or artifact-refresh task before implementation tasks.
 
 Use local evidence before asking questions. Ask only blocking questions that cannot be resolved from the requirements or repository.
 
@@ -51,6 +55,7 @@ Load `references/gap-audit-template.md` and produce:
 - Dependency-ordered task plan.
 - Recommended priorities.
 - Automated test requirements.
+- For medium/high complexity gap-closing tasks, draft shift-left design, implementation-plan, and context-manifest artifacts using `references/planning-artifacts-template.md`: `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when the project workflow supports them.
 
 Use only these statuses: `DONE`, `PARTIAL`, `MISSING`, `UNTESTED`, `UNCLEAR`.
 
@@ -108,7 +113,8 @@ After confirmation:
 2. Create one child task per tightly related gap group.
 3. Use `references/delivery-task-prd-template.md` for child PRDs.
 4. Separate foundation contracts, business behavior, UI, tests, and final validation when they have different dependencies.
-5. Do not start coding.
+5. For medium/high complexity child tasks, write or draft `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when `.trellis/workflow.md` or existing tasks show those artifacts are expected. Do not overwrite existing artifacts without reading them first.
+6. Do not start coding.
 
 ### 5. Plan Test Closure
 
@@ -127,6 +133,7 @@ Load `references/bug-classification-rules.md` when validation discovers a bug. D
 - `references/gap-audit-template.md` - read for the first read-only MVP audit.
 - `references/self-review-checklist.md` - read for self-review after each audit round.
 - `references/self-review-report-template.md` - read when generating review reports.
+- `references/planning-artifacts-template.md` - read when drafting Trellis 0.6 beta design, implementation, and context manifest artifacts for medium/high complexity tasks.
 - `references/delivery-task-prd-template.md` - read before creating gap-closing task PRDs.
 - `references/test-coverage-matrix-template.md` - read when planning or adding test coverage.
 - `references/final-acceptance-template.md` - read for final delivery acceptance.

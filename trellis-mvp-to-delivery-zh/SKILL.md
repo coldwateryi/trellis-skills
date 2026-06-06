@@ -18,6 +18,7 @@ description: |
 - 不要把无关缺口混进同一个任务。
 - 任务粒度按执行模型能力分级：若执行阶段可能用能力有限的本地模型（如离线 qwen），把任务拆得更碎并标注复杂度。
 - 交付任务 PRD 是给执行模型照着做的执行规格。规划阶段必须把所有 `<...>` 占位符替换为具体值（具体文件路径、可照抄的现有范例、有序实现步骤、可机器校验的验收断言、自检命令），禁止把推理判断（含 bug 修复走哪条分支）留给执行阶段。
+- 对 Trellis 0.6 beta 项目，如果存在 `.trellis/workflow.md`，必须把它当作当前项目的本地工作流契约。如果已有任务使用 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl`，补缺任务应保留并延续这些产物。
 - 不要把所有测试都推到最终兜底任务。每个功能任务必须包含自己的基础测试。
 - 最终验证任务只能在功能补缺任务规划完成后创建。
 - 如果 bug 不阻塞当前需求验收，先分类，再创建或建议独立 bug task。
@@ -33,6 +34,9 @@ description: |
 - 现有 `.trellis/tasks/`，尤其是已完成或进行中的任务。
 - 已有需求 ID、追踪矩阵和验收备注。
 - 受影响 package 的相关 `.trellis/spec/` 索引。
+- Trellis 0.6 beta 工作流元数据：如存在，读取 `.trellis/workflow.md`、`.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer` 和 `.trellis/workspace/`。
+
+规划补缺任务前，检查 `.trellis/spec/` 和已有任务产物是否足够新，能解释当前行为。如果它们过期或过于泛化，先增加 spec 刷新/bootstrap 或任务产物刷新任务，再规划实现任务。
 
 先使用本地证据再提问。只问无法从需求文档或仓库判断的阻塞性问题。
 
@@ -52,6 +56,7 @@ description: |
 - 按依赖排序的任务计划。
 - 推荐优先级。
 - 自动化测试要求。
+- 对中/高复杂度补缺任务，读取 `references/planning-artifacts-template.md` 起草左移设计、实现计划和上下文清单产物：当项目工作流支持时，包含 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。
 
 只能使用这些状态：`DONE`、`PARTIAL`、`MISSING`、`UNTESTED`、`UNCLEAR`。
 
@@ -109,7 +114,8 @@ description: |
 2. 为每组高度相关的缺口创建一个子任务。
 3. 使用 `references/delivery-task-prd-template.md` 写入子任务 PRD。
 4. 如果基础契约、业务行为、UI、测试和最终验证的依赖不同，就分开任务。
-5. 不要开始编码。
+5. 对中/高复杂度子任务，如果 `.trellis/workflow.md` 或现有任务显示项目期望这些产物，写入或起草 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。写入前必须先读取已有产物，禁止盲目覆盖。
+6. 不要开始编码。
 
 ### 5. 规划测试闭环
 
@@ -128,6 +134,7 @@ description: |
 - `references/gap-audit-template.md` - 第一次只读 MVP 审计时读取。
 - `references/self-review-checklist.md` - 每轮审计后进行自我评审时读取。
 - `references/self-review-report-template.md` - 生成评审报告时读取。
+- `references/planning-artifacts-template.md` - 为中/高复杂度任务起草 Trellis 0.6 beta 的设计、实现和上下文清单产物时读取。
 - `references/delivery-task-prd-template.md` - 创建补缺任务 PRD 前读取。
 - `references/test-coverage-matrix-template.md` - 规划或补齐测试覆盖时读取。
 - `references/final-acceptance-template.md` - 最终交付验收时读取。

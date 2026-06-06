@@ -6,6 +6,24 @@
 
 用 5-10 条说明需求文档最终要求交付什么。
 
+## Trellis 工作流上下文
+
+| 项目 | 值 | 备注 |
+| --- | --- | --- |
+| Trellis 版本/来源 | <来自 `.trellis/.version` 或 "unknown"> | <beta/current/legacy 信号> |
+| 工作流契约 | <`.trellis/workflow.md` 路径或 "not present"> | <发现的产物要求> |
+| 配置 | <`.trellis/config.yaml` 路径或 "not present"> | <相关选项> |
+| Developer identity | <来自 `.trellis/.developer` 或 "not initialized"> | <缺失时要做什么> |
+| Spec 新鲜度 | <fresh/stale/missing/unknown> | <已读 spec 文件或需要的刷新任务> |
+
+## 执行模型画像
+
+| 项目 | 值 |
+| --- | --- |
+| 预期执行模型 | <如 qwen3.6 35b 本地模型 / GPT-5.5 / Opus 4.8> |
+| 规划深度 | <standard / small-model-safe / high-risk> |
+| 任务粒度规则 | <此画像下任务必须拆到多小> |
+
 ## Requirements Traceability Matrix
 
 | ID | 需求 | 当前状态 | 相关代码 | 现有测试 | 缺口 | 建议 Task |
@@ -28,9 +46,9 @@
 
 ## 任务拆分
 
-| Task ID | 标题 | 目标 | 类型 | 依赖 | 优先级 | 复杂度 | 是否可并行 | 验收标准 | 可能涉及区域 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T0 |  |  | docs | none | P0 | 低 | no |  |  |
+| Task ID | 标题 | 目标 | 类型 | 依赖 | 优先级 | 复杂度 | 规划产物 | 是否可并行 | 验收标准 | 可能涉及区域 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| T0 |  |  | docs | none | P0 | 低 | prd.md | no |  |  |
 
 允许的任务类型：`backend`、`frontend`、`fullstack`、`docs`、`test`、`infra`。
 
@@ -67,6 +85,8 @@
 ## 子任务 PRD 草案
 
 为每个子任务使用 `child-prd-template.md` 起草 PRD。
+
+对每个中/高复杂度子任务，同时使用 `planning-artifacts-template.md` 起草必要的 Trellis 0.6 beta 规划产物。
 
 ## 确认请求
 

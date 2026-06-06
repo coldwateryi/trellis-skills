@@ -2,9 +2,9 @@
 
 所有功能补缺任务完成后使用此模板。最终验收阶段不要新增功能，除非阻塞性 bug 导致无法验收。
 
-## Final Acceptance Report
+## 最终验收报告
 
-### Requirement Status
+### 需求状态
 
 | ID | 状态 | 证据 | 测试 | 备注 |
 | --- | --- | --- | --- | --- |
@@ -18,23 +18,23 @@
 - `NOT TESTED`
 - `BLOCKED`
 
-### Commands Run
+### 运行命令
 
-| Command | Result | Notes |
+| 命令 | 结果 | 备注 |
 | --- | --- | --- |
 |  |  |  |
 
-### Failed Items
+### 未通过项
 
 | ID | 失败原因 | 建议 Bug Task |
 | --- | --- | --- |
 |  |  |  |
 
-### Residual Risks
+### 剩余风险
 
 - <风险>
 
-### Delivery Decision
+### 交付结论
 
 只能选择一个：
 

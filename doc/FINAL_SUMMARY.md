@@ -108,11 +108,11 @@ trellis-mvp-to-delivery/references/
 ### 文档文件（5个）
 
 ```
-PROJECT_ANALYSIS.md               (400行) - 项目整体分析
-OPTIMIZATION_PROPOSAL.md          (600行) - 优化方案设计
-IMPLEMENTATION_SUMMARY.md         (400行) - Phase 1 实施总结
-COMPLETION_REPORT.md              (500行) - Phase 1 完成报告
-PHASE2_COMPLETION_REPORT.md       (400行) - Phase 2 完成报告
+doc/PROJECT_ANALYSIS.md           (400行) - 项目整体分析
+doc/OPTIMIZATION_PROPOSAL.md      (600行) - 优化方案设计
+doc/IMPLEMENTATION_SUMMARY.md     (400行) - Phase 1 实施总结
+doc/COMPLETION_REPORT.md          (500行) - Phase 1 完成报告
+doc/PHASE2_COMPLETION_REPORT.md   (400行) - Phase 2 完成报告
 ```
 
 ---
@@ -123,7 +123,7 @@ PHASE2_COMPLETION_REPORT.md       (400行) - Phase 2 完成报告
 
 #### 提交 1: Phase 1（Zero to MVP）
 ```bash
-git add trellis-zero-to-mvp*/ PROJECT_ANALYSIS.md OPTIMIZATION_PROPOSAL.md
+git add trellis-zero-to-mvp*/ doc/PROJECT_ANALYSIS.md doc/OPTIMIZATION_PROPOSAL.md
 git commit -m "feat: 为 zero-to-mvp 添加自我评审循环功能
 
 - 增加 self-review-checklist.md (中英文, 45项检查)
@@ -133,14 +133,14 @@ git commit -m "feat: 为 zero-to-mvp 添加自我评审循环功能
 - 收敛机制：连续2轮无新问题自动通过，超5轮提示用户
 - ROI > 5:1
 
-详见 OPTIMIZATION_PROPOSAL.md 和 PROJECT_ANALYSIS.md
+详见 doc/OPTIMIZATION_PROPOSAL.md 和 doc/PROJECT_ANALYSIS.md
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 
 #### 提交 2: Phase 2（MVP to Delivery）
 ```bash
-git add trellis-mvp-to-delivery*/ PHASE2_COMPLETION_REPORT.md
+git add trellis-mvp-to-delivery*/ doc/PHASE2_COMPLETION_REPORT.md
 git commit -m "feat: 为 mvp-to-delivery 添加自我评审循环功能
 
 - 增加 self-review-checklist.md (中英文, 60项检查)
@@ -150,7 +150,7 @@ git commit -m "feat: 为 mvp-to-delivery 添加自我评审循环功能
 - 特别强调 MVP 兼容性检查（不破坏已有行为）
 - 支持小参数模型安全扩展 MVP
 
-详见 PHASE2_COMPLETION_REPORT.md
+详见 doc/PHASE2_COMPLETION_REPORT.md
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -160,9 +160,9 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 git add .
 git commit -m "docs: 完善自我评审循环实施文档
 
-- IMPLEMENTATION_SUMMARY.md: Phase 1 实施细节
-- COMPLETION_REPORT.md: Phase 1 完成报告
-- FINAL_SUMMARY.md: 完整实施总结
+- doc/IMPLEMENTATION_SUMMARY.md: Phase 1 实施细节
+- doc/COMPLETION_REPORT.md: Phase 1 完成报告
+- doc/FINAL_SUMMARY.md: 完整实施总结
 - 更新之前的 PRD 模板（弱模型适配增强）
 
 完整实施：4个技能，12个新文件，约3,500行代码

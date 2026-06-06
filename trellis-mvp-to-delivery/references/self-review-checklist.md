@@ -10,6 +10,27 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
+## 0. Trellis 0.6 Beta Workflow Fit Check
+
+### 0.1 Workflow Discovery
+- [ ] `.trellis/workflow.md` was read when present
+- [ ] `.trellis/config.yaml`, `.trellis/.version`, and `.trellis/.developer` were checked when present
+- [ ] Existing task artifacts (`design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`) were detected and preserved when present
+- [ ] Developer identity setup uses `trellis init -u <name>` as the primary instruction, with `init_developer.py` only as legacy fallback
+
+### 0.2 Spec and Artifact Freshness
+- [ ] Relevant `.trellis/spec/` files are listed
+- [ ] Existing task artifacts used as evidence are listed
+- [ ] Spec/artifact freshness is marked fresh/stale/missing/unknown
+- [ ] Stale or missing specs/artifacts become refresh tasks or blocking notes
+
+### 0.3 Planning Artifact Gate
+- [ ] Every gap-closing task states required artifacts (`prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`)
+- [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller
+- [ ] JSONL context manifests are required when stable specs, research notes, or external context must be preloaded before implementation/checking
+
+---
+
 ## A. Requirements Traceability Matrix Quality Check
 
 ### A1. Status Determination Accuracy
@@ -64,6 +85,9 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 - [ ] Every task annotated with complexity (low/medium/high)
 - [ ] Complexity based on small model capability
 - [ ] High complexity tasks split or have detailed steps
+- [ ] Low: has an existing example to copy
+- [ ] Medium: has explicit implementation steps
+- [ ] High: split further or every step pinned down
 
 ### C3. Dependencies
 - [ ] Dependencies clearly listed
@@ -163,6 +187,14 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 - [ ] Build commands specified
 - [ ] Test commands specified (including regression tests)
 
+### E5. Context and Design Shift-left
+- [ ] Context Manifest lists exact MVP code, tests, and specs the execution model must read before editing
+- [ ] Decision Table pins bug branches, naming, schema, API, and validation choices
+- [ ] MVP Compatibility Contract lists preserved behaviors and regression checks
+- [ ] Contract snapshots define API/interface/data/state behavior before coding
+- [ ] `implement.jsonl` entries list stable implementation context files, not source files or step actions, when used
+- [ ] `check.jsonl` entries list stable verification context files, not test commands, when used
+
 ---
 
 ## F. Test Coverage Planning Check
@@ -210,6 +242,17 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 - [ ] Deferred non-blocking bugs recorded in Out of Scope
 
 ---
+
+## Pass Criteria
+
+- All applicable check items are marked ✅
+- Non-applicable items are marked `N/A` with a reason
+
+## Failure Handling
+
+- Failed check items become explicit issues
+- Generate an issue list (location, description, impact, improvement suggestion)
+- Apply targeted improvements and continue to the next review round
 
 ## Convergence Conditions
 

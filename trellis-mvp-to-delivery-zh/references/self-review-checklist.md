@@ -10,6 +10,27 @@
 
 ---
 
+## 0. Trellis 0.6 Beta 工作流适配检查
+
+### 0.1 工作流发现
+- [ ] 如存在 `.trellis/workflow.md`，已读取
+- [ ] 如存在 `.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer`，已检查
+- [ ] 如现有任务包含 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`，已识别并在补缺任务中保留延续
+- [ ] Developer identity 设置以 `trellis init -u <name>` 为主要提示，`init_developer.py` 只作为旧版兜底
+
+### 0.2 Spec 与任务产物新鲜度
+- [ ] 列出了相关 `.trellis/spec/` 文件
+- [ ] 列出了作为证据使用的已有任务产物
+- [ ] Spec/任务产物新鲜度标记为 fresh/stale/missing/unknown
+- [ ] Spec/任务产物过期或缺失时，已形成刷新任务或阻塞说明
+
+### 0.3 规划产物门槛
+- [ ] 每个补缺任务都说明必要产物（`prd.md`、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`）
+- [ ] 中/高复杂度任务已包含设计和实现产物，或已进一步拆小
+- [ ] 需要在实现/检查前预加载稳定 specs、调研说明或外部上下文时，要求 JSONL 上下文清单
+
+---
+
 ## A. 需求追踪矩阵质量检查
 
 ### A1. 状态判定准确性
@@ -165,6 +186,14 @@
 - [ ] 使用的框架/库已在 Technical Notes 中列出
 - [ ] 构建命令已明确
 - [ ] 测试命令已明确（包括回归测试）
+
+### E5. 上下文与设计左移
+- [ ] 上下文清单列出了执行模型编辑前必须读取的 MVP 代码、测试和 specs
+- [ ] 决策表定死了 bug 分支、命名、schema、API、校验等选择
+- [ ] MVP 兼容性契约列出了必须保留的行为和回归检查
+- [ ] 契约快照在编码前定义了 API/interface/data/state 行为
+- [ ] 使用 `implement.jsonl` 时，条目列出稳定实现上下文文件，而不是源代码文件或步骤动作
+- [ ] 使用 `check.jsonl` 时，条目列出稳定验证上下文文件，而不是测试命令
 
 ---
 

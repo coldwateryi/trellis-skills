@@ -4,9 +4,9 @@ Use this template when designing or filling automated tests for delivery closure
 
 ## Test Coverage Matrix
 
-| Requirement ID | Test Type | Test File | Test Case | Current Status | Gap |
-| --- | --- | --- | --- | --- | --- |
-| REQ-001 | unit |  |  | MISSING |  |
+| Requirement ID | Test Type | Test File | Test Case | Current Status | Gap | Manual Reason | Manual Steps |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| REQ-001 | unit |  |  | MISSING |  |  |  |
 
 Allowed test types:
 

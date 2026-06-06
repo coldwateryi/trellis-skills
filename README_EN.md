@@ -1,6 +1,6 @@
 # Trellis Requirements-to-Delivery Skills
 
-This repository provides a set of Trellis workflow skills for [Codex CLI](https://github.com/anthropics/codex), covering the full lifecycle from raw requirements documents to complete delivery — **Analyze → Plan → Trace → Audit → Close Gaps → Accept**.
+This repository provides a set of Trellis workflow skills for Codex CLI and other skill-capable CLI tools, covering the full lifecycle from raw requirements documents to complete delivery — **Analyze → Plan → Trace → Audit → Close Gaps → Accept**.
 
 ## Skill Overview
 
@@ -11,28 +11,9 @@ This repository provides a set of Trellis workflow skills for [Codex CLI](https:
 | `trellis-zero-to-mvp-zh` | ZH | Same as above (Chinese) |
 | `trellis-mvp-to-delivery-zh` | ZH | Same as above (Chinese) |
 
-### ✨ New Feature: Self-Review Loop
+### ✨ New Feature: Self-Review Loop and Design Shift-left
 
-**All skills now support self-review loop mechanism to ensure planning phase output meets execution requirements for small parameter models (e.g., qwen3.6 35b).**
-
-**How It Works**:
-1. 🔍 **Analyze** - Generate initial requirements traceability matrix, task split, and PRDs
-2. ✅ **Self-Review** - Check against 45-60 item checklist
-3. 🔧 **Targeted Improvements** - Fix only marked issues, not full redo
-4. 🔄 **Iterative Convergence** - Repeat 2-3 rounds until all checks pass
-5. ✅ **User Confirmation** - Create task tree only after meeting standards
-
-**Key Benefits**:
-- ✅ **Small Model Friendly** - Eliminates placeholders, provides concrete paths and steps
-- ✅ **Quality Assurance** - 45-60 precise checks, issues located to specific lines
-- ✅ **Cost Effective** - ROI > 5:1 (planning costs +45k tokens, execution saves 200k tokens)
-- ✅ **Proven Results** - Execution success rate improves 30%-50%
-
-See: [Optimization Proposal](OPTIMIZATION_PROPOSAL.md) and [Final Summary](FINAL_SUMMARY.md)
-
-### ✨ New Feature: Self-Review Loop
-
-**All skills now support self-review loop mechanism to ensure planning phase output meets execution requirements for small parameter models (e.g., qwen3.6 35b).**
+**All skills now support a self-review loop and shift complex-task design, implementation steps, and stable context manifests into the planning phase, so output can meet execution requirements for small parameter models (e.g., qwen3.6 35b).**
 
 **How It Works**:
 1. 🔍 **Analyze** - Generate initial requirements traceability matrix, task split, and PRDs
@@ -43,11 +24,22 @@ See: [Optimization Proposal](OPTIMIZATION_PROPOSAL.md) and [Final Summary](FINAL
 
 **Key Benefits**:
 - ✅ **Small Model Friendly** - Eliminates placeholders, provides concrete paths and steps
+- ✅ **Design Shift-left** - Adds Context Manifest, Decision Table, `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` for medium/high complexity tasks
 - ✅ **Quality Assurance** - 45-60 precise checks, issues located to specific lines
 - ✅ **Cost Effective** - ROI > 5:1 (planning costs +45k tokens, execution saves 200k tokens)
 - ✅ **Proven Results** - Execution success rate improves 30%-50%
 
-See: [Optimization Proposal](OPTIMIZATION_PROPOSAL.md) and [Final Summary](FINAL_SUMMARY.md)
+See: [Optimization Proposal](doc/OPTIMIZATION_PROPOSAL.md) and [Final Summary](doc/FINAL_SUMMARY.md)
+
+## Trellis 0.6 Beta Compatibility
+
+These skills remain compatible with the core Trellis task layout (`.trellis/tasks/`, `.trellis/spec/`, `task.py create --parent`) and now include 0.6 beta workflow support:
+
+- If `.trellis/workflow.md` exists, treat it as the local workflow contract.
+- If `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, or `.trellis/workspace/` exist, include them in planning context.
+- Check `.trellis/spec/` freshness before planning implementation-heavy tasks; plan spec refresh/bootstrap when specs are missing, generic, or stale.
+- For medium/high complexity tasks, add `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` in addition to `prd.md` when the project workflow expects them.
+- Prefer `trellis init -u <name>` for first-time setup, with the project platform flag when needed; keep `init_developer.py` as a legacy fallback.
 
 ## Recommended Workflow
 
@@ -153,6 +145,7 @@ skills/
 │       ├── analysis-output-template.md   # Read-only analysis template
 │       ├── parent-prd-template.md        # Parent task PRD template
 │       ├── child-prd-template.md         # Child task PRD template
+│       ├── planning-artifacts-template.md # 0.6 beta design/implementation/context manifest template
 │       └── task-creation-checklist.md    # Task creation checklist
 ├── trellis-mvp-to-delivery/      # MVP → Delivery (English)
 │   ├── SKILL.md
@@ -161,6 +154,7 @@ skills/
 │   └── references/
 │       ├── gap-audit-template.md         # Gap audit template
 │       ├── delivery-task-prd-template.md # Gap-closing task PRD template
+│       ├── planning-artifacts-template.md # 0.6 beta design/implementation/context manifest template
 │       ├── test-coverage-matrix-template.md  # Test coverage matrix template
 │       ├── final-acceptance-template.md      # Final acceptance template
 │       └── bug-classification-rules.md       # Bug classification rules
@@ -174,9 +168,10 @@ skills/
 
 ## Prerequisites
 
-- [Codex CLI](https://github.com/anthropics/codex) installed
+- Codex CLI or another skill-capable CLI tool installed
 - Trellis initialized in the project (`.trellis/` directory exists)
-- Run `python ./.trellis/scripts/init_developer.py <name>` before first use to set the developer identity
+- Prefer `trellis init -u <name>` before first use to set the developer identity, adding the project platform flag when needed (for example `--codex`)
+- If the Trellis CLI is unavailable, use the legacy fallback: `python ./.trellis/scripts/init_developer.py <name>`
 
 ## Key Principles
 

@@ -43,13 +43,13 @@ trellis-zero-to-mvp/
     ├── self-review-report-template.md (新增)
     └── 其他已修改的模板文件
 
-PROJECT_ANALYSIS.md (新增)
-OPTIMIZATION_PROPOSAL.md (新增)
+doc/PROJECT_ANALYSIS.md (新增)
+doc/OPTIMIZATION_PROPOSAL.md (新增)
 ```
 
 **提交命令**:
 ```bash
-git add trellis-zero-to-mvp*/ PROJECT_ANALYSIS.md OPTIMIZATION_PROPOSAL.md
+git add trellis-zero-to-mvp*/ doc/PROJECT_ANALYSIS.md doc/OPTIMIZATION_PROPOSAL.md
 git status  # 确认要提交的文件
 git commit -m "feat: 为 zero-to-mvp 添加自我评审循环功能
 
@@ -64,7 +64,7 @@ git commit -m "feat: 为 zero-to-mvp 添加自我评审循环功能
 - 支持小参数模型（如 qwen3.6 35b）生成高质量 PRD
 - ROI > 5:1（规划多花45k tokens，执行少花200k tokens）
 
-详见 OPTIMIZATION_PROPOSAL.md 和 PROJECT_ANALYSIS.md
+详见 doc/OPTIMIZATION_PROPOSAL.md 和 doc/PROJECT_ANALYSIS.md
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -89,12 +89,12 @@ trellis-mvp-to-delivery/
     ├── self-review-report-template.md (新增)
     └── 其他已修改的模板文件
 
-PHASE2_COMPLETION_REPORT.md (新增)
+doc/PHASE2_COMPLETION_REPORT.md (新增)
 ```
 
 **提交命令**:
 ```bash
-git add trellis-mvp-to-delivery*/ PHASE2_COMPLETION_REPORT.md
+git add trellis-mvp-to-delivery*/ doc/PHASE2_COMPLETION_REPORT.md
 git status  # 确认要提交的文件
 git commit -m "feat: 为 mvp-to-delivery 添加自我评审循环功能
 
@@ -108,7 +108,7 @@ git commit -m "feat: 为 mvp-to-delivery 添加自我评审循环功能
   - 特别强调 MVP 兼容性（所有补缺任务不能破坏已有行为）
 - 支持小参数模型安全扩展 MVP
 
-详见 PHASE2_COMPLETION_REPORT.md
+详见 doc/PHASE2_COMPLETION_REPORT.md
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
@@ -121,22 +121,22 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 ```
 README.md (修改)
 README_EN.md (修改)
-IMPLEMENTATION_SUMMARY.md (新增)
-COMPLETION_REPORT.md (新增)
-FINAL_SUMMARY.md (新增)
+doc/IMPLEMENTATION_SUMMARY.md (新增)
+doc/COMPLETION_REPORT.md (新增)
+doc/FINAL_SUMMARY.md (新增)
 ```
 
 **提交命令**:
 ```bash
-git add README.md README_EN.md IMPLEMENTATION_SUMMARY.md COMPLETION_REPORT.md FINAL_SUMMARY.md
+git add README.md README_EN.md doc/IMPLEMENTATION_SUMMARY.md doc/COMPLETION_REPORT.md doc/FINAL_SUMMARY.md
 git status  # 确认要提交的文件
 git commit -m "docs: 完善自我评审循环实施文档和 README
 
 - README.md / README_EN.md: 增加自我评审循环功能说明
   - 工作原理、核心优势、使用示例
-- IMPLEMENTATION_SUMMARY.md: Phase 1 实施细节
-- COMPLETION_REPORT.md: Phase 1 完成报告
-- FINAL_SUMMARY.md: 完整实施总结
+- doc/IMPLEMENTATION_SUMMARY.md: Phase 1 实施细节
+- doc/COMPLETION_REPORT.md: Phase 1 完成报告
+- doc/FINAL_SUMMARY.md: 完整实施总结
 
 完整实施：
 - ✅ 4个技能全部增强

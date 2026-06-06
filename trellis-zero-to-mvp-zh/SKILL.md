@@ -20,8 +20,9 @@ description: |
 - 每个子任务必须包含需求 ID、验收标准、测试要求、依赖、解锁项、范围外内容和技术备注。
 - PRD 是给执行模型照着做的执行规格，不是意图描述。规划阶段必须把所有 `<...>` 占位符替换为具体值（具体文件路径、可照抄的现有范例、有序实现步骤、可机器校验的验收断言、自检命令），禁止把推理判断留给执行阶段。
 - 凡是需要推理的判断（用哪个注解、走哪条分支、命名、表结构、照抄哪个范例）必须在规划阶段定死。无法定死的点列入范围外或拆成独立任务，不要交给执行模型自由发挥。
+- 对 Trellis 0.6 beta 项目，如果存在 `.trellis/workflow.md`，必须把它当作当前项目的本地工作流契约。不要在项目已声明 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl` 产物时仍按旧的纯 task/PRD 工作流假设执行。
 - Trellis 的父子任务关系只表达任务结构。严格依赖必须写入每个子任务的 `prd.md`。
-- 如果 `task.py create` 因 developer identity 未初始化而失败，停止并提示用户运行 `python ./.trellis/scripts/init_developer.py <name>`，或让用户提供明确的 assignee。
+- 如果 `task.py create` 因 developer identity 未初始化而失败，停止并提示用户运行 `trellis init -u <name>`（加上项目使用的平台参数，例如 `--codex`），或让用户提供明确的 assignee。只有 Trellis CLI 不可用时，才把 `python ./.trellis/scripts/init_developer.py <name>` 作为旧版兜底方式。
 
 ## 工作流
 
@@ -33,6 +34,9 @@ description: |
 - README 或项目概览文件。
 - 如果仓库不是空项目，读取现有代码结构和测试。
 - 与项目相关的 `.trellis/tasks/` 和 `.trellis/spec/` 内容。
+- Trellis 0.6 beta 工作流元数据：如存在，读取 `.trellis/workflow.md`、`.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer` 和 `.trellis/workspace/`。
+
+起草任务前，检查 `.trellis/spec/` 是否足够新且具体，能支撑实现。如果 spec 缺失、过于泛化或明显过期，先增加 spec 刷新/bootstrap 任务或阻塞说明，再规划代码量大的任务。
 
 先检查仓库再提问。只问无法从本地上下文判断的阻塞性问题。
 
@@ -53,6 +57,7 @@ description: |
 - 按依赖排序的 MVP 推荐开发顺序。
 - 父任务 PRD 草案。
 - 子任务 PRD 草案。
+- 对中/高复杂度子任务，读取 `references/planning-artifacts-template.md` 起草左移设计、实现计划和上下文清单产物：当项目工作流支持时，包含 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。
 
 需求追踪矩阵只能使用这些状态：`DONE`、`PARTIAL`、`MISSING`、`UNTESTED`、`UNCLEAR`。
 
@@ -107,8 +112,9 @@ description: |
 2. 使用 `--parent <parent-task-dir>` 创建子任务。
 3. 使用 `references/parent-prd-template.md` 写入父任务 `prd.md`。
 4. 使用 `references/child-prd-template.md` 写入每个子任务 `prd.md`。
-5. 精确保留需求 ID 和依赖关系。
-6. 不要开始实现。
+5. 对中/高复杂度子任务，如果 `.trellis/workflow.md` 或现有任务显示项目期望这些产物，写入或起草 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。写入前必须先读取已有产物，禁止盲目覆盖。
+6. 精确保留需求 ID 和依赖关系。
+7. 不要开始实现。
 
 使用：
 
@@ -132,6 +138,7 @@ python ./.trellis/scripts/task.py create "<child title>" --slug <child-slug> --p
 - `references/analysis-output-template.md` - 生成初始分析前读取。
 - `references/self-review-checklist.md` - 每轮分析后进行自我评审时读取。
 - `references/self-review-report-template.md` - 生成评审报告时读取。
+- `references/planning-artifacts-template.md` - 为中/高复杂度任务起草 Trellis 0.6 beta 的设计、实现和上下文清单产物时读取。
 - `references/parent-prd-template.md` - 起草或写入父任务 PRD 时读取。
 - `references/child-prd-template.md` - 起草或写入子任务 PRD 时读取。
 - `references/task-creation-checklist.md` - 创建任务树前读取。

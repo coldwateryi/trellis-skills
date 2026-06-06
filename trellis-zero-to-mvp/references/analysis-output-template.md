@@ -6,6 +6,24 @@ Use this template for the read-only analysis. Do not create tasks or write code 
 
 Write 5-10 bullets describing what the requirements document asks the project to deliver.
 
+## Trellis Workflow Context
+
+| Item | Value | Notes |
+| --- | --- | --- |
+| Trellis version/source | <from `.trellis/.version` or "unknown"> | <beta/current/legacy signal> |
+| Workflow contract | <path to `.trellis/workflow.md` or "not present"> | <artifact requirements found> |
+| Config | <path to `.trellis/config.yaml` or "not present"> | <relevant options> |
+| Developer identity | <from `.trellis/.developer` or "not initialized"> | <action needed if missing> |
+| Spec freshness | <fresh/stale/missing/unknown> | <spec files read or refresh task needed> |
+
+## Execution Profile
+
+| Profile | Value |
+| --- | --- |
+| Expected execution model | <e.g. qwen3.6 35b local / GPT-5.5 / Opus 4.8> |
+| Planning depth | <standard / small-model-safe / high-risk> |
+| Task size rule | <how small tasks must be for this profile> |
+
 ## Requirements Traceability Matrix
 
 | ID | Requirement | Current Status | Related Code | Existing Tests | Gap | Suggested Task |
@@ -28,9 +46,9 @@ Allowed statuses:
 
 ## Task Split
 
-| Task ID | Title | Goal | Type | Depends On | Priority | Complexity | Parallelizable | Acceptance Criteria | Likely Areas |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T0 |  |  | docs | none | P0 | low | no |  |  |
+| Task ID | Title | Goal | Type | Depends On | Priority | Complexity | Planning Artifacts | Parallelizable | Acceptance Criteria | Likely Areas |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| T0 |  |  | docs | none | P0 | low | prd.md | no |  |  |
 
 Allowed task types: `backend`, `frontend`, `fullstack`, `docs`, `test`, `infra`.
 
@@ -67,6 +85,8 @@ Draft the parent PRD using `parent-prd-template.md`.
 ## Child Task PRD Drafts
 
 For each child task, draft the PRD using `child-prd-template.md`.
+
+For every medium/high complexity child task, also draft the required Trellis 0.6 beta planning artifacts using `planning-artifacts-template.md`.
 
 ## Confirmation Request
 

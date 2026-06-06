@@ -1,6 +1,6 @@
 # Trellis 需求交付技能集
 
-本仓库为 [Codex CLI](https://github.com/anthropics/codex) 以及其他支持skill的cli工具提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
+本仓库为 Codex CLI 以及其他支持 skill 的 CLI 工具提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
 
 ## 技能概览
 
@@ -11,9 +11,9 @@
 | `trellis-zero-to-mvp-zh` | ZH | 同上（中文版） |
 | `trellis-mvp-to-delivery-zh` | ZH | 同上（中文版） |
 
-### ✨ 新功能：自我评审循环
+### ✨ 新功能：自我评审循环与设计左移
 
-**所有技能现已支持自我评审循环机制，确保规划阶段输出满足小参数模型（如 qwen3.6 35b）的执行要求。**
+**所有技能现已支持自我评审循环机制，并把复杂任务的设计、实现步骤和稳定上下文清单前置到规划阶段，确保输出满足小参数模型（如 qwen3.6 35b）的执行要求。**
 
 **工作原理**：
 1. 🔍 **分析** - 生成初版需求追踪矩阵、任务拆分和 PRD
@@ -24,11 +24,22 @@
 
 **核心优势**：
 - ✅ **小模型友好** - 消除占位符、提供具体路径和步骤
+- ✅ **设计左移** - 对中/高复杂度任务补充 Context Manifest、Decision Table、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`
 - ✅ **质量保证** - 45-60 项精准检查，问题定位到具体行
 - ✅ **成本可控** - ROI > 5:1（规划多花 45k tokens，执行少花 200k tokens）
 - ✅ **效果显著** - 执行成功率提升 30%-50%
 
 详见：[优化提案](doc/OPTIMIZATION_PROPOSAL.md) 和 [实施总结](doc/FINAL_SUMMARY.md)
+
+## Trellis 0.6 Beta 适配
+
+本技能集仍兼容 Trellis 的核心任务结构（`.trellis/tasks/`、`.trellis/spec/`、`task.py create --parent`），同时增加对 0.6 beta 工作流的适配：
+
+- 如存在 `.trellis/workflow.md`，优先把它作为项目本地工作流契约读取。
+- 如存在 `.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer`、`.trellis/workspace/`，在规划前纳入上下文。
+- 对依赖 `.trellis/spec/` 的任务先检查 spec 新鲜度；缺失、泛化或过期时，先规划 spec refresh/bootstrap。
+- 对中/高复杂度任务，除 `prd.md` 外，按项目工作流补充 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`。
+- 首次初始化优先使用 `trellis init -u <name>`，并按项目需要添加平台参数；`init_developer.py` 只作为旧版兜底。
 
 ## 推荐工作流
 
@@ -134,6 +145,7 @@ skills/
 │       ├── analysis-output-template.md   # 只读分析输出模板
 │       ├── parent-prd-template.md        # 父任务 PRD 模板
 │       ├── child-prd-template.md         # 子任务 PRD 模板
+│       ├── planning-artifacts-template.md # 0.6 beta 设计/实现/上下文清单模板
 │       └── task-creation-checklist.md    # 任务创建检查清单
 ├── trellis-mvp-to-delivery/      # MVP → Delivery（英文）
 │   ├── SKILL.md
@@ -142,6 +154,7 @@ skills/
 │   └── references/
 │       ├── gap-audit-template.md         # 差距审计模板
 │       ├── delivery-task-prd-template.md # 补缺任务 PRD 模板
+│       ├── planning-artifacts-template.md # 0.6 beta 设计/实现/上下文清单模板
 │       ├── test-coverage-matrix-template.md  # 测试覆盖矩阵模板
 │       ├── final-acceptance-template.md      # 最终验收模板
 │       └── bug-classification-rules.md       # Bug 分类规则
@@ -154,9 +167,10 @@ skills/
 
 ## 前置条件
 
-- 已安装 [Codex CLI](https://github.com/anthropics/codex)或者其他cli工具
+- 已安装 Codex CLI 或其他支持 skill 的 CLI 工具
 - 项目中已初始化 Trellis（`.trellis/` 目录存在）
-- 首次使用前运行 `python ./.trellis/scripts/init_developer.py <name>` 设置开发者身份
+- 首次使用前优先运行 `trellis init -u <name>` 设置开发者身份，并按项目需要添加平台参数（如 `--codex`）
+- 如果 Trellis CLI 不可用，再使用旧版兜底命令：`python ./.trellis/scripts/init_developer.py <name>`
 
 ## 关键原则
 

@@ -10,6 +10,26 @@ This checklist evaluates whether read-only analysis output meets the requirement
 
 ---
 
+## 0. Trellis 0.6 Beta Workflow Fit Check
+
+### 0.1 Workflow Discovery
+- [ ] `.trellis/workflow.md` was read when present
+- [ ] `.trellis/config.yaml`, `.trellis/.version`, and `.trellis/.developer` were checked when present
+- [ ] The analysis states whether the project uses legacy PRD-only tasks or Trellis 0.6 beta planning artifacts
+- [ ] Developer identity setup uses `trellis init -u <name>` as the primary instruction, with `init_developer.py` only as legacy fallback
+
+### 0.2 Spec Freshness
+- [ ] Relevant `.trellis/spec/` files are listed
+- [ ] Spec freshness is marked fresh/stale/missing/unknown
+- [ ] Stale or missing specs become a spec-refresh/bootstrap task or blocking note
+
+### 0.3 Planning Artifact Gate
+- [ ] Every task states required artifacts (`prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`)
+- [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller
+- [ ] JSONL context manifests are required when stable specs, research notes, or external context must be preloaded before implementation/checking
+
+---
+
 ## A. Requirements Completeness Check
 
 ### A1. Requirement Identification
@@ -61,6 +81,10 @@ This checklist evaluates whether read-only analysis output meets the requirement
 
 ### B4. Priority
 - [ ] Every task assigned priority (P0/P1/P2/P3)
+- [ ] P0: blocks other modules or core correctness
+- [ ] P1: core business loop
+- [ ] P2: experience, reports, notifications, enhancements
+- [ ] P3: non-essential optimization
 
 ---
 
@@ -131,6 +155,13 @@ This checklist evaluates whether read-only analysis output meets the requirement
 - [ ] Build commands specified
 - [ ] Test commands specified
 
+### D5. Context and Design Shift-left
+- [ ] Context Manifest lists exact files the execution model must read before editing
+- [ ] Decision Table pins naming, branch, schema, API, and validation choices
+- [ ] Contract snapshots define API/interface/data/state behavior before coding
+- [ ] `implement.jsonl` entries list stable implementation context files, not source files or step actions, when used
+- [ ] `check.jsonl` entries list stable verification context files, not test commands, when used
+
 ---
 
 ## E. Risk Point Check
@@ -146,6 +177,17 @@ This checklist evaluates whether read-only analysis output meets the requirement
 - [ ] Not vague like "other features"
 
 ---
+
+## Pass Criteria
+
+- All applicable check items are marked ✅
+- Non-applicable items are marked `N/A` with a reason
+
+## Failure Handling
+
+- Failed check items become explicit issues
+- Generate an issue list (location, description, impact, improvement suggestion)
+- Apply targeted improvements and continue to the next review round
 
 ## Convergence Conditions
 

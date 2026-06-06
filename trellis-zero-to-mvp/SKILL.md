@@ -19,8 +19,9 @@ Turn a raw requirements document into an MVP-sized Trellis delivery plan. The ou
 - Every child task must include requirement IDs, acceptance criteria, tests, dependencies, unlocks, out-of-scope items, and technical notes.
 - A PRD is an execution spec the execution model copies from, not an intent description. During planning, replace every `<...>` placeholder with a concrete value (exact file paths, copyable existing examples, ordered implementation steps, machine-checkable acceptance assertions, self-check commands). Never leave reasoning to the execution phase.
 - Every decision requiring reasoning (which annotation, which branch, naming, table schema, which example to copy) must be pinned down during planning. Points that cannot be pinned go to out-of-scope or a separate task, never to the execution model's discretion.
+- For Trellis 0.6 beta projects, treat `.trellis/workflow.md` as the active local workflow contract when present. Do not assume older task-only behavior if the project declares `design.md`, `implement.md`, `implement.jsonl`, or `check.jsonl` artifacts.
 - Treat Trellis parent/child links as task structure only. Write strict dependencies in each child `prd.md`.
-- If `task.py create` fails because the developer identity is not initialized, stop and tell the user to run `python ./.trellis/scripts/init_developer.py <name>` or provide an explicit assignee.
+- If `task.py create` fails because the developer identity is not initialized, stop and tell the user to run `trellis init -u <name>` (with the platform flag used by the project, such as `--codex`) or provide an explicit assignee. Keep `python ./.trellis/scripts/init_developer.py <name>` only as a legacy fallback when the Trellis CLI is unavailable.
 
 ## Workflow
 
@@ -32,6 +33,9 @@ Locate and read:
 - README or project overview files.
 - Existing code structure and tests, if the repo is not empty.
 - Existing `.trellis/tasks/` and `.trellis/spec/` material relevant to the project.
+- Trellis 0.6 beta workflow metadata when present: `.trellis/workflow.md`, `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, and `.trellis/workspace/`.
+
+Before drafting tasks, check whether `.trellis/spec/` is current enough to support implementation. If specs are missing, generic, or clearly stale, add a spec-refresh/bootstrap task or blocking note before planning code-heavy work.
 
 Use repository inspection before asking the user questions. Ask only blocking questions that cannot be answered from local context.
 
@@ -52,6 +56,7 @@ Load `references/analysis-output-template.md` and produce:
 - Recommended dependency-ordered MVP development sequence.
 - Draft parent PRD.
 - Draft child PRDs.
+- For medium/high complexity child tasks, draft shift-left design, implementation-plan, and context-manifest artifacts using `references/planning-artifacts-template.md`: `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when the project workflow supports them.
 
 Use these statuses in the traceability matrix: `DONE`, `PARTIAL`, `MISSING`, `UNTESTED`, `UNCLEAR`.
 
@@ -106,8 +111,9 @@ After confirmation:
 2. Create child tasks with `--parent <parent-task-dir>`.
 3. Write the parent `prd.md` using `references/parent-prd-template.md`.
 4. Write each child `prd.md` using `references/child-prd-template.md`.
-5. Preserve requirement IDs and dependencies exactly.
-6. Do not start implementation.
+5. For medium/high complexity child tasks, write or draft `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when `.trellis/workflow.md` or existing tasks show those artifacts are expected. Do not overwrite existing artifacts without reading them first.
+6. Preserve requirement IDs and dependencies exactly.
+7. Do not start implementation.
 
 Use:
 
@@ -128,9 +134,10 @@ Output:
 
 ## References
 
-- `references/analysis-output-template.md` - read before producing the initial audit.
+- `references/analysis-output-template.md` - read before producing the initial analysis.
 - `references/self-review-checklist.md` - read for self-review after each analysis round.
 - `references/self-review-report-template.md` - read when generating review reports.
+- `references/planning-artifacts-template.md` - read when drafting Trellis 0.6 beta design, implementation, and context manifest artifacts for medium/high complexity tasks.
 - `references/parent-prd-template.md` - read when drafting or writing the parent task PRD.
 - `references/child-prd-template.md` - read when drafting or writing child task PRDs.
 - `references/task-creation-checklist.md` - read before creating the task tree.

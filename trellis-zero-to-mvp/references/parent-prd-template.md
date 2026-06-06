@@ -45,7 +45,7 @@ T0 requirements traceability
 - [ ] All MVP P0/P1 requirements are complete.
 - [ ] Every requirement ID has a test mapping or documented manual verification reason.
 - [ ] Lint, typecheck, and required tests pass.
-- [ ] Final acceptance report uses PASS / FAIL / PARTIAL / NOT TESTED.
+- [ ] Final acceptance report uses PASS / FAIL / PARTIAL / NOT TESTED / BLOCKED.
 - [ ] Docs and run instructions are updated if behavior changed.
 
 ## Out of Scope

@@ -2,9 +2,27 @@
 
 已有 MVP 后的第一轮使用此模板。用户确认审计前，不要写代码或创建任务。
 
-## Requirements Traceability Matrix
+## Trellis 工作流上下文
 
-| ID | 需求 | 当前状态 | 相关代码 | 现有测试 | 缺口 | 建议 Task |
+| 项目 | 值 | 备注 |
+| --- | --- | --- |
+| Trellis 版本/来源 | <来自 `.trellis/.version` 或 "unknown"> | <beta/current/legacy 信号> |
+| 工作流契约 | <`.trellis/workflow.md` 路径或 "not present"> | <发现的产物要求> |
+| 配置 | <`.trellis/config.yaml` 路径或 "not present"> | <相关选项> |
+| Developer identity | <来自 `.trellis/.developer` 或 "not initialized"> | <缺失时要做什么> |
+| Spec 新鲜度 | <fresh/stale/missing/unknown> | <已读 spec 文件或需要的刷新任务> |
+
+## 执行模型画像
+
+| 项目 | 值 |
+| --- | --- |
+| 预期执行模型 | <如 qwen3.6 35b 本地模型 / GPT-5.5 / Opus 4.8> |
+| 规划深度 | <standard / small-model-safe / high-risk> |
+| 回归风险等级 | <low/medium/high> |
+
+## 需求追踪矩阵
+
+| ID | 需求 | 当前状态 | 相关代码 | 现有测试 | 缺口 | 建议任务 |
 | --- | --- | --- | --- | --- | --- | --- |
 | REQ-001 |  | UNCLEAR |  |  |  |  |
 
@@ -38,9 +56,9 @@
 
 ## 任务计划
 
-| 顺序 | Task Slug | 标题 | 需求 ID | 依赖 | 验收标准 | 自动化测试要求 | 优先级 | 复杂度 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 |  |  |  |  |  |  | P0 | 低 |
+| 顺序 | 任务 Slug | 标题 | 需求 ID | 依赖 | 验收标准 | 自动化测试要求 | 优先级 | 复杂度 | 规划产物 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 |  |  |  |  |  |  | P0 | 低 | prd.md |
 
 复杂度（按执行模型能力评估，决定拆分粒度和 PRD 详细度）：
 
@@ -55,6 +73,8 @@
 3. 不要把功能实现和最终验证混在一起。
 4. 每个功能任务都包含自己的基础测试。
 5. 最终验证任务依赖所有功能任务。
+
+对每个中/高复杂度补缺任务，同时使用 `planning-artifacts-template.md` 起草必要的 Trellis 0.6 beta 规划产物。
 
 ## 确认请求
 

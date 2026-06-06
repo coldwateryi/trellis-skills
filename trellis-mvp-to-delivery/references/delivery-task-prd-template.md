@@ -32,6 +32,42 @@ Close the verified gap for these requirements without expanding unrelated scope.
 - Gap:
 - Risk:
 
+## Complexity and Planning Artifacts
+
+- Complexity: <low/medium/high, assessed against the execution model capability>
+- Execution model assumption: <e.g. qwen3.6 35b local / GPT-5.5 / Opus 4.8>
+- Required artifacts:
+  - `prd.md`: required
+  - `design.md`: <required/not required and reason>
+  - `implement.md`: <required/not required and reason>
+  - `implement.jsonl`: <required/not required and reason>
+  - `check.jsonl`: <required/not required and reason>
+- Spec freshness: <which `.trellis/spec/` files were read; if stale, name the spec-refresh task>
+
+## Context Manifest
+
+The execution model must read these before editing:
+
+| Kind | Path | Purpose |
+| --- | --- | --- |
+| MVP code | <path> | <behavior to preserve or extend> |
+| Existing test | <path> | <regression or style reference> |
+| Contract/spec | <path> | <API/schema/state rules> |
+
+## Decision Table
+
+Pin every decision that would otherwise require reasoning during execution:
+
+| Decision | Selected Option | Reason | Affected Files |
+| --- | --- | --- | --- |
+| <bug branch/naming/schema/API choice> | <exact choice> | <why> | <paths> |
+
+## MVP Compatibility Contract
+
+| Existing Behavior | Evidence | Must Preserve? | Regression Check |
+| --- | --- | --- | --- |
+| <behavior> | <path/test> | yes | <command/test> |
+
 ## Reference Implementation
 
 During execution, prefer copying the existing examples below, replacing only the entity/fields/naming for this task:

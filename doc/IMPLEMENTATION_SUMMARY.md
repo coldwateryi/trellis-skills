@@ -27,13 +27,13 @@
 4. **references/self-review-report-template.md** (约200行)
 
 #### 文档
-5. **OPTIMIZATION_PROPOSAL.md** (约600行)
+5. **doc/OPTIMIZATION_PROPOSAL.md** (约600行)
    - 完整的优化方案设计文档
    - 技术可行性分析
    - 成本效益分析
    - 实施步骤
 
-6. **PROJECT_ANALYSIS.md** (约400行)
+6. **doc/PROJECT_ANALYSIS.md** (约400行)
    - 项目整体分析报告
 
 ### 1.2 修改文件（4个）
@@ -48,7 +48,7 @@
 2. **trellis-zero-to-mvp/SKILL.md**
    - 同上（英文版）
 
-#### 已暂存但未提交
+#### 既有增强模板
 3. **trellis-zero-to-mvp-zh/** 其他已修改文件（来自之前）
 4. **trellis-zero-to-mvp/** 其他已修改文件（来自之前）
 
@@ -241,9 +241,9 @@ trellis-zero-to-mvp/SKILL.md          # 工作流增强（英文）
 ### 8.3 文档
 
 ```
-OPTIMIZATION_PROPOSAL.md              # 优化提案
-PROJECT_ANALYSIS.md                   # 项目分析报告
-IMPLEMENTATION_SUMMARY.md             # 本文件
+doc/OPTIMIZATION_PROPOSAL.md          # 优化提案
+doc/PROJECT_ANALYSIS.md               # 项目分析报告
+doc/IMPLEMENTATION_SUMMARY.md         # 本文件
 ```
 
 ---

@@ -5,24 +5,24 @@
 ## 分类输出
 
 ```markdown
-## Bug Classification
+## 缺陷分类
 
-- Bug:
-- Affected Requirement IDs:
-- Blocks current task: yes/no
-- Recommended action:
-  - fix in current task
-  - create bug task
-  - defer with documented risk
+- 缺陷:
+- 受影响的需求 ID:
+- 是否阻塞当前任务: 是/否
+- 建议动作:
+  - 在当前任务修复
+  - 创建独立 bug task
+  - 记录风险后延期
 
-## Proposed Bug Task
+## 建议的 Bug 任务
 
-- Title:
+- 标题:
 - Slug:
-- Priority:
-- Dependencies:
-- Acceptance criteria:
-- Tests required:
+- 优先级:
+- 依赖:
+- 验收标准:
+- 所需测试:
 ```
 
 ## 判断规则

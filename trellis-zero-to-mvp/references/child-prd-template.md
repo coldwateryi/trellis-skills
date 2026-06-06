@@ -29,6 +29,36 @@ Implement or validate this independently verifiable capability for the MVP.
 - Gap: <missing behavior>
 - Risk: <why this matters>
 
+## Complexity and Planning Artifacts
+
+- Complexity: <low/medium/high, assessed against the execution model capability>
+- Execution model assumption: <e.g. qwen3.6 35b local / GPT-5.5 / Opus 4.8>
+- Required artifacts:
+  - `prd.md`: required
+  - `design.md`: <required/not required and reason>
+  - `implement.md`: <required/not required and reason>
+  - `implement.jsonl`: <required/not required and reason>
+  - `check.jsonl`: <required/not required and reason>
+- Spec freshness: <which `.trellis/spec/` files were read; if stale, name the spec-refresh task>
+
+## Context Manifest
+
+The execution model must read these before editing:
+
+| Kind | Path | Purpose |
+| --- | --- | --- |
+| Existing example | <path> | <pattern to copy> |
+| Contract/spec | <path> | <API/schema/state rules> |
+| Test example | <path> | <test style to copy> |
+
+## Decision Table
+
+Pin every decision that would otherwise require reasoning during execution:
+
+| Decision | Selected Option | Reason | Affected Files |
+| --- | --- | --- | --- |
+| <annotation/naming/schema/branch/API choice> | <exact choice> | <why> | <paths> |
+
 ## Reference Implementation
 
 During execution, prefer copying the existing examples below, replacing only the entity/fields/naming for this task:

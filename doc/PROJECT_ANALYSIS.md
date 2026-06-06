@@ -1,6 +1,6 @@
 # Trellis Skills 项目分析报告
 
-生成时间: 2026-06-05
+生成时间: 2026-06-06（仓库状态段已刷新）
 
 ## 一、项目概览
 
@@ -25,6 +25,8 @@ Trellis Skills 是一套面向 Codex CLI 以及其他支持 skill 的 CLI 工具
 ## 二、架构设计分析
 
 ### 2.1 目录结构
+
+以下结构图用于说明阶段划分和主要产物，省略了部分新增的自我评审 reference 文件。
 
 ```
 trellis-skills/
@@ -206,60 +208,35 @@ trellis-skills/
 
 ## 五、当前状态分析
 
-### 5.1 Git 仓库状态
+### 5.1 运行时仓库状态说明
 
-**当前分支**: main  
-**最近提交**:
-- ae79581: Add MIT License
-- be33818: modify desc
-- cccfcf0: first commit
-- 4994c45: first commit
+Git 分支、最近提交和工作区是否干净都属于**运行时信息**，不适合静态写死在分析报告里。查看当前真实状态时，应以实时命令输出为准：
 
-**未提交的更改** (14 个文件，+348/-36 行):
+- `git status --short --branch`
+- `git log --oneline -5`
 
-#### 5.1.1 修改的文件
-1. **SKILL.md** (4 个文件)
-   - trellis-mvp-to-delivery-zh/SKILL.md (+2 行)
-   - trellis-mvp-to-delivery/SKILL.md (+2 行)
-   - trellis-zero-to-mvp-zh/SKILL.md (+3 行)
-   - trellis-zero-to-mvp/SKILL.md (+3 行)
+本文档不再维护“未提交更改列表”，以避免文档在后续提交和评审后迅速过期。
 
-2. **PRD Templates** (4 个文件)
-   - trellis-mvp-to-delivery-zh/references/delivery-task-prd-template.md (+79/-2 行)
-   - trellis-mvp-to-delivery/references/delivery-task-prd-template.md (+75/-2 行)
-   - trellis-zero-to-mvp-zh/references/child-prd-template.md (+84/-3 行)
-   - trellis-zero-to-mvp/references/child-prd-template.md (+80/-3 行)
+### 5.2 文件统计（2026-06-06 刷新）
 
-3. **Audit Templates** (2 个文件)
-   - trellis-mvp-to-delivery-zh/references/gap-audit-template.md (+12/-1 行)
-   - trellis-mvp-to-delivery/references/gap-audit-template.md (+12/-1 行)
+**Git 跟踪文件数**: 44
 
-4. **Analysis Templates** (2 个文件)
-   - trellis-zero-to-mvp-zh/references/analysis-output-template.md (+12/-1 行)
-   - trellis-zero-to-mvp/references/analysis-output-template.md (+12/-1 行)
-
-5. **Checklists** (2 个文件)
-   - trellis-zero-to-mvp-zh/references/task-creation-checklist.md (+4 行)
-   - trellis-zero-to-mvp/references/task-creation-checklist.md (+4 行)
-
-**变更特征**:
-- 所有更改都集中在文档和模板文件
-- 中英文版本的修改保持同步
-- PRD 模板增加了大量内容（+75~84 行），可能是增强了"弱模型适配"相关说明
-- 其他模板也有小幅增强（+12 行或 +4 行）
-
-### 5.2 文件统计
-
-**总文件数**: 26 个 Markdown 文件
+**Markdown 文件数**: 39
 - 2 个 README
 - 4 个 SKILL.md
-- 4 个 agents/openai.yaml（每个约 5 行）
-- 16 个参考模板文件
+- 26 个 reference 模板文件
+- 7 个 `doc/` 文档
+
+**YAML 文件数**: 4
+- 4 个 `agents/openai.yaml`
+
+**其他文件**: 1
+- `LICENSE`
 
 **模板文件规模**:
-- 最小: bug-classification-rules.md (34 行)
-- 最大: delivery-task-prd-template.md (148 行)
-- 平均: 约 75 行/文件
+- 最小: `bug-classification-rules.md` (34 行)
+- 最大: `delivery-task-prd-template.md` (148 行)
+- 覆盖阶段: Zero to MVP（12 个 reference 模板）+ MVP to Delivery（14 个 reference 模板）
 
 ## 六、优势分析
 
@@ -290,7 +267,7 @@ trellis-skills/
 3. **缺少架构图**: 文字描述较多，缺少直观的流程图或架构图
 
 #### 7.1.2 工程问题
-1. **未提交的变更**: 14 个文件有未提交的更改，可能导致版本不一致
+1. **缺少文档一致性校验**: 路径迁移、命令示例和状态型报告容易在后续迭代中失真
 2. **缺少测试**: 项目是技能集，但没有验证技能本身正确性的测试
 3. **缺少版本管理**: SKILL.md 没有版本号字段
 
@@ -302,7 +279,7 @@ trellis-skills/
 ### 7.2 改进建议
 
 #### 7.2.1 立即可做
-1. **提交未提交的更改**: 将当前 14 个文件的更改提交，统一版本
+1. **减少静态 Git 状态描述**: 将动态仓库状态改为实时命令说明，避免报告快速过期
 2. **添加 CHANGELOG.md**: 记录版本变更历史
 3. **完善 agents/openai.yaml**: 补充完整的 agent 配置示例
 4. **添加端到端示例**: 在 `examples/` 目录下提供完整的使用示例
@@ -323,13 +300,13 @@ trellis-skills/
 
 ### 8.1 核心依赖
 - **Codex CLI**: 技能执行环境
-- **Trellis**: 任务管理系统（需要 `.trellis/` 目录）
-- **Python**: 用于 Trellis 脚本（task.py, init_developer.py）
+- **Trellis**: 任务管理系统（需要 `.trellis/` 目录；0.6 beta 项目应优先读取 `.trellis/workflow.md`、`.trellis/config.yaml`、`.trellis/.version`）
+- **Python**: 用于 Trellis 脚本（task.py；init_developer.py 仅作为旧版兜底）
 
 ### 8.2 前置条件
 1. 已安装 Codex CLI 或其他支持 skill 的 CLI 工具
 2. 项目中已初始化 Trellis（存在 `.trellis/` 目录）
-3. 首次使用前运行 `python ./.trellis/scripts/init_developer.py <name>`
+3. 首次使用前优先运行 `trellis init -u <name>`，按项目需要添加平台参数；Trellis CLI 不可用时，再使用 `python ./.trellis/scripts/init_developer.py <name>` 兜底
 
 ### 8.3 文件格式标准
 - **Markdown**: 所有文档和模板

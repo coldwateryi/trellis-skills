@@ -121,10 +121,10 @@
     └── self-review-report-template.md    (230行)
 
 文档文件（4个）：
-├── OPTIMIZATION_PROPOSAL.md              (600行)
-├── IMPLEMENTATION_SUMMARY.md             (400行)
-├── COMPLETION_REPORT.md                  (500行)
-└── PROJECT_ANALYSIS.md                   (400行)
+├── doc/OPTIMIZATION_PROPOSAL.md          (600行)
+├── doc/IMPLEMENTATION_SUMMARY.md         (400行)
+├── doc/COMPLETION_REPORT.md              (500行)
+└── doc/PROJECT_ANALYSIS.md               (400行)
 
 总计：12个新文件，约3,500行代码
 ```
@@ -188,11 +188,11 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 git add .
 git commit -m "docs: 添加完整的项目分析、优化提案和实施文档
 
-- PROJECT_ANALYSIS.md: 完整项目分析报告
-- OPTIMIZATION_PROPOSAL.md: 自我评审循环优化提案
-- IMPLEMENTATION_SUMMARY.md: Phase 1 实施细节
-- COMPLETION_REPORT.md: Phase 1 完成报告
-- PHASE2_COMPLETION_REPORT.md: Phase 2 完成报告
+- doc/PROJECT_ANALYSIS.md: 完整项目分析报告
+- doc/OPTIMIZATION_PROPOSAL.md: 自我评审循环优化提案
+- doc/IMPLEMENTATION_SUMMARY.md: Phase 1 实施细节
+- doc/COMPLETION_REPORT.md: Phase 1 完成报告
+- doc/PHASE2_COMPLETION_REPORT.md: Phase 2 完成报告
 - 更新 PRD 模板（弱模型适配增强）
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"

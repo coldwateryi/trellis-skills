@@ -24,9 +24,9 @@
   - ✅ 修改 SKILL.md 工作流
 
 - [x] **Task #5**: 创建优化提案和实施总结文档
-  - ✅ OPTIMIZATION_PROPOSAL.md (600行)
-  - ✅ IMPLEMENTATION_SUMMARY.md (400行)
-  - ✅ PROJECT_ANALYSIS.md (400行)
+  - ✅ doc/OPTIMIZATION_PROPOSAL.md (600行)
+  - ✅ doc/IMPLEMENTATION_SUMMARY.md (400行)
+  - ✅ doc/PROJECT_ANALYSIS.md (400行)
 
 ### Phase 2: MVP to Delivery 技能增强 (待完成)
 
@@ -132,9 +132,9 @@ SKILL.md                               (修改, 增加自我评审循环)
 
 ### 文档
 ```
-OPTIMIZATION_PROPOSAL.md               (新增, 600行) - 优化方案设计
-IMPLEMENTATION_SUMMARY.md              (新增, 400行) - 实施总结
-PROJECT_ANALYSIS.md                    (新增, 400行) - 项目分析
+doc/OPTIMIZATION_PROPOSAL.md           (新增, 600行) - 优化方案设计
+doc/IMPLEMENTATION_SUMMARY.md          (新增, 400行) - 实施总结
+doc/PROJECT_ANALYSIS.md                (新增, 400行) - 项目分析
 ```
 
 ---
@@ -271,9 +271,9 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 git add .
 git commit -m "docs: 添加项目分析、优化提案和实施总结
 
-- PROJECT_ANALYSIS.md: 完整项目分析报告
-- OPTIMIZATION_PROPOSAL.md: 自我评审循环优化提案
-- IMPLEMENTATION_SUMMARY.md: 实施细节总结
+- doc/PROJECT_ANALYSIS.md: 完整项目分析报告
+- doc/OPTIMIZATION_PROPOSAL.md: 自我评审循环优化提案
+- doc/IMPLEMENTATION_SUMMARY.md: 实施细节总结
 - 更新 PRD 模板（弱模型适配增强）
 
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"

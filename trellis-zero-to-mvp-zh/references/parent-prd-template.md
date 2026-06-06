@@ -3,17 +3,17 @@
 ```markdown
 # <项目标题>
 
-## Goal
+## 目标
 
 交付源需求文档描述的项目。父任务负责整体范围、需求 ID、依赖计划和最终验收定义；子任务负责实现可独立验收的能力。
 
-## Source Requirement Document
+## 源需求文档
 
-- Path: <需求文档路径>
-- Version: <版本或日期>
-- Owner: <业务或技术负责人>
+- 路径: <需求文档路径>
+- 版本: <版本或日期>
+- 负责人: <业务或技术负责人>
 
-## Requirement IDs
+## 需求 ID
 
 | ID | 需求摘要 | 子任务 | 状态 |
 | --- | --- | --- | --- |
@@ -21,7 +21,7 @@
 
 允许的状态：`PLANNED`、`IN_PROGRESS`、`DONE`、`PARTIAL`、`BLOCKED`、`VERIFIED`。
 
-## Task Dependency Graph
+## 任务依赖图
 
 ```text
 T0 需求追踪
@@ -31,7 +31,7 @@ T0 需求追踪
   -> T-final 验证
 ```
 
-## Delivery Strategy
+## 交付策略
 
 1. 完成需求追踪和技术计划。
 2. 实现基础能力和契约。
@@ -39,20 +39,20 @@ T0 需求追踪
 4. 只有依赖完成后才添加次级能力。
 5. 最后完成验证和验收报告。
 
-## Definition of Done
+## 完成定义
 
 - [ ] 每个需求 ID 都有状态。
 - [ ] 所有 MVP P0/P1 需求完成。
 - [ ] 每个需求 ID 都有测试映射，或记录无法自动化验证的原因。
 - [ ] lint、typecheck 和必要测试通过。
-- [ ] 最终验收报告使用 PASS / FAIL / PARTIAL / NOT TESTED。
+- [ ] 最终验收报告使用 PASS / FAIL / PARTIAL / NOT TESTED / BLOCKED。
 - [ ] 行为变化时更新文档和运行说明。
 
-## Out of Scope
+## 范围外
 
 - <MVP 明确排除项>
 
-## Notes
+## 备注
 
 - 严格依赖写在子任务的 `Dependencies` 部分。
 - 父子任务链接用于组织范围，不替代依赖文档。
