@@ -1,13 +1,13 @@
 ---
 name: trellis-zero-to-mvp
-description: Create a Trellis MVP task tree from a full requirements document. Use when Codex receives a product brief, requirements document, PRD, or large feature request for a new project or major capability and needs to do read-only analysis, assign stable REQ/AC IDs, build a traceability matrix, split scope into parent and child Trellis tasks, draft PRDs, and plan dependency-ordered MVP delivery before any coding starts.
+description: Create a Trellis MVP task tree from a full requirements document. Use when Codex receives a product brief, requirements document, PRD, or large feature request for a new or partially implemented project and needs to do read-only analysis, assign stable REQ/AC IDs, build a traceability matrix, recognize existing implementation evidence, split only remaining MVP scope into parent and child Trellis tasks, draft PRDs, and plan dependency-ordered MVP delivery before coding continues.
 ---
 
 # Trellis Zero to MVP
 
 ## Overview
 
-Turn a raw requirements document into an MVP-sized Trellis delivery plan. The output is a confirmed parent task plus independently verifiable child tasks, not application code.
+Turn a raw requirements document into an MVP-sized Trellis delivery plan. The input may be a blank project or a project where the user already implemented part of the requirements manually before initializing Trellis. The output is a confirmed parent task plus independently verifiable child tasks for the remaining MVP scope, not application code.
 
 ## Guardrails
 
@@ -19,6 +19,8 @@ Turn a raw requirements document into an MVP-sized Trellis delivery plan. The ou
 - Every child task must include requirement IDs, acceptance criteria, tests, dependencies, unlocks, out-of-scope items, and technical notes.
 - A PRD is an execution spec the execution model copies from, not an intent description. During planning, replace every `<...>` placeholder with a concrete value (exact file paths, copyable existing examples, ordered implementation steps, machine-checkable acceptance assertions, self-check commands). Never leave reasoning to the execution phase.
 - Every decision requiring reasoning (which annotation, which branch, naming, table schema, which example to copy) must be pinned down during planning. Points that cannot be pinned go to out-of-scope or a separate task, never to the execution model's discretion.
+- If existing code already satisfies a requirement, do not create an implementation task for that satisfied scope. Use existing evidence as a baseline dependency instead.
+- In partially implemented projects, task creation follows this rule: `DONE` -> no task; `UNTESTED` -> test-only task; `PARTIAL` -> gap-closing task for the missing behavior only; `MISSING` -> new implementation task; `UNCLEAR` -> blocking question or clarification task.
 - For Trellis 0.6 beta projects, treat `.trellis/workflow.md` as the active local workflow contract when present. Do not assume older task-only behavior if the project declares `design.md`, `implement.md`, `implement.jsonl`, or `check.jsonl` artifacts.
 - Treat Trellis parent/child links as task structure only. Write strict dependencies in each child `prd.md`.
 - If `task.py create` fails because the developer identity is not initialized, stop and tell the user to run `trellis init -u <name>` (with the platform flag used by the project, such as `--codex`) or provide an explicit assignee. Keep `python ./.trellis/scripts/init_developer.py <name>` only as a legacy fallback when the Trellis CLI is unavailable.
@@ -35,6 +37,8 @@ Locate and read:
 - Existing `.trellis/tasks/` and `.trellis/spec/` material relevant to the project.
 - Trellis 0.6 beta workflow metadata when present: `.trellis/workflow.md`, `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, and `.trellis/workspace/`.
 
+If the repository is not empty, or if source requirements mention functionality that appears partially implemented, produce an Existing Implementation Baseline before splitting tasks. Treat the original requirements document as the source of truth; use `.trellis/spec/` and code only as implementation evidence and context.
+
 Before drafting tasks, check whether `.trellis/spec/` is current enough to support implementation. If specs are missing, generic, or clearly stale, add a spec-refresh/bootstrap task or blocking note before planning code-heavy work.
 
 Use repository inspection before asking the user questions. Ask only blocking questions that cannot be answered from local context.
@@ -50,6 +54,7 @@ Loop through the following steps until small model execution standards are met:
 Load `references/analysis-output-template.md` and produce:
 
 - Project goal summary.
+- Existing Implementation Baseline when the repo contains manually implemented functionality.
 - Requirements Traceability Matrix.
 - Module dependency graph.
 - Task split by capability.
@@ -59,6 +64,8 @@ Load `references/analysis-output-template.md` and produce:
 - For medium/high complexity child tasks, draft shift-left design, implementation-plan, and context-manifest artifacts using `references/planning-artifacts-template.md`: `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when the project workflow supports them.
 
 Use these statuses in the traceability matrix: `DONE`, `PARTIAL`, `MISSING`, `UNTESTED`, `UNCLEAR`.
+
+When any requirement is `DONE`, `PARTIAL`, or `UNTESTED`, include code/test evidence and ensure the task split creates only the remaining work. Existing capabilities may appear in dependency fields as `existing:<capability-or-file>` when no Trellis task slug exists for them.
 
 **2.2 Self-Review**
 

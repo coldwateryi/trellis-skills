@@ -21,6 +21,16 @@ Deliver the project described by the source requirements document. The parent ta
 
 Allowed statuses: `PLANNED`, `IN_PROGRESS`, `DONE`, `PARTIAL`, `BLOCKED`, `VERIFIED`.
 
+For requirements already satisfied by existing code, set `Child Task` to `none` and reference the evidence in Existing Baseline Summary.
+
+## Existing Baseline Summary
+
+Use this section when development started before Trellis planning:
+
+| Requirement ID | Existing Capability | Evidence | Remaining Work |
+| --- | --- | --- | --- |
+| REQ-001 | <capability or "none"> | <code/test/spec paths> | <none/test gap/behavior gap> |
+
 ## Task Dependency Graph
 
 ```text
@@ -55,5 +65,6 @@ T0 requirements traceability
 ## Notes
 
 - Strict dependencies live in child task `Dependencies` sections.
+- Existing capabilities may be referenced as baseline dependencies in child tasks.
 - Parent/child links organize scope but do not replace dependency documentation.
 ```

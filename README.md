@@ -1,6 +1,6 @@
 # Trellis 需求交付技能集
 
-本仓库为 Codex CLI 以及其他支持 skill 的 CLI 工具提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
+本仓库为 Codex CLI、Claude Code 以及其他支持 skill 的 CLI 工具提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
 
 ## 技能概览
 
@@ -43,9 +43,21 @@
 
 ## 从 GitHub 安装
 
-脚本会检查当前目录是否存在 `.trellis/`。如果当前目录不是已初始化的 Trellis 项目，会提示输入目标项目目录。随后询问是否安装中文版 skill：选择是仅安装 `trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`；选择否仅安装英文版。
+脚本会优先检查当前目录是否存在 `.trellis/`。如果当前目录是已初始化的 Trellis 项目，默认安装到该项目的项目级 skill 目录；如果当前目录不是 Trellis 项目，会提示输入目标项目目录。若用户输入的目录仍未发现 `.trellis/`，脚本会询问是否改为安装到全局 skill 目录。
 
-安装位置：目标项目的 `.agents/skills/`。
+随后询问是否安装中文版 skill：选择是仅安装 `trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`；选择否仅安装英文版。
+
+项目级默认安装位置：
+
+- `.agents/skills/`：Codex CLI / Trellis agent 兼容目录
+- `.claude/skills/`：Claude Code 项目级 skill 自动发现目录
+
+全局回退安装位置：
+
+- `$CODEX_HOME/skills`，未设置 `CODEX_HOME` 时为 `~/.codex/skills`：Codex CLI 全局 skill 目录
+- `~/.claude/skills`：Claude Code 用户级 skill 目录
+
+如只想安装到单个平台目录，可设置 `TRELLIS_SKILLS_AGENT_TARGETS=codex` 或 `TRELLIS_SKILLS_AGENT_TARGETS=claude`。未设置时默认值为 `both`。
 
 如果在本仓库的 `scripts/` 目录直接执行脚本，脚本会先从 GitHub 更新父级 `trellis-skills` 目录的 `main` 分支源码，然后再按上述逻辑安装。更新使用 fast-forward 合并；如果本地有未提交改动或分支无法快进，脚本会停止，避免覆盖本地修改。
 
@@ -53,6 +65,18 @@
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```
+
+仅安装 Codex / Trellis agent 目录：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=codex bash
+```
+
+仅安装 Claude Code 目录：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=claude bash
 ```
 
 macOS 默认 zsh 也可以直接执行：
@@ -72,6 +96,9 @@ cd /path/to/trellis-skills/scripts
 bash ./install-trellis-skills.sh
 # 或
 zsh ./install-trellis-skills.sh
+
+# 仅安装到 Claude Code 项目级 skill 目录
+TRELLIS_SKILLS_AGENT_TARGETS=claude bash ./install-trellis-skills.sh
 ```
 
 ### PowerShell
@@ -80,12 +107,28 @@ zsh ./install-trellis-skills.sh
 irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
 ```
 
+仅安装 Claude Code 目录：
+
+```powershell
+$env:TRELLIS_SKILLS_AGENT_TARGETS = "claude"
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
 本地脚本方式：
 
 ```powershell
 cd C:\path\to\trellis-skills\scripts
 .\install-trellis-skills.ps1
+
+# 仅安装到 Claude Code 项目级 skill 目录
+.\install-trellis-skills.ps1 -AgentTargets claude
 ```
+
+## Claude Code 兼容性
+
+Claude Code 会从项目的 `.claude/skills/<skill-name>/SKILL.md` 自动发现项目级 skill，也会读取用户级 `~/.claude/skills/<skill-name>/SKILL.md`。当前四个技能目录已经包含 Claude Code 所需的 `SKILL.md` 入口和引用资料目录；`agents/openai.yaml` 是面向 Codex/OpenAI 兼容运行器的附加配置，Claude Code 可忽略该文件。
+
+安装脚本在项目级安装时默认同时写入 `.agents/skills/` 和 `.claude/skills/`，因此同一 Trellis 项目可以被 Codex CLI 和 Claude Code 分别识别。只有当前目录和用户指定目录都不是 Trellis 项目且用户确认后，脚本才会安装到全局目录。若团队只使用其中一个运行器，通过 `TRELLIS_SKILLS_AGENT_TARGETS` 或 PowerShell 的 `-AgentTargets` 参数限制安装目标即可。
 
 ## 推荐工作流
 
@@ -158,7 +201,22 @@ MVP 已实现完成，源需求文档在 docs/requirements.md。
 - ✅ Regression Tests 覆盖 MVP 核心流程
 - ✅ Bug 修复的分支逻辑已明确定死
 
-### 场景 3：持续迭代
+### 场景 3：已手工实现部分功能，但还没有形成 MVP
+
+```
+需求文档在 docs/requirements.md，项目中已经手工实现了一部分功能，并且中途运行过 trellis init。
+
+请使用 trellis-zero-to-mvp-zh 基于现有代码、.trellis/spec/ 和需求文档，只规划剩余 MVP 功能任务。
+```
+
+技能会先生成 Existing Implementation Baseline（已有实现基线），再按状态处理需求：
+
+- `DONE`：不创建实现任务，只作为已有依赖证据。
+- `UNTESTED`：只创建测试补齐任务。
+- `PARTIAL`：只创建缺失行为的补缺任务。
+- `MISSING`：创建新实现任务。
+
+### 场景 4：持续迭代
 
 在实际开发中，两个技能可以循环使用：
 
@@ -186,7 +244,7 @@ skills/
 ├── trellis-zero-to-mvp/          # Zero → MVP（英文）
 │   ├── SKILL.md                  # 技能定义与工作流
 │   ├── agents/
-│   │   └── openai.yaml           # Codex agent 配置
+│   │   └── openai.yaml           # OpenAI 兼容运行器配置
 │   └── references/
 │       ├── analysis-output-template.md   # 只读分析输出模板
 │       ├── parent-prd-template.md        # 父任务 PRD 模板
@@ -216,7 +274,7 @@ skills/
 
 ## 前置条件
 
-- 已安装 Codex CLI 或其他支持 skill 的 CLI 工具
+- 已安装 Codex CLI、Claude Code 或其他支持 skill 的 CLI 工具
 - 项目中已初始化 Trellis（`.trellis/` 目录存在）
 - 首次使用前优先运行 `trellis init -u <name>` 设置开发者身份，并按项目需要添加平台参数（如 `--codex`）
 - 如果 Trellis CLI 不可用，再使用旧版兜底命令：`python ./.trellis/scripts/init_developer.py <name>`

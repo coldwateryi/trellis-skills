@@ -23,6 +23,16 @@
 
 实现或验证这个可独立验收的 MVP 能力。
 
+## 缺口来源
+
+- 本任务前的需求状态：<PARTIAL/MISSING/UNTESTED>
+- 任务动作：<gap-task/new-task/test-only>
+- 已有基线依赖：
+  - <existing:path-or-capability，或 "none">
+- Trellis task 依赖：
+  - <task slug 或 "none">
+- 范围规则：本任务不得重复实现 Existing Implementation Baseline 中已经列出的行为。
+
 ## 当前缺口
 
 - 当前实现：<已有行为或无>
@@ -140,8 +150,10 @@
 
 ## 依赖
 
-- 依赖于:
+- Trellis task 依赖:
   - <task slug or none>
+- 已有基线依赖:
+  - <existing:path-or-capability or none>
 - 原因:
   - <依赖原因>
 

@@ -6,6 +6,22 @@ Use this template for the read-only analysis. Do not create tasks or write code 
 
 Write 5-10 bullets describing what the requirements document asks the project to deliver.
 
+## Existing Implementation Baseline
+
+Use this section when the repository already contains manually implemented functionality or when Trellis/spec was initialized after development had started.
+
+| Existing Capability | Evidence Type | Code Evidence | Test Evidence | Requirement IDs Covered | Baseline Dependency Name | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| <capability> | code/test/spec/task | <exact paths> | <exact paths or "none"> | REQ-001 | existing:<capability-or-file> | <reuse constraints> |
+
+Rules:
+
+- Source requirements are the source of truth; existing code and `.trellis/spec/` are evidence, not requirements substitutes.
+- If a requirement is already `DONE`, do not create an implementation task for that scope.
+- If a requirement is `UNTESTED`, create only test coverage work unless implementation evidence is weak.
+- If a requirement is `PARTIAL`, create only the gap-closing task for the missing behavior.
+- If a requirement is `MISSING`, create a new implementation task.
+
 ## Trellis Workflow Context
 
 | Item | Value | Notes |
@@ -26,9 +42,9 @@ Write 5-10 bullets describing what the requirements document asks the project to
 
 ## Requirements Traceability Matrix
 
-| ID | Requirement | Current Status | Related Code | Existing Tests | Gap | Suggested Task |
-| --- | --- | --- | --- | --- | --- | --- |
-| REQ-001 |  | MISSING |  |  |  |  |
+| ID | Requirement | Current Status | Related Code | Existing Tests | Gap | Task Action | Suggested Task |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| REQ-001 |  | MISSING |  |  |  | new-task |  |
 
 Allowed statuses:
 
@@ -38,6 +54,14 @@ Allowed statuses:
 - `UNTESTED`: Implemented but missing adequate tests.
 - `UNCLEAR`: Requirement is not clear enough to implement.
 
+Task actions:
+
+- `none`: requirement is `DONE`; use as baseline evidence only.
+- `test-only`: requirement is `UNTESTED`; create tests without reimplementing behavior.
+- `gap-task`: requirement is `PARTIAL`; implement only the missing behavior.
+- `new-task`: requirement is `MISSING`; create new implementation work.
+- `clarify`: requirement is `UNCLEAR`; ask a blocking question or create clarification work before implementation.
+
 ## Module Dependency Graph
 
 | Module | Responsibility | Depends On | Used By | Risks |
@@ -46,9 +70,9 @@ Allowed statuses:
 
 ## Task Split
 
-| Task ID | Title | Goal | Type | Depends On | Priority | Complexity | Planning Artifacts | Parallelizable | Acceptance Criteria | Likely Areas |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T0 |  |  | docs | none | P0 | low | prd.md | no |  |  |
+| Task ID | Title | Goal | Type | Requirement IDs | Source Status | Depends On | Baseline Dependencies | Priority | Complexity | Planning Artifacts | Parallelizable | Acceptance Criteria | Likely Areas |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| T0 |  |  | docs | REQ-001 | MISSING | none | none | P0 | low | prd.md | no |  |  |
 
 Allowed task types: `backend`, `frontend`, `fullstack`, `docs`, `test`, `infra`.
 
@@ -72,6 +96,14 @@ Sorting rules:
 3. Pull high-risk unknowns earlier.
 4. Put UI polish, documentation, and experience enhancements later.
 5. Do not mark mutually dependent tasks as parallel.
+
+Partial implementation rules:
+
+1. Do not create child tasks for `DONE` requirements.
+2. Create `test` tasks for `UNTESTED` requirements only when tests are the missing part.
+3. Create `gap-task` style child tasks for `PARTIAL` requirements; the goal must name the missing behavior, not the already implemented behavior.
+4. Use `Baseline Dependencies` for existing capabilities that a task relies on, e.g. `existing:src/auth/session.ts`.
+5. Never list an existing baseline dependency as if it were a new Trellis task.
 
 ## Recommended MVP Development Order
 

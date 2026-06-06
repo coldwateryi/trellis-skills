@@ -2,7 +2,8 @@
 param(
     [string]$ProjectDir,
     [string]$RepoUrl = "https://github.com/coldwateryi/trellis-skills",
-    [string]$Branch = "main"
+    [string]$Branch = "main",
+    [string]$AgentTargets = $env:TRELLIS_SKILLS_AGENT_TARGETS
 )
 
 Set-StrictMode -Version Latest
@@ -23,6 +24,47 @@ function Test-TrellisProject {
     param([Parameter(Mandatory = $true)][string]$Path)
 
     return Test-Path -LiteralPath (Join-Path $Path ".trellis") -PathType Container
+}
+
+function Get-CodexGlobalSkillsRoot {
+    if (-not [string]::IsNullOrWhiteSpace($env:CODEX_HOME)) {
+        return Join-Path $env:CODEX_HOME "skills"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($HOME)) {
+        throw "无法确定全局 Codex skill 目录：请设置 CODEX_HOME 或 HOME。"
+    }
+
+    return Join-Path (Join-Path $HOME ".codex") "skills"
+}
+
+function Get-ClaudeGlobalSkillsRoot {
+    if ([string]::IsNullOrWhiteSpace($HOME)) {
+        throw "无法确定全局 Claude Code skill 目录：请设置 HOME。"
+    }
+
+    return Join-Path (Join-Path $HOME ".claude") "skills"
+}
+
+function Resolve-AgentTargets {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return "both"
+    }
+
+    switch ($Value.Trim().ToLowerInvariant()) {
+        "both" { return "both" }
+        "all" { return "both" }
+        "codex" { return "codex" }
+        "agents" { return "codex" }
+        "claude" { return "claude" }
+        "claude-code" { return "claude" }
+        "claude_code" { return "claude" }
+        default {
+            throw "未知 Agent 安装目标: $Value。请使用 -AgentTargets both|codex|claude，或设置 TRELLIS_SKILLS_AGENT_TARGETS=both|codex|claude。"
+        }
+    }
 }
 
 function Test-TrellisSkillsSource {
@@ -114,6 +156,21 @@ function Update-LocalTrellisSkillsSource {
     Write-Host "本地 trellis-skills 源码已更新。"
 }
 
+function Read-GlobalInstallChoice {
+    param([Parameter(Mandatory = $true)][string]$CheckedDir)
+
+    while ($true) {
+        $answer = Read-Host "目录 $CheckedDir 不是 Trellis 项目。是否改为安装到全局 skill 目录? [y/N]"
+
+        switch -Regex ($answer) {
+            '^(Y|y|Yes|yes|YES|是)$' { return $true }
+            '^\s*$' { return $false }
+            '^(N|n|No|no|NO|否)$' { return $false }
+            default { Write-Host "请输入 y/yes/是 或 n/no/否。" }
+        }
+    }
+}
+
 function Read-TrellisProjectDirectory {
     while ($true) {
         $inputDir = Read-Host "请输入已完成 Trellis 初始化的项目目录"
@@ -130,18 +187,29 @@ function Read-TrellisProjectDirectory {
         }
 
         if (Test-TrellisProject -Path $resolvedDir) {
-            return $resolvedDir
+            return [PSCustomObject]@{
+                Scope = "project"
+                TargetDir = $resolvedDir
+            }
         }
 
-        Write-Host "该目录未发现 .trellis/，请先运行 trellis init 或输入其他项目目录。"
+        Write-Host "该目录未发现 .trellis/: $resolvedDir"
+        if (Read-GlobalInstallChoice -CheckedDir $resolvedDir) {
+            return [PSCustomObject]@{
+                Scope = "global"
+                TargetDir = $null
+            }
+        }
+
+        Write-Host "请先运行 trellis init，或输入其他已初始化 Trellis 的项目目录。"
     }
 }
 
 function Read-SkillLanguage {
-    param([Parameter(Mandatory = $true)][string]$TargetDir)
+    param([Parameter(Mandatory = $true)][string]$TargetLabel)
 
     while ($true) {
-        $answer = Read-Host "是否安装中文版 skill 到 $TargetDir ? [Y/n]"
+        $answer = Read-Host "是否安装中文版 skill 到 $TargetLabel ? [Y/n]"
 
         switch -Regex ($answer) {
             '^\s*$' { return "zh" }
@@ -154,9 +222,11 @@ function Read-SkillLanguage {
 
 function Install-TrellisSkills {
     param(
-        [Parameter(Mandatory = $true)][string]$TargetDir,
+        [Parameter(Mandatory = $true)][ValidateSet("project", "global")][string]$InstallScope,
+        [string]$TargetDir,
         [Parameter(Mandatory = $true)][ValidateSet("zh", "en")][string]$Language,
-        [string]$SourceDir
+        [string]$SourceDir,
+        [Parameter(Mandatory = $true)][ValidateSet("both", "codex", "claude")][string]$AgentTargets
     )
 
     if ($Language -eq "zh") {
@@ -166,8 +236,27 @@ function Install-TrellisSkills {
         $skills = @("trellis-zero-to-mvp", "trellis-mvp-to-delivery")
     }
 
-    $installRoot = Join-Path $TargetDir ".agents\skills"
-    New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
+    $installRoots = @()
+    if ($InstallScope -eq "project") {
+        if ([string]::IsNullOrWhiteSpace($TargetDir)) {
+            throw "项目级安装需要 TargetDir。"
+        }
+
+        if ($AgentTargets -eq "both" -or $AgentTargets -eq "codex") {
+            $installRoots += (Join-Path $TargetDir ".agents\skills")
+        }
+        if ($AgentTargets -eq "both" -or $AgentTargets -eq "claude") {
+            $installRoots += (Join-Path $TargetDir ".claude\skills")
+        }
+    }
+    else {
+        if ($AgentTargets -eq "both" -or $AgentTargets -eq "codex") {
+            $installRoots += (Get-CodexGlobalSkillsRoot)
+        }
+        if ($AgentTargets -eq "both" -or $AgentTargets -eq "claude") {
+            $installRoots += (Get-ClaudeGlobalSkillsRoot)
+        }
+    }
 
     $tempRoot = $null
 
@@ -201,23 +290,30 @@ function Install-TrellisSkills {
             $resolvedSourceDir = $sourceDir.FullName
         }
 
-        foreach ($skill in $skills) {
-            $sourceSkill = Join-Path $resolvedSourceDir $skill
-            $targetSkill = Join-Path $installRoot $skill
+        foreach ($installRoot in $installRoots) {
+            New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
+            Write-Host "准备安装 skills 到: $installRoot"
 
-            if (-not (Test-Path -LiteralPath $sourceSkill -PathType Container)) {
-                throw "GitHub 源目录缺少 skill: $skill"
+            foreach ($skill in $skills) {
+                $sourceSkill = Join-Path $resolvedSourceDir $skill
+                $targetSkill = Join-Path $installRoot $skill
+
+                if (-not (Test-Path -LiteralPath $sourceSkill -PathType Container)) {
+                    throw "GitHub 源目录缺少 skill: $skill"
+                }
+
+                if (Test-Path -LiteralPath $targetSkill) {
+                    Remove-Item -LiteralPath $targetSkill -Recurse -Force
+                }
+
+                Copy-Item -LiteralPath $sourceSkill -Destination $installRoot -Recurse
+                Write-Host "已安装: $targetSkill"
             }
 
-            if (Test-Path -LiteralPath $targetSkill) {
-                Remove-Item -LiteralPath $targetSkill -Recurse -Force
-            }
-
-            Copy-Item -LiteralPath $sourceSkill -Destination $installRoot -Recurse
-            Write-Host "已安装: $targetSkill"
+            Write-Host "完成。安装目录: $installRoot"
         }
 
-        Write-Host "完成。安装目录: $installRoot"
+        Write-Host "完成。安装目标: $AgentTargets"
     }
     finally {
         if (-not [string]::IsNullOrWhiteSpace($tempRoot) -and (Test-Path -LiteralPath $tempRoot)) {
@@ -226,12 +322,16 @@ function Install-TrellisSkills {
     }
 }
 
+$resolvedAgentTargets = Resolve-AgentTargets -Value $AgentTargets
+Write-Host "安装目标: $resolvedAgentTargets"
+
 $localSourceDir = Get-LocalTrellisSkillsSource
 if ($null -ne $localSourceDir) {
     Update-LocalTrellisSkillsSource -SourceDir $localSourceDir
 }
 
-if ([string]::IsNullOrWhiteSpace($ProjectDir)) {
+$projectDirProvided = -not [string]::IsNullOrWhiteSpace($ProjectDir)
+if (-not $projectDirProvided) {
     $candidateDir = (Get-Location).Path
 }
 else {
@@ -242,12 +342,37 @@ else {
 }
 
 if (Test-TrellisProject -Path $candidateDir) {
+    $installScope = "project"
     $targetDir = $candidateDir
 }
 else {
-    Write-Host "当前目录未发现 .trellis/，不是已初始化的 Trellis 项目。"
-    $targetDir = Read-TrellisProjectDirectory
+    if ($projectDirProvided) {
+        Write-Host "指定项目目录未发现 .trellis/，不是已初始化的 Trellis 项目: $candidateDir"
+        if (Read-GlobalInstallChoice -CheckedDir $candidateDir) {
+            $installTarget = [PSCustomObject]@{
+                Scope = "global"
+                TargetDir = $null
+            }
+        }
+        else {
+            $installTarget = Read-TrellisProjectDirectory
+        }
+    }
+    else {
+        Write-Host "当前目录未发现 .trellis/，不是已初始化的 Trellis 项目。"
+        $installTarget = Read-TrellisProjectDirectory
+    }
+
+    $installScope = $installTarget.Scope
+    $targetDir = $installTarget.TargetDir
 }
 
-$language = Read-SkillLanguage -TargetDir $targetDir
-Install-TrellisSkills -TargetDir $targetDir -Language $language -SourceDir $localSourceDir
+if ($installScope -eq "global") {
+    $targetLabel = "全局 skill 目录"
+}
+else {
+    $targetLabel = $targetDir
+}
+
+$language = Read-SkillLanguage -TargetLabel $targetLabel
+Install-TrellisSkills -InstallScope $installScope -TargetDir $targetDir -Language $language -SourceDir $localSourceDir -AgentTargets $resolvedAgentTargets

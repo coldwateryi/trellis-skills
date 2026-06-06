@@ -23,6 +23,16 @@ This PRD is filled in by a strong model during the **planning phase** and may be
 
 Implement or validate this independently verifiable capability for the MVP.
 
+## Gap Source
+
+- Requirement status before this task: <PARTIAL/MISSING/UNTESTED>
+- Task action: <gap-task/new-task/test-only>
+- Existing baseline dependencies:
+  - <existing:path-or-capability, or "none">
+- Trellis task dependencies:
+  - <task slug or "none">
+- Scope rule: this task must not recreate behavior already listed in Existing Implementation Baseline.
+
 ## Current Gap
 
 - Current implementation: <existing behavior or none>
@@ -140,8 +150,10 @@ Commands the execution phase can run after each step to confirm locally, no huma
 
 ## Dependencies
 
-- Depends on:
+- Trellis task dependencies:
   - <task slug or none>
+- Existing baseline dependencies:
+  - <existing:path-or-capability or none>
 - Reason:
   - <why this dependency exists>
 

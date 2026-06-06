@@ -7,12 +7,17 @@ Use this checklist after the user confirms the read-only analysis.
 - [ ] The source requirements document path is known.
 - [ ] `.trellis/workflow.md` was read if present; `.trellis/config.yaml`, `.trellis/.version`, and `.trellis/.developer` were checked if present.
 - [ ] Relevant `.trellis/spec/` files are fresh enough, or a spec-refresh/bootstrap task is planned before implementation work.
+- [ ] If the repository already has manual implementation, Existing Implementation Baseline is complete.
+- [ ] `DONE` requirements have no implementation child tasks.
+- [ ] `UNTESTED` requirements create only test coverage tasks.
+- [ ] `PARTIAL` requirements create only gap-closing tasks for missing behavior.
 - [ ] Requirement IDs are stable.
 - [ ] MVP boundary is explicit.
 - [ ] Task split is confirmed by the user.
 - [ ] Every child task has acceptance criteria.
 - [ ] Every child task has required tests.
 - [ ] Dependencies are explicit.
+- [ ] Trellis task dependencies and existing baseline dependencies are separated.
 - [ ] Every child task is annotated with complexity (low/medium/high); high-complexity tasks are split further or have every step pinned down in the PRD.
 - [ ] Every `<...>` placeholder in each child PRD is replaced with a concrete value; no "TBD / depends".
 - [ ] Each child PRD includes reference implementation paths, a file manifest, ordered implementation steps, and self-check commands.

@@ -28,6 +28,17 @@ This checklist evaluates whether read-only analysis output meets the requirement
 - [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller
 - [ ] JSONL context manifests are required when stable specs, research notes, or external context must be preloaded before implementation/checking
 
+### 0.4 Partial Implementation Retrofit
+- [ ] If the repository is not empty, Existing Implementation Baseline is present
+- [ ] Baseline entries list exact code evidence and test evidence, or explicitly state test evidence is missing
+- [ ] Source requirements remain the source of truth; `.trellis/spec/` is not treated as the only requirement source
+- [ ] `DONE` requirements do not create implementation tasks
+- [ ] `UNTESTED` requirements create test-only tasks, not duplicated implementation tasks
+- [ ] `PARTIAL` requirements create gap-closing tasks scoped only to missing behavior
+- [ ] `MISSING` requirements create new implementation tasks
+- [ ] Every traceability row has a Task Action matching its Current Status (`none`, `test-only`, `gap-task`, `new-task`, or `clarify`)
+- [ ] Existing capabilities used as dependencies are listed as baseline dependencies such as `existing:<path-or-capability>`
+
 ---
 
 ## A. Requirements Completeness Check
@@ -78,6 +89,8 @@ This checklist evaluates whether read-only analysis output meets the requirement
 - [ ] No circular dependencies
 - [ ] "Parallelizable" tasks truly have no dependencies
 - [ ] Blocking tasks (P0) identified and prioritized
+- [ ] Baseline dependencies are separated from Trellis task dependencies
+- [ ] Existing code dependencies are not represented as new Trellis child tasks
 
 ### B4. Priority
 - [ ] Every task assigned priority (P0/P1/P2/P3)

@@ -21,6 +21,16 @@
 
 允许的状态：`PLANNED`、`IN_PROGRESS`、`DONE`、`PARTIAL`、`BLOCKED`、`VERIFIED`。
 
+如果需求已经由现有代码满足，`子任务` 写 `none`，并在 Existing Baseline Summary 中引用证据。
+
+## Existing Baseline Summary（已有基线摘要）
+
+当开发早于 Trellis 规划时使用本节：
+
+| 需求 ID | 已有能力 | 证据 | 剩余工作 |
+| --- | --- | --- | --- |
+| REQ-001 | <capability 或 "none"> | <code/test/spec paths> | <none/test gap/behavior gap> |
+
 ## 任务依赖图
 
 ```text
@@ -55,5 +65,6 @@ T0 需求追踪
 ## 备注
 
 - 严格依赖写在子任务的 `Dependencies` 部分。
+- 已有能力可以在子任务中作为基线依赖引用。
 - 父子任务链接用于组织范围，不替代依赖文档。
 ```

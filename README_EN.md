@@ -1,6 +1,6 @@
 # Trellis Requirements-to-Delivery Skills
 
-This repository provides a set of Trellis workflow skills for Codex CLI and other skill-capable CLI tools, covering the full lifecycle from raw requirements documents to complete delivery — **Analyze → Plan → Trace → Audit → Close Gaps → Accept**.
+This repository provides a set of Trellis workflow skills for Codex CLI, Claude Code, and other skill-capable CLI tools, covering the full lifecycle from raw requirements documents to complete delivery — **Analyze → Plan → Trace → Audit → Close Gaps → Accept**.
 
 ## Skill Overview
 
@@ -43,9 +43,21 @@ These skills remain compatible with the core Trellis task layout (`.trellis/task
 
 ## Install From GitHub
 
-The installer checks whether the current directory contains `.trellis/`. If the current directory is not an initialized Trellis project, it asks for the target project directory. It then asks whether to install Chinese skills: yes installs only `trellis-zero-to-mvp-zh` and `trellis-mvp-to-delivery-zh`; no installs only the English variants.
+The installer first checks whether the current directory contains `.trellis/`. If the current directory is an initialized Trellis project, it installs to that project's project-level skill directories by default. If the current directory is not a Trellis project, it asks for the target project directory. If the user-provided directory still does not contain `.trellis/`, the installer asks whether to install to global skill directories instead.
 
-Install location: `.agents/skills/` in the target project.
+It then asks whether to install Chinese skills: yes installs only `trellis-zero-to-mvp-zh` and `trellis-mvp-to-delivery-zh`; no installs only the English variants.
+
+Default project-level install locations:
+
+- `.agents/skills/`: Codex CLI / Trellis agent compatible directory
+- `.claude/skills/`: Claude Code project-level skill discovery directory
+
+Global fallback install locations:
+
+- `$CODEX_HOME/skills`, or `~/.codex/skills` when `CODEX_HOME` is unset: Codex CLI global skill directory
+- `~/.claude/skills`: Claude Code user-level skill directory
+
+To install to only one platform directory, set `TRELLIS_SKILLS_AGENT_TARGETS=codex` or `TRELLIS_SKILLS_AGENT_TARGETS=claude`. When unset, the default is `both`.
 
 If you run the script directly from this repository's `scripts/` directory, it first updates the parent `trellis-skills` directory from the GitHub `main` branch, then continues with the install flow above. The update uses fast-forward merge; if local changes exist or the branch cannot fast-forward, the script stops instead of overwriting local work.
 
@@ -53,6 +65,18 @@ If you run the script directly from this repository's `scripts/` directory, it f
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```
+
+Install only to the Codex / Trellis agent directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=codex bash
+```
+
+Install only to the Claude Code directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=claude bash
 ```
 
 macOS default zsh also works:
@@ -72,6 +96,9 @@ cd /path/to/trellis-skills/scripts
 bash ./install-trellis-skills.sh
 # or
 zsh ./install-trellis-skills.sh
+
+# Install only to the Claude Code project-level skill directory
+TRELLIS_SKILLS_AGENT_TARGETS=claude bash ./install-trellis-skills.sh
 ```
 
 ### PowerShell
@@ -80,12 +107,28 @@ zsh ./install-trellis-skills.sh
 irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
 ```
 
+Install only to the Claude Code directory:
+
+```powershell
+$env:TRELLIS_SKILLS_AGENT_TARGETS = "claude"
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
 Local script mode:
 
 ```powershell
 cd C:\path\to\trellis-skills\scripts
 .\install-trellis-skills.ps1
+
+# Install only to the Claude Code project-level skill directory
+.\install-trellis-skills.ps1 -AgentTargets claude
 ```
+
+## Claude Code Compatibility
+
+Claude Code discovers project-level skills from `.claude/skills/<skill-name>/SKILL.md` and user-level skills from `~/.claude/skills/<skill-name>/SKILL.md`. The four skill directories already contain the required `SKILL.md` entry point and reference files; `agents/openai.yaml` is additional configuration for Codex/OpenAI-compatible runners and can be ignored by Claude Code.
+
+For project-level installs, the installers write to both `.agents/skills/` and `.claude/skills/` by default, so the same Trellis project can be recognized by Codex CLI and Claude Code. The installers use global directories only when both the current directory and the user-provided directory are not Trellis projects and the user confirms the global fallback. If a team uses only one runner, limit the target with `TRELLIS_SKILLS_AGENT_TARGETS` or the PowerShell `-AgentTargets` parameter.
 
 ## Recommended Workflow
 
@@ -158,7 +201,22 @@ The skill checks existing implementation and tests against the requirements docu
 - ✅ Regression Tests cover MVP core flows
 - ✅ Bug fix branch logic clearly pinned down
 
-### Scenario 3: Iterative Development
+### Scenario 3: Partially Implemented Project Before MVP
+
+```
+Requirements are in docs/requirements.md. The project already has some manually implemented functionality, and trellis init was run midway.
+
+Use trellis-zero-to-mvp to inspect existing code, .trellis/spec/, and the requirements document, then plan only the remaining MVP tasks.
+```
+
+The skill first produces an Existing Implementation Baseline, then handles requirement statuses as follows:
+
+- `DONE`: creates no implementation task; uses evidence as an existing dependency.
+- `UNTESTED`: creates only test coverage tasks.
+- `PARTIAL`: creates only gap-closing tasks for missing behavior.
+- `MISSING`: creates new implementation tasks.
+
+### Scenario 4: Iterative Development
 
 In practice, the two skills can be used in cycles:
 
@@ -186,7 +244,7 @@ skills/
 ├── trellis-zero-to-mvp/          # Zero → MVP (English)
 │   ├── SKILL.md                  # Skill definition & workflow
 │   ├── agents/
-│   │   └── openai.yaml           # Codex agent config
+│   │   └── openai.yaml           # OpenAI-compatible runner config
 │   └── references/
 │       ├── analysis-output-template.md   # Read-only analysis template
 │       ├── parent-prd-template.md        # Parent task PRD template
@@ -217,7 +275,7 @@ skills/
 
 ## Prerequisites
 
-- Codex CLI or another skill-capable CLI tool installed
+- Codex CLI, Claude Code, or another skill-capable CLI tool installed
 - Trellis initialized in the project (`.trellis/` directory exists)
 - Prefer `trellis init -u <name>` before first use to set the developer identity, adding the project platform flag when needed (for example `--codex`)
 - If the Trellis CLI is unavailable, use the legacy fallback: `python ./.trellis/scripts/init_developer.py <name>`
