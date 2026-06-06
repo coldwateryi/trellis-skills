@@ -52,14 +52,26 @@
 ### macOS / Linux / Git Bash
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | sh
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
 ```
+
+macOS 默认 zsh 也可以直接执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | zsh
+```
+
+脚本主要支持 `bash` 和 `zsh`。如果使用其他不兼容 shell（例如 `sh`/`dash`）执行，脚本会直接提示改用 `bash` 或 `zsh`。脚本会从当前终端读取交互输入，即使通过 `curl | bash` 或 `curl | zsh` 管道执行，也可以正常选择目标目录和语言。
+
+安装过程中会输出带 `[trellis-skills]` 前缀的步骤日志。遇到问题时，请保留完整安装输出，便于定位当前 shell、工作目录、目标目录、源码来源和失败步骤。
 
 本地脚本方式：
 
 ```bash
 cd /path/to/trellis-skills/scripts
-./install-trellis-skills.sh
+bash ./install-trellis-skills.sh
+# 或
+zsh ./install-trellis-skills.sh
 ```
 
 ### PowerShell

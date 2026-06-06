@@ -52,14 +52,26 @@ If you run the script directly from this repository's `scripts/` directory, it f
 ### macOS / Linux / Git Bash
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | sh
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
 ```
+
+macOS default zsh also works:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | zsh
+```
+
+The script primarily supports `bash` and `zsh`. If it is run with another incompatible shell such as `sh` or `dash`, it exits with a prompt to use `bash` or `zsh`. The script reads interactive answers from the current terminal, so target-directory and language prompts work even when the installer is run through `curl | bash` or `curl | zsh`.
+
+During installation, the script prints step logs with a `[trellis-skills]` prefix. If something fails, keep the full installer output so the shell, working directory, target directory, source location, and failed step can be diagnosed.
 
 Local script mode:
 
 ```bash
 cd /path/to/trellis-skills/scripts
-./install-trellis-skills.sh
+bash ./install-trellis-skills.sh
+# or
+zsh ./install-trellis-skills.sh
 ```
 
 ### PowerShell
