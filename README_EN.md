@@ -41,6 +41,40 @@ These skills remain compatible with the core Trellis task layout (`.trellis/task
 - For medium/high complexity tasks, add `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` in addition to `prd.md` when the project workflow expects them.
 - Prefer `trellis init -u <name>` for first-time setup, with the project platform flag when needed; keep `init_developer.py` as a legacy fallback.
 
+## Install From GitHub
+
+The installer checks whether the current directory contains `.trellis/`. If the current directory is not an initialized Trellis project, it asks for the target project directory. It then asks whether to install Chinese skills: yes installs only `trellis-zero-to-mvp-zh` and `trellis-mvp-to-delivery-zh`; no installs only the English variants.
+
+Install location: `.agents/skills/` in the target project.
+
+If you run the script directly from this repository's `scripts/` directory, it first updates the parent `trellis-skills` directory from the GitHub `main` branch, then continues with the install flow above. The update uses fast-forward merge; if local changes exist or the branch cannot fast-forward, the script stops instead of overwriting local work.
+
+### macOS / Linux / Git Bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | sh
+```
+
+Local script mode:
+
+```bash
+cd /path/to/trellis-skills/scripts
+./install-trellis-skills.sh
+```
+
+### PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
+Local script mode:
+
+```powershell
+cd C:\path\to\trellis-skills\scripts
+.\install-trellis-skills.ps1
+```
+
 ## Recommended Workflow
 
 ```
@@ -162,6 +196,9 @@ skills/
 │   └── (same structure as above)
 ├── trellis-mvp-to-delivery-zh/   # MVP → Delivery (Chinese)
 │   └── (same structure as above)
+├── scripts/                      # Install skills from the GitHub main branch
+│   ├── install-trellis-skills.sh
+│   └── install-trellis-skills.ps1
 ├── README.md                     # Chinese README
 └── README_EN.md                  # English README (this file)
 ```

@@ -41,6 +41,40 @@
 - 对中/高复杂度任务，除 `prd.md` 外，按项目工作流补充 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`。
 - 首次初始化优先使用 `trellis init -u <name>`，并按项目需要添加平台参数；`init_developer.py` 只作为旧版兜底。
 
+## 从 GitHub 安装
+
+脚本会检查当前目录是否存在 `.trellis/`。如果当前目录不是已初始化的 Trellis 项目，会提示输入目标项目目录。随后询问是否安装中文版 skill：选择是仅安装 `trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`；选择否仅安装英文版。
+
+安装位置：目标项目的 `.agents/skills/`。
+
+如果在本仓库的 `scripts/` 目录直接执行脚本，脚本会先从 GitHub 更新父级 `trellis-skills` 目录的 `main` 分支源码，然后再按上述逻辑安装。更新使用 fast-forward 合并；如果本地有未提交改动或分支无法快进，脚本会停止，避免覆盖本地修改。
+
+### macOS / Linux / Git Bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | sh
+```
+
+本地脚本方式：
+
+```bash
+cd /path/to/trellis-skills/scripts
+./install-trellis-skills.sh
+```
+
+### PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
+本地脚本方式：
+
+```powershell
+cd C:\path\to\trellis-skills\scripts
+.\install-trellis-skills.ps1
+```
+
 ## 推荐工作流
 
 ```
@@ -162,6 +196,9 @@ skills/
 │   └── （结构同上）
 ├── trellis-mvp-to-delivery-zh/   # MVP → Delivery（中文）
 │   └── （结构同上）
+├── scripts/                      # 从 GitHub main 分支安装 skill 的脚本
+│   ├── install-trellis-skills.sh
+│   └── install-trellis-skills.ps1
 └── README.md
 ```
 
