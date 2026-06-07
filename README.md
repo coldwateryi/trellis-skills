@@ -474,8 +474,8 @@ trellis-implement-tdd-zh（TDD 实现）→ trellis-debug-systematic-zh（遇红
 ## 目录结构
 
 ```
-skills/
-├── trellis-zero-to-mvp/          # Zero → MVP（英文）
+trellis-skills/
+├── trellis-zero-to-mvp/          # 规划技能：Zero → MVP（英文）
 │   ├── SKILL.md                  # 技能定义与工作流
 │   ├── agents/
 │   │   └── openai.yaml           # OpenAI 兼容运行器配置
@@ -484,8 +484,10 @@ skills/
 │       ├── parent-prd-template.md        # 父任务 PRD 模板
 │       ├── child-prd-template.md         # 子任务 PRD 模板
 │       ├── planning-artifacts-template.md # 0.6 beta 设计/实现/上下文清单模板
+│       ├── self-review-checklist.md      # 自我评审检查清单
+│       ├── self-review-report-template.md # 自我评审报告模板
 │       └── task-creation-checklist.md    # 任务创建检查清单
-├── trellis-mvp-to-delivery/      # MVP → Delivery（英文）
+├── trellis-mvp-to-delivery/      # 规划技能：MVP → Delivery（英文）
 │   ├── SKILL.md
 │   ├── agents/
 │   │   └── openai.yaml
@@ -495,15 +497,51 @@ skills/
 │       ├── planning-artifacts-template.md # 0.6 beta 设计/实现/上下文清单模板
 │       ├── test-coverage-matrix-template.md  # 测试覆盖矩阵模板
 │       ├── final-acceptance-template.md      # 最终验收模板
-│       └── bug-classification-rules.md       # Bug 分类规则
-├── trellis-zero-to-mvp-zh/       # Zero → MVP（中文）
-│   └── （结构同上）
-├── trellis-mvp-to-delivery-zh/   # MVP → Delivery（中文）
-│   └── （结构同上）
-├── scripts/                      # 从 GitHub main 分支安装 skill 的脚本
+│       ├── bug-classification-rules.md       # Bug 分类规则
+│       ├── self-review-checklist.md      # 自我评审检查清单
+│       └── self-review-report-template.md # 自我评审报告模板
+├── trellis-zero-to-mvp-zh/       # 规划技能：Zero → MVP（中文）
+│   └── （结构同 trellis-zero-to-mvp）
+├── trellis-mvp-to-delivery-zh/   # 规划技能：MVP → Delivery（中文）
+│   └── （结构同 trellis-mvp-to-delivery）
+├── trellis-implement-tdd/        # 执行期技能：TDD 实现（英文）
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── tdd-loop-protocol.md      # RED-GREEN 循环协议
+│       └── tdd-progress-template.md  # 进度表模板
+├── trellis-debug-systematic/     # 执行期技能：系统化调试（英文）
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── debug-protocol.md         # 4 步调试脚本
+│       └── debug-report-template.md  # 调试记录模板
+├── trellis-review-twostage/      # 执行期技能：双阶段评审（英文）
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── review-stage1-checklist.md # Stage 1 规范符合检查清单
+│       ├── review-stage2-checklist.md # Stage 2 代码质量检查清单
+│       └── review-report-template.md  # 评审报告模板
+├── trellis-implement-tdd-zh/     # 执行期技能：TDD 实现（中文）
+│   └── （结构同 trellis-implement-tdd）
+├── trellis-debug-systematic-zh/  # 执行期技能：系统化调试（中文）
+│   └── （结构同 trellis-debug-systematic）
+├── trellis-review-twostage-zh/   # 执行期技能：双阶段评审（中文）
+│   └── （结构同 trellis-review-twostage）
+├── doc/                          # 设计文档
+│   ├── FRAMEWORK_COMPARISON_REPORT.md       # 五框架深度对比
+│   ├── REQUIREMENT_LANDING_ENHANCEMENT.md   # 需求落地能力增强设计
+│   ├── OPTIMIZATION_PROPOSAL.md             # 优化提案
+│   └── FINAL_SUMMARY.md                     # 实施总结
+├── scripts/                      # 安装脚本（从 GitHub main 分支安装）
 │   ├── install-trellis-skills.sh
 │   └── install-trellis-skills.ps1
-└── README.md
+├── README.md                     # 中文说明
+└── README_EN.md                  # English documentation
 ```
 
 ## 前置条件

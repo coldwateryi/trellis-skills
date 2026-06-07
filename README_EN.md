@@ -6,10 +6,16 @@ This repository provides a set of Trellis workflow skills for Codex CLI, Claude 
 
 | Skill | Language | Purpose |
 | --- | --- | --- |
-| `trellis-zero-to-mvp` | EN | Zero to MVP: turn a requirements document into an MVP task tree |
-| `trellis-mvp-to-delivery` | EN | MVP to Delivery: gap audit, gap-closing plan, final acceptance |
+| `trellis-zero-to-mvp` | EN | Planning: turn a requirements document into an MVP task tree |
+| `trellis-mvp-to-delivery` | EN | Planning: gap audit, gap-closing plan, final acceptance |
 | `trellis-zero-to-mvp-zh` | ZH | Same as above (Chinese) |
 | `trellis-mvp-to-delivery-zh` | ZH | Same as above (Chinese) |
+| `trellis-implement-tdd` | EN | Execution: strict RED-GREEN-REFACTOR per AC (small-model friendly) |
+| `trellis-debug-systematic` | EN | Execution: rigid 4-step debugging — reproduce→pinpoint→verify→fix |
+| `trellis-review-twostage` | EN | Execution: spec compliance (small model) + code quality (strong model) gate |
+| `trellis-implement-tdd-zh` | ZH | Same as above (Chinese) |
+| `trellis-debug-systematic-zh` | ZH | Same as above (Chinese) |
+| `trellis-review-twostage-zh` | ZH | Same as above (Chinese) |
 
 ### ✨ New Feature: Self-Review Loop and Design Shift-left
 
@@ -45,7 +51,7 @@ These skills remain compatible with the core Trellis task layout (`.trellis/task
 
 The installer first checks whether the current directory contains `.trellis/`. If the current directory is an initialized Trellis project, it installs to that project's project-level skill directories by default. If the current directory is not a Trellis project, it asks for the target project directory. If the user-provided directory still does not contain `.trellis/`, the installer asks whether to install to global skill directories instead.
 
-It then asks whether to install Chinese skills: yes installs only `trellis-zero-to-mvp-zh` and `trellis-mvp-to-delivery-zh`; no installs only the English variants.
+It then asks whether to install Chinese skills: yes installs `trellis-zero-to-mvp-zh`, `trellis-mvp-to-delivery-zh`, and the three execution-phase skills (`trellis-implement-tdd-zh`, `trellis-debug-systematic-zh`, `trellis-review-twostage-zh`); no installs only the English variants (5 skills total).
 
 Default project-level install locations:
 
@@ -225,6 +231,188 @@ In practice, the two skills can be used in cycles:
 3. Use `mvp-to-delivery` to audit gaps and close them for full delivery
 4. If new requirements arrive, return to step 1 and run `zero-to-mvp` again for the new scope
 
+## Execution-Phase Skills Detailed Usage
+
+After planning skills (`zero-to-mvp` / `mvp-to-delivery`) create the task tree, use the following **execution-phase skills** to implement each subtask in dependency order, forming a complete **Plan→Implement→Debug→Review** loop.
+
+### Execution-Phase Skills Overview
+
+| Skill | Trigger Timing | Core Value | Small-Model Adaptation |
+| --- | --- | --- | --- |
+| `trellis-implement-tdd` | Subtask enters implementation | Turn "implement requirement" into "make test green" mechanical loop, objective signal per step | ✅ Narrow path + objective signals, small model just chases "make assertion green" |
+| `trellis-debug-systematic` | Test should be green but stays red, self-check fails | Rigid 4-step script (reproduce→pinpoint→verify→fix), prevents small model from changing everywhere | ✅ Iron rules: "one change at a time, must re-run after change, no guessing" |
+| `trellis-review-twostage` | Implementation self-check all green | Spec compliance (small model) + code quality (strong model) two-stage gate, critical blocks | ✅ Role layering: Stage 1 small model, Stage 2 strong model |
+
+### Typical Workflow: From Task to Done
+
+Assume you've created a task tree with `trellis-zero-to-mvp` and now want to implement the first subtask:
+
+#### 1️⃣ Start TDD Loop
+
+```
+Now implement subtask .trellis/tasks/feature-user-auth/01-implement-login/
+
+Please use trellis-implement-tdd for TDD landing.
+```
+
+**What the skill does**:
+- Reads subtask `prd.md` (acceptance criteria, file manifest, decision table, self-check commands)
+- If `design.md` exists, reads orchestration-computation separation, mount point checklist
+- For each acceptance criterion (AC-001, AC-002...), executes RED-GREEN loop:
+  1. **RED**: Write a failing test (copy test example from `prd.md` reference implementation)
+  2. **See red**: Run test, must see failure (no failure = test didn't cover behavior, go back to fix test)
+  3. **GREEN**: Write minimal code to turn it green, landing point per file manifest + design layering
+  4. **See green**: Run test again, see it pass
+  5. **Self-check**: Run all `prd.md` self-check commands, confirm no regression
+  6. **Record**: Mark AC as done, stage changes (no commit), move to next AC
+
+**Key constraints**:
+- No failing test, no implementation code
+- Only handle one AC at a time
+- Don't touch files outside file manifest / forbidden list
+- Don't execute `git commit` (Trellis implementation executors forbid commit)
+
+#### 2️⃣ Debug When Red
+
+If an AC's test should be green but stays red, or self-check command fails:
+
+```
+AC-003's test should be green but stays red, error message is "AssertionError: Expected 200, got 401"
+
+Please use trellis-debug-systematic to pinpoint and fix.
+```
+
+**What the skill does**:
+1. **Pin failure signal**: Paste error original text, confirm stable reproduction
+2. **Pinpoint** (three tricks by cost low to high):
+   - Read stack: Look directly at file and line from error stack
+   - Binary-comment: Binary-comment suspicious code segment, see if failure disappears
+   - Add one log line: Print key variable actual value, compare with expected
+3. **Single hypothesis**: Write one-sentence hypothesis (specific to variable/branch), verify truth before fixing
+4. **Minimal fix**: Only change the verified root cause spot, re-run original failing command immediately
+5. **Defensive regression**: Ask "Can this bug happen again from elsewhere?" → If yes, add regression test
+
+**Iron rules**:
+- One change at a time
+- Must re-run original failing command after change
+- No guessing (pinpointing uses only three tricks)
+- Beyond 3 rounds still red → Stop, escalate to strong model
+
+#### 3️⃣ Review After Done
+
+After all ACs turn green and self-check all green:
+
+```
+Subtask implementation self-check all green, now hand off to review.
+
+Please use trellis-review-twostage to review this change.
+```
+
+**What the skill does**:
+
+**Stage 1 · Spec Compliance** (small model ok, mechanical check):
+- Each AC has corresponding test and is green? ⛔ Missing/red = critical
+- Changed files all within file manifest? ⛔ Changed file outside = critical
+- No violation of forbidden (create already-existing base class, introduce unlisted dependency)? ⛔ critical
+- Decision table choices followed (annotation / naming / schema / branching)?
+- Mount point checklist wired item by item (route / config / subscription / DI)? ⛔ Missing wire = critical
+
+**Stage 2 · Code Quality** (strong model execution):
+- Orchestration-computation separation: Mixed in one place?
+- Structural health: Keep piling into already-fat file?
+- Simplification/reuse: Duplicate implementation of existing capability? Over-abstraction (YAGNI)?
+- Correctness: Boundary / error paths actually handled (not just happy path)? ⛔ Missing = critical
+- Spec compliance: Naming / layering / error semantics conform to `.trellis/spec/`?
+
+**Verdict**:
+- Has **critical** → Block, send back to `trellis-implement-tdd`, only fix flagged items, re-review after fix
+- Only major/minor → Pass (major suggest fix this round, minor note to remarks)
+- All pass → Hand back to orchestration session to advance task status
+
+### Role-Layered Model Assignment (Small-Model Friendly)
+
+| Phase | Recommended Model | Reason |
+| --- | --- | --- |
+| Planning (zero-to-mvp / mvp-to-delivery) | Strong model (Opus 4.8 / GPT-5.5) | Needs judgment: split, boundaries, design decisions |
+| Implementation (trellis-implement-tdd) | Small model (qwen3.6 35b) | Mechanical execution: make test green per PRD |
+| Debugging (trellis-debug-systematic) | Small model → beyond 3 rounds escalate strong | Early mechanical pinpointing; complex root cause escalate |
+| Review Stage 1 | Small model | Mechanical check spec compliance |
+| Review Stage 2 | Strong model | Needs judgment: design discipline, code quality |
+
+**Why small models can handle implementation/debugging/review Stage 1**:
+- Judgment already left-shifted to planning phase (naming/branching/schema/landing/refactor all decided by strong model)
+- Execution phase only faces narrow-path mechanical tasks like "make assertion green", "change one at a time", "check list item by item"
+- Each step has objective signal (test red/green, command exit code), doesn't rely on small model's subjective judgment
+
+### Auto-Trigger Scenario Prompts
+
+To avoid manually invoking execution-phase skills per subtask, use the following **auto-orchestration prompts** to let AI automatically drive the complete implement→debug→review loop:
+
+#### English Auto-Orchestration Prompt
+
+\`\`\`
+Task tree created. Now automatically land all subtasks in dependency order, for each subtask:
+
+1. Use trellis-implement-tdd for TDD implementation, AC-by-AC RED-GREEN loop
+2. When test should be green but stays red or self-check fails, auto-switch to trellis-debug-systematic
+3. After implementation self-check all green, auto-invoke trellis-review-twostage for two-stage review
+4. After review passes, advance task status and continue to next subtask
+5. After all subtasks complete, use trellis-mvp-to-delivery for final acceptance
+
+Please execute the above flow automatically, stop to ask when hitting points requiring human decision.
+\`\`\`
+
+#### Small-Model Auto-Prompt (Role Layering)
+
+If using qwen3.6 35b or similar small models, explicitly specify role layering in the prompt:
+
+\`\`\`
+Task tree created. Now I (qwen3.6 35b small model) handle implementation and mechanical checks, auto-prompt to switch to strong model when hitting judgment-requiring points.
+
+For each subtask:
+1. [Small model] Use trellis-implement-tdd for TDD implementation
+2. [Small model] Use trellis-debug-systematic when red (prompt to escalate strong model beyond 3 rounds)
+3. [Small model] trellis-review-twostage Stage 1 spec compliance check
+4. [Prompt to switch strong model] trellis-review-twostage Stage 2 code quality review
+5. [Small model] Advance task status after review passes
+
+Please execute per above role assignment, prompt "switch to strong model to continue Stage 2 review" when reaching Stage 2 review.
+\`\`\`
+
+#### Single-Subtask Quick Trigger
+
+If task tree already exists and you only want to execute the full loop for one specific subtask:
+
+\`\`\`
+For subtask .trellis/tasks/feature-user-auth/01-implement-login/ execute full implementation loop:
+
+trellis-implement-tdd (TDD implementation) → trellis-debug-systematic (when red) → trellis-review-twostage (review) → advance status
+
+Please execute automatically, report when blocked.
+\`\`\`
+
+#### Value of Automation
+
+Benefits of using auto-trigger prompts:
+- ✅ **Reduce manual invocation**: One prompt covers full flow, no need to manually invoke each skill
+- ✅ **Standardize flow**: Guarantee every subtask goes through complete TDD→Debug→Review quality gate
+- ✅ **Auto role switching**: Clear when to use small model, when to escalate strong model, cost optimal
+- ✅ **Batch landing friendly**: With 10+ subtasks in task tree, auto mode significantly improves efficiency
+
+> **Note**: In auto mode, AI still stops to ask when hitting points it cannot automatically decide (review finds critical issue, debugging beyond 3 rounds unresolved, needs to supplement PRD info, etc.), not fully unattended.
+
+### Integration with Planning Skills
+
+Both planning skills' SKILL.md include a "Landing Phase Integration" section, prompting to use execution-phase skills after creating task tree. Typical flow:
+
+1. **`trellis-zero-to-mvp`** outputs task tree + execution plan sorted by dependency
+2. For the first executable subtask (dependencies satisfied):
+   - Invoke **`trellis-implement-tdd`** for AC-by-AC RED-GREEN loop
+   - Trigger **`trellis-debug-systematic`** when hitting red light
+   - Trigger **`trellis-review-twostage`** after self-check all green
+3. Review passes → Advance task status → Next subtask
+4. All subtasks done → **`trellis-mvp-to-delivery`** final acceptance + architecture spec write-back
+
 ## Requirement Statuses
 
 Both skills use a unified set of requirement statuses:
@@ -240,8 +428,8 @@ Both skills use a unified set of requirement statuses:
 ## Directory Structure
 
 ```
-skills/
-├── trellis-zero-to-mvp/          # Zero → MVP (English)
+trellis-skills/
+├── trellis-zero-to-mvp/          # Planning: Zero → MVP (English)
 │   ├── SKILL.md                  # Skill definition & workflow
 │   ├── agents/
 │   │   └── openai.yaml           # OpenAI-compatible runner config
@@ -250,8 +438,10 @@ skills/
 │       ├── parent-prd-template.md        # Parent task PRD template
 │       ├── child-prd-template.md         # Child task PRD template
 │       ├── planning-artifacts-template.md # 0.6 beta design/implementation/context manifest template
+│       ├── self-review-checklist.md      # Self-review checklist
+│       ├── self-review-report-template.md # Self-review report template
 │       └── task-creation-checklist.md    # Task creation checklist
-├── trellis-mvp-to-delivery/      # MVP → Delivery (English)
+├── trellis-mvp-to-delivery/      # Planning: MVP → Delivery (English)
 │   ├── SKILL.md
 │   ├── agents/
 │   │   └── openai.yaml
@@ -261,11 +451,46 @@ skills/
 │       ├── planning-artifacts-template.md # 0.6 beta design/implementation/context manifest template
 │       ├── test-coverage-matrix-template.md  # Test coverage matrix template
 │       ├── final-acceptance-template.md      # Final acceptance template
-│       └── bug-classification-rules.md       # Bug classification rules
-├── trellis-zero-to-mvp-zh/       # Zero → MVP (Chinese)
-│   └── (same structure as above)
-├── trellis-mvp-to-delivery-zh/   # MVP → Delivery (Chinese)
-│   └── (same structure as above)
+│       ├── bug-classification-rules.md       # Bug classification rules
+│       ├── self-review-checklist.md      # Self-review checklist
+│       └── self-review-report-template.md # Self-review report template
+├── trellis-zero-to-mvp-zh/       # Planning: Zero → MVP (Chinese)
+│   └── (same structure as trellis-zero-to-mvp)
+├── trellis-mvp-to-delivery-zh/   # Planning: MVP → Delivery (Chinese)
+│   └── (same structure as trellis-mvp-to-delivery)
+├── trellis-implement-tdd/        # Execution: TDD Implementation (English)
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── tdd-loop-protocol.md      # RED-GREEN loop protocol
+│       └── tdd-progress-template.md  # Progress table template
+├── trellis-debug-systematic/     # Execution: Systematic Debugging (English)
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── debug-protocol.md         # 4-step debugging script
+│       └── debug-report-template.md  # Debugging record template
+├── trellis-review-twostage/      # Execution: Two-Stage Review (English)
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── review-stage1-checklist.md # Stage 1 spec compliance checklist
+│       ├── review-stage2-checklist.md # Stage 2 code quality checklist
+│       └── review-report-template.md  # Review report template
+├── trellis-implement-tdd-zh/     # Execution: TDD Implementation (Chinese)
+│   └── (same structure as trellis-implement-tdd)
+├── trellis-debug-systematic-zh/  # Execution: Systematic Debugging (Chinese)
+│   └── (same structure as trellis-debug-systematic)
+├── trellis-review-twostage-zh/   # Execution: Two-Stage Review (Chinese)
+│   └── (same structure as trellis-review-twostage)
+├── doc/                          # Design documents
+│   ├── FRAMEWORK_COMPARISON_REPORT.md       # 5-framework deep comparison
+│   ├── REQUIREMENT_LANDING_ENHANCEMENT.md   # Requirement landing enhancement design
+│   ├── OPTIMIZATION_PROPOSAL.md             # Optimization proposal
+│   └── FINAL_SUMMARY.md                     # Implementation summary
 ├── scripts/                      # Install skills from the GitHub main branch
 │   ├── install-trellis-skills.sh
 │   └── install-trellis-skills.ps1
