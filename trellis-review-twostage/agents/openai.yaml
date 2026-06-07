@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis Two-Stage Review"
+  short_description: "Spec compliance (small model) + code quality (strong model) two-stage review"
+  default_prompt: "Use $trellis-review-twostage to review this subtask's diff in two stages before marking it done."

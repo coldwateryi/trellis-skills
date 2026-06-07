@@ -230,10 +230,22 @@ function Install-TrellisSkills {
     )
 
     if ($Language -eq "zh") {
-        $skills = @("trellis-zero-to-mvp-zh", "trellis-mvp-to-delivery-zh")
+        $skills = @(
+            "trellis-zero-to-mvp-zh",
+            "trellis-mvp-to-delivery-zh",
+            "trellis-implement-tdd-zh",
+            "trellis-debug-systematic-zh",
+            "trellis-review-twostage-zh"
+        )
     }
     else {
-        $skills = @("trellis-zero-to-mvp", "trellis-mvp-to-delivery")
+        $skills = @(
+            "trellis-zero-to-mvp",
+            "trellis-mvp-to-delivery",
+            "trellis-implement-tdd",
+            "trellis-debug-systematic",
+            "trellis-review-twostage"
+        )
     }
 
     $installRoots = @()

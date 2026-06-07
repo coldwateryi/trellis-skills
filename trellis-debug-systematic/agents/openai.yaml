@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis Systematic Debugging"
+  short_description: "Rigid 4-step script to pinpoint root cause and minimally fix"
+  default_prompt: "Use $trellis-debug-systematic to systematically root-cause and minimally fix this failing test or check."

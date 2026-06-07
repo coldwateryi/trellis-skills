@@ -272,14 +272,14 @@ download_archive() {
 copy_skills_to_install_root() {
   source_dir="$1"
   install_root="$2"
-  skill_one="$3"
-  skill_two="$4"
+  shift 2
+  skills=("$@")
 
-  log "准备安装 skills。source_dir=$source_dir install_root=$install_root skills=\"$skill_one $skill_two\""
+  log "准备安装 skills。source_dir=$source_dir install_root=$install_root skills=\"${skills[*]}\""
   mkdir -p "$install_root"
   log "已确保安装目录存在: $install_root"
 
-  for skill in "$skill_one" "$skill_two"; do
+  for skill in "${skills[@]}"; do
     source_skill="$source_dir/$skill"
     target_skill="$install_root/$skill"
     log "开始安装 skill。skill=$skill source=$source_skill target=$target_skill"
@@ -306,19 +306,29 @@ install_skills() {
 
   case "$language" in
     zh)
-      skill_one='trellis-zero-to-mvp-zh'
-      skill_two='trellis-mvp-to-delivery-zh'
+      skills=(
+        'trellis-zero-to-mvp-zh'
+        'trellis-mvp-to-delivery-zh'
+        'trellis-implement-tdd-zh'
+        'trellis-debug-systematic-zh'
+        'trellis-review-twostage-zh'
+      )
       ;;
     en)
-      skill_one='trellis-zero-to-mvp'
-      skill_two='trellis-mvp-to-delivery'
+      skills=(
+        'trellis-zero-to-mvp'
+        'trellis-mvp-to-delivery'
+        'trellis-implement-tdd'
+        'trellis-debug-systematic'
+        'trellis-review-twostage'
+      )
       ;;
     *)
       die "未知语言选项: $language"
       ;;
   esac
 
-  log "准备安装 skills。install_scope=$install_scope target_dir=$target_dir language=$language agent_targets=$agent_targets skills=\"$skill_one $skill_two\""
+  log "准备安装 skills。install_scope=$install_scope target_dir=$target_dir language=$language agent_targets=$agent_targets skills=\"${skills[*]}\""
 
   tmp_dir=''
 
@@ -351,20 +361,20 @@ install_skills() {
   case "$install_scope" in
     project)
       if [ "$agent_targets" = "both" ] || [ "$agent_targets" = "codex" ]; then
-        copy_skills_to_install_root "$source_dir" "$target_dir/.agents/skills" "$skill_one" "$skill_two"
+        copy_skills_to_install_root "$source_dir" "$target_dir/.agents/skills" "${skills[@]}"
       fi
 
       if [ "$agent_targets" = "both" ] || [ "$agent_targets" = "claude" ]; then
-        copy_skills_to_install_root "$source_dir" "$target_dir/.claude/skills" "$skill_one" "$skill_two"
+        copy_skills_to_install_root "$source_dir" "$target_dir/.claude/skills" "${skills[@]}"
       fi
       ;;
     global)
       if [ "$agent_targets" = "both" ] || [ "$agent_targets" = "codex" ]; then
-        copy_skills_to_install_root "$source_dir" "$(codex_global_skills_root)" "$skill_one" "$skill_two"
+        copy_skills_to_install_root "$source_dir" "$(codex_global_skills_root)" "${skills[@]}"
       fi
 
       if [ "$agent_targets" = "both" ] || [ "$agent_targets" = "claude" ]; then
-        copy_skills_to_install_root "$source_dir" "$(claude_global_skills_root)" "$skill_one" "$skill_two"
+        copy_skills_to_install_root "$source_dir" "$(claude_global_skills_root)" "${skills[@]}"
       fi
       ;;
     *)
