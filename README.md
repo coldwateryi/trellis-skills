@@ -10,9 +10,12 @@
 | `trellis-mvp-to-delivery` | EN | 从 MVP 到交付：差距审计、补缺规划、最终验收 |
 | `trellis-zero-to-mvp-zh` | ZH | 同上（中文版） |
 | `trellis-mvp-to-delivery-zh` | ZH | 同上（中文版） |
-| `trellis-implement-tdd-zh` | ZH | 执行期：用严格 TDD 红绿循环逐条落地验收标准（小模型友好） |
-| `trellis-debug-systematic-zh` | ZH | 执行期：刚性 4 步调试脚本——复现→定位→假设验证→最小修复 |
-| `trellis-review-twostage-zh` | ZH | 执行期：规范符合(小模型)+代码质量(强模型)双阶段评审门 |
+| `trellis-implement-tdd` | EN | 执行期：用严格 TDD 红绿循环逐条落地验收标准（小模型友好） |
+| `trellis-debug-systematic` | EN | 执行期：刚性 4 步调试脚本——复现→定位→假设验证→最小修复 |
+| `trellis-review-twostage` | EN | 执行期：规范符合(小模型)+代码质量(强模型)双阶段评审门 |
+| `trellis-implement-tdd-zh` | ZH | 同上（中文版） |
+| `trellis-debug-systematic-zh` | ZH | 同上（中文版） |
+| `trellis-review-twostage-zh` | ZH | 同上（中文版） |
 
 ### ✨ 新功能：自我评审循环与设计左移
 
@@ -384,6 +387,77 @@ AC-003 的测试该绿却一直红，错误信息是 "AssertionError: Expected 2
    - 自检全绿后触发 **`trellis-review-twostage-zh`**
 3. 评审通过 → 推进任务状态 → 下一个子任务
 4. 所有子任务完成 → **`trellis-mvp-to-delivery-zh`** 最终验收 + 架构档案回写
+
+### 全自动触发场景提示词
+
+为了避免对每个子任务手动调用执行期技能，可以使用以下**全自动编排提示词**，让 AI 自动驱动完整的实现→调试→评审闭环：
+
+#### 中文版全自动提示词
+
+```
+任务树已创建完成。现在按依赖顺序自动落地所有子任务，对每个子任务：
+
+1. 使用 trellis-implement-tdd-zh 进行 TDD 实现，逐条 AC 红绿循环
+2. 测试该绿不绿或自检失败时，自动切换到 trellis-debug-systematic-zh 定位修复
+3. 实现自检全绿后，自动调用 trellis-review-twostage-zh 进行双阶段评审
+4. 评审通过后推进任务状态，继续下一个子任务
+5. 所有子任务完成后，使用 trellis-mvp-to-delivery-zh 执行最终验收
+
+请自动执行上述流程，遇到需要人工决策的点时停下询问。
+```
+
+#### 英文版全自动提示词
+
+```
+Task tree created. Now automatically land all subtasks in dependency order, for each subtask:
+
+1. Use trellis-implement-tdd for TDD implementation, AC-by-AC RED-GREEN loop
+2. When test should be green but stays red or self-check fails, auto-switch to trellis-debug-systematic
+3. After implementation self-check all green, auto-invoke trellis-review-twostage for two-stage review
+4. After review passes, advance task status and continue to next subtask
+5. After all subtasks complete, use trellis-mvp-to-delivery for final acceptance
+
+Please execute the above flow automatically, stop to ask when hitting points requiring human decision.
+```
+
+#### 小模型专用全自动提示词（角色分层）
+
+如果你在 qwen3.6 35b 等小模型环境中使用，可以在提示词中明确角色分层：
+
+```
+任务树已创建。现在由我（qwen3.6 35b 小模型）负责实现和机械核对，遇到需要判断的环节时自动提示切换到强模型。
+
+对每个子任务：
+1. [小模型] 使用 trellis-implement-tdd-zh 进行 TDD 实现
+2. [小模型] 遇红灯使用 trellis-debug-systematic-zh（超 3 轮提示升级强模型）
+3. [小模型] trellis-review-twostage-zh Stage 1 规范符合核对
+4. [提示切换强模型] trellis-review-twostage-zh Stage 2 代码质量评审
+5. [小模型] 评审通过后推进任务状态
+
+请按上述角色分工自动执行，到 Stage 2 评审时提示"请切换到强模型继续 Stage 2 评审"。
+```
+
+#### 单子任务快速触发（已有任务树时）
+
+如果任务树已存在，只想对某个特定子任务执行完整闭环：
+
+```
+对子任务 .trellis/tasks/feature-user-auth/01-implement-login/ 执行完整实现闭环：
+
+trellis-implement-tdd-zh（TDD 实现）→ trellis-debug-systematic-zh（遇红灯时）→ trellis-review-twostage-zh（评审）→ 推进状态
+
+请自动执行，遇阻塞时报告。
+```
+
+#### 自动化的价值
+
+使用全自动提示词的好处：
+- ✅ **减少手动调用**：一次提示覆盖完整流程，无需逐个技能手动调用
+- ✅ **流程标准化**：保证每个子任务都经过 TDD→调试→评审的完整质量门
+- ✅ **角色自动切换**：明确何时用小模型、何时升级强模型，成本最优
+- ✅ **适合批量落地**：任务树有 10+ 子任务时，全自动模式显著提效
+
+> **注意**：全自动模式下，AI 仍会在遇到无法自动判断的点时停下询问（如评审发现 critical 问题、调试超 3 轮未解决、需要补充 PRD 信息等），并非完全无人值守。
 
 ## 需求状态说明
 
