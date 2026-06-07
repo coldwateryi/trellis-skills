@@ -511,3 +511,13 @@ trellis-skills/
 - **Split by capability, not by file** — Each child task maps to an independently verifiable business or technical capability.
 - **Stable IDs** — Requirement IDs (REQ-xxx) and acceptance criteria IDs (AC-xxx) are assigned during analysis and remain fixed thereafter.
 - **Explicit dependencies** — Parent/child task relationships express structure only. True execution dependencies are written into each child task's PRD.
+
+## Acknowledgements
+
+This project's design references ideas and practices from the following open-source projects:
+
+- [obra/superpowers](https://github.com/obra/superpowers)
+- [open-gsd/gsd-core](https://github.com/open-gsd/gsd-core)
+- [liuzhengdongfortest/CodeStable](https://github.com/liuzhengdongfortest/CodeStable)
+
+Thanks to these projects for influencing the skill organization, requirement-to-delivery workflow, and engineering quality constraints used here.

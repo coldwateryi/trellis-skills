@@ -555,3 +555,13 @@ trellis-skills/
 - **按能力拆分，不按文件拆分** — 每个子任务对应一个可独立验收的业务或技术能力
 - **稳定 ID** — 需求编号（REQ-xxx）和验收标准编号（AC-xxx）在分析阶段确定，后续保持不变
 - **严格依赖** — 父子任务仅表达结构，真正的执行依赖写在每个子任务的 PRD 中
+
+## 致谢
+
+本项目在设计上参考了以下开源项目的相关思路与实践：
+
+- [obra/superpowers](https://github.com/obra/superpowers)
+- [open-gsd/gsd-core](https://github.com/open-gsd/gsd-core)
+- [liuzhengdongfortest/CodeStable](https://github.com/liuzhengdongfortest/CodeStable)
+
+感谢这些项目对 skill 组织方式、需求落地流程和工程质量约束设计提供的启发。
