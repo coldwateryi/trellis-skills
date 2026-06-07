@@ -10,6 +10,9 @@
 | `trellis-mvp-to-delivery` | EN | 从 MVP 到交付：差距审计、补缺规划、最终验收 |
 | `trellis-zero-to-mvp-zh` | ZH | 同上（中文版） |
 | `trellis-mvp-to-delivery-zh` | ZH | 同上（中文版） |
+| `trellis-implement-tdd-zh` | ZH | 执行期：用严格 TDD 红绿循环逐条落地验收标准（小模型友好） |
+| `trellis-debug-systematic-zh` | ZH | 执行期：刚性 4 步调试脚本——复现→定位→假设验证→最小修复 |
+| `trellis-review-twostage-zh` | ZH | 执行期：规范符合(小模型)+代码质量(强模型)双阶段评审门 |
 
 ### ✨ 新功能：自我评审循环与设计左移
 
@@ -46,6 +49,8 @@
 脚本会优先检查当前目录是否存在 `.trellis/`。如果当前目录是已初始化的 Trellis 项目，默认安装到该项目的项目级 skill 目录；如果当前目录不是 Trellis 项目，会提示输入目标项目目录。若用户输入的目录仍未发现 `.trellis/`，脚本会询问是否改为安装到全局 skill 目录。
 
 随后询问是否安装中文版 skill：选择是仅安装 `trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`；选择否仅安装英文版。
+
+> **执行期技能**（`trellis-implement-tdd-zh`、`trellis-debug-systematic-zh`、`trellis-review-twostage-zh`）不通过安装脚本分发，直接从本仓库手动复制到项目的 `.agents/skills/` 或 `.claude/skills/` 目录即可。
 
 项目级默认安装位置：
 

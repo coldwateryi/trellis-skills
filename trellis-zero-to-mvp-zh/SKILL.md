@@ -140,6 +140,16 @@ python ./.trellis/scripts/task.py create "<child title>" --slug <child-slug> --p
 - 可并行任务。
 - 第一个建议开始的任务及原因。
 
+## 落地阶段衔接（任务创建后）
+
+本技能止于创建任务树，不写代码。进入"需求落地"时，对每个子任务按依赖顺序使用执行期技能形成闭环（尤其执行模型为 qwen3.6 35b 这类小模型时）：
+
+1. **`trellis-implement-tdd-zh`** —— 对子任务每条 AC 跑红→绿→提交的 TDD 机械循环。
+2. **`trellis-debug-systematic-zh`** —— 测试该绿不绿或自检失败时，用刚性脚本定位修复。
+3. **`trellis-review-twostage-zh`** —— 完成前做规范符合(可小模型) + 代码质量(强模型)双阶段评审。
+
+角色分层模型分配：规划用强模型、实现用小模型、评审 Stage 2 用强模型（Trellis 可按 agent 配 `model`）。
+
 ## 参考文件
 
 - `references/analysis-output-template.md` - 生成初始分析前读取。

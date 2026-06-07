@@ -129,6 +129,16 @@ description: |
 
 验证发现 bug 时，读取 `references/bug-classification-rules.md`。判断是在当前任务修复、创建独立 bug task，还是记录风险后延期。
 
+## 落地阶段衔接（补缺任务创建后）
+
+本技能负责审计与规划补缺任务，不写代码。进入"需求落地"时，对每个补缺子任务按依赖顺序使用执行期技能形成闭环（尤其执行模型为 qwen3.6 35b 这类小模型时）：
+
+1. **`trellis-implement-tdd-zh`** —— 对补缺任务每条 AC 跑红→绿→提交的 TDD 机械循环，回归测试守住 MVP 兼容性契约。
+2. **`trellis-debug-systematic-zh`** —— 测试该绿不绿或自检失败时，用刚性脚本定位修复。
+3. **`trellis-review-twostage-zh`** —— 完成前做规范符合(可小模型) + 代码质量(强模型)双阶段评审。
+
+角色分层模型分配：规划用强模型、实现用小模型、评审 Stage 2 用强模型（Trellis 可按 agent 配 `model`）。
+
 ## 参考文件
 
 - `references/gap-audit-template.md` - 第一次只读 MVP 审计时读取。

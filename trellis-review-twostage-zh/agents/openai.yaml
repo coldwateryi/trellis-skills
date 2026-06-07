@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis 双阶段评审"
+  short_description: "规范符合(可小模型)+代码质量(强模型)两段评审"
+  default_prompt: "Use $trellis-review-twostage-zh to review this subtask's diff in two stages before marking it done."
