@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis TDD Implementation"
+  short_description: "Turn acceptance criteria into code via strict RED-GREEN-REFACTOR"
+  default_prompt: "Use $trellis-implement-tdd to implement this Trellis subtask via strict TDD, one acceptance criterion at a time."
