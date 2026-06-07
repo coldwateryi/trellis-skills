@@ -75,7 +75,13 @@ function Test-TrellisSkillsSource {
         "trellis-zero-to-mvp",
         "trellis-zero-to-mvp-zh",
         "trellis-mvp-to-delivery",
-        "trellis-mvp-to-delivery-zh"
+        "trellis-mvp-to-delivery-zh",
+        "trellis-implement-tdd",
+        "trellis-debug-systematic",
+        "trellis-review-twostage",
+        "trellis-implement-tdd-zh",
+        "trellis-debug-systematic-zh",
+        "trellis-review-twostage-zh"
     )
 
     foreach ($dir in $requiredDirs) {

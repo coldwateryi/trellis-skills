@@ -1,5 +1,7 @@
 # TDD Progress Table Template
 
+Copy this template to `<task-dir>/tdd-progress.md`. Update that task-local file throughout execution; do not edit the skill's `references/tdd-progress-template.md`.
+
 After loading the task, extract each AC from `prd.md` into one row. Write back status throughout, ensuring "only one AC in progress at a time".
 
 ## Progress Table

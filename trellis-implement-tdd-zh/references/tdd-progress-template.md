@@ -1,5 +1,7 @@
 # TDD 进度表模板
 
+先把本模板复制到 `<task-dir>/tdd-progress.md`。执行过程中只更新任务目录下这个副本，不要修改 skill 的 `references/tdd-progress-template.md`。
+
 载入任务后，把 `prd.md` 的每条 AC 抽成一行。全程回写状态，确保"一次只一条 AC 在进行中"。
 
 ## 进度表

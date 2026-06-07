@@ -12,6 +12,8 @@ description: |
 
 触发：`trellis-implement-tdd-zh` 的红绿循环里某测试该绿不绿，或 `prd.md` 自检命令失败，且原因不显然。
 
+调试轨迹固定写入任务目录下的 `<task-dir>/debug-report.md`。第一次进入调试时从 `references/debug-report-template.md` 创建，后续每次新的调试事件在同一个文件里追加一个 session 块；不要改 skill 目录里的模板文件。
+
 ## 约束（铁律）
 
 - **一次只改一处**。改完立刻重跑那个失败命令，再决定下一步。
@@ -29,6 +31,7 @@ description: |
 - 把失败的**原文**贴出：报错堆栈 / 失败断言 / 命令非零退出码及输出。
 - 确认能稳定复现：记下复现命令（取自 `prd.md` 自检命令或测试命令）。
 - 复现不了就先解决"不稳定复现"，不要对着偶发现象瞎修。
+- 把复现命令、失败原文和是否稳定复现写入 `<task-dir>/debug-report.md`。
 
 ### 2. 定位（只用三招，缩小到具体行）
 
@@ -71,4 +74,4 @@ description: |
 ## 参考文件
 
 - `references/debug-protocol.md` —— 4 步脚本的判据细节、三招定位法与反模式，开始调试前读取。
-- `references/debug-report-template.md` —— 失败信号 / 假设 / 已排除项 / 修复 / 回归点记录表，全程回写。
+- `references/debug-report-template.md` —— `<task-dir>/debug-report.md` 的只读模板；调试过程中全程更新任务目录下的固定文件。

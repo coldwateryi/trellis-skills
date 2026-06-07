@@ -17,6 +17,8 @@ Any stage finding **critical** issue blocks completion, send back to `trellis-im
 
 Trigger: `trellis-implement-tdd` wrap-up self-check all green, handoff to review.
 
+Write every review pass to the fixed task-local file `<task-dir>/review-report.md`. Create it from `references/review-report-template.md` on the first review pass, then append a new review-round block for each re-review. Do not edit the template under the skill directory.
+
 ## Constraints
 
 - **Review based on diff + `prd.md`**, not re-reading entire requirements document.
@@ -57,7 +59,7 @@ Walk `references/review-stage2-checklist.md` item by item, review **code itself*
 
 ### 4. Issue report and verdict
 
-Use `references/review-report-template.md` to produce report:
+Use `references/review-report-template.md` to produce/update `<task-dir>/review-report.md`:
 
 - Has **critical** → block, send back to `trellis-implement-tdd`, only fix flagged items, after fix return to step 1 for re-review.
 - Only major/minor → can pass; major suggest fix this round, minor note to task remarks/later.
@@ -74,4 +76,4 @@ Use `references/review-report-template.md` to produce report:
 
 - `references/review-stage1-checklist.md` —— Spec compliance mechanical check list, read in Stage 1.
 - `references/review-stage2-checklist.md` —— Code quality and design discipline list (includes orchestration-computation separation/structural health), read in Stage 2.
-- `references/review-report-template.md` —— Issue report graded by severity and verdict record, read when producing report.
+- `references/review-report-template.md` —— Read-only template for `<task-dir>/review-report.md`; append/update the task-local file when producing review results.

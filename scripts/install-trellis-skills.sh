@@ -77,7 +77,13 @@ is_trellis_skills_source() {
     [ -d "$1/trellis-zero-to-mvp" ] &&
     [ -d "$1/trellis-zero-to-mvp-zh" ] &&
     [ -d "$1/trellis-mvp-to-delivery" ] &&
-    [ -d "$1/trellis-mvp-to-delivery-zh" ]
+    [ -d "$1/trellis-mvp-to-delivery-zh" ] &&
+    [ -d "$1/trellis-implement-tdd" ] &&
+    [ -d "$1/trellis-debug-systematic" ] &&
+    [ -d "$1/trellis-review-twostage" ] &&
+    [ -d "$1/trellis-implement-tdd-zh" ] &&
+    [ -d "$1/trellis-debug-systematic-zh" ] &&
+    [ -d "$1/trellis-review-twostage-zh" ]
 }
 
 detect_local_source_dir() {

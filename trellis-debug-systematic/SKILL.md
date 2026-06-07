@@ -12,6 +12,8 @@ Take over a failing test or self-check command, fix it in 4 fixed steps: pin fai
 
 Trigger: A test in `trellis-implement-tdd`'s RED-GREEN loop should be green but stays red, or `prd.md` self-check command fails, and the cause is not obvious.
 
+Record the debugging trail in the fixed task-local file `<task-dir>/debug-report.md`. Create it from `references/debug-report-template.md` on the first debugging incident, then append a new session block for each later incident. Do not edit the template under the skill directory.
+
 ## Constraints (Iron Rules)
 
 - **One change at a time**. After changing, immediately re-run that failing command, then decide next step.
@@ -29,6 +31,7 @@ Trigger: A test in `trellis-implement-tdd`'s RED-GREEN loop should be green but 
 - Paste the **original text** of the failure: error stack / failed assertion / command non-zero exit code and output.
 - Confirm stable reproduction: note down reproduction command (taken from `prd.md` self-check commands or test commands).
 - Can't reproduce then fix "unstable reproduction" first, don't blindly fix against transient phenomena.
+- Write the reproduction command, original failure text, and stability result into `<task-dir>/debug-report.md`.
 
 ### 2. Pinpoint (only three tricks, narrow to specific line)
 
@@ -71,4 +74,4 @@ Output: Narrow range to "specific file + specific line/variable", not vague "som
 ## Reference files
 
 - `references/debug-protocol.md` —— 4-step script's criteria details, three-trick pinpointing and anti-patterns, read before starting debug.
-- `references/debug-report-template.md` —— Failure signal / hypotheses / excluded items / fix / regression point recording table, write back throughout.
+- `references/debug-report-template.md` —— Read-only template for `<task-dir>/debug-report.md`; append/update the task-local file throughout debugging.

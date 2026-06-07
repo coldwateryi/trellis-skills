@@ -52,6 +52,26 @@ These artifacts shift reasoning left. They should let a capability-limited execu
 | --- | --- | --- | --- | --- |
 | <name> | <type> | <values> | <default> | <rules> |
 
+## Orchestration-Computation Separation
+
+Separate this change into orchestration vs computation, and point each part to its landing point in the File Manifest. The execution phase follows this placement plan instead of choosing files on its own.
+
+| Layer | Elements Touched In This Task | Landing Point (File Manifest Path) |
+| --- | --- | --- |
+| Orchestration Layer (main flow / control flow / branch orchestration / workflow) | <orchestration elements> | <path> |
+| Computation Layer (pure algorithms / pure functions / data transforms) | <independently testable logic> | <path> |
+
+- The orchestration layer should only coordinate; independently testable logic belongs in the computation layer.
+- If the task only touches one or two simple files, this table may be brief, but the landing points must still be explicit.
+
+## Mount Point Checklist
+
+Use this rule: "if this line disappears, the feature disappears from the user/system point of view." Usually 3-5 rows. The execution phase wires these points one by one; review checks them one by one, so implementation does not stop at "code exists but is not launched".
+
+| Mount Point | Type | Location | Exact Wiring Action |
+| --- | --- | --- | --- |
+| <name> | route registration / config entry / event subscription / DI binding / menu entry | <path> | <exact registration or binding action> |
+
 ## Non-goals
 
 - <explicitly excluded behavior>

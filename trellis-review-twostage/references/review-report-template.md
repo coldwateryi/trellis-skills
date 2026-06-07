@@ -1,14 +1,16 @@
-# Two-Stage Review Report Template
+# Review Report
 
-One subtask one copy. After producing report, advance or send back per verdict.
+Copy this template into `<task-dir>/review-report.md`. Keep that fixed file for the whole task and append one `## Review Round <n>` block per full review or re-review. Update only the task-local file; do not edit the skill's `references/review-report-template.md`.
 
-## Review Subject
+## Review Round `<n>`
+
+### Review Subject
 
 - Task: `<task directory>`
 - Diff range: `<start..current>`
 - Stage 2 review model: `<strong model name / if small model flag "not reviewed by strong model" risk>`
 
-## Stage 1 · Spec Compliance
+### Stage 1 · Spec Compliance
 
 | Check Item | Result | Severity | Location | Notes |
 | --- | --- | --- | --- | --- |
@@ -18,7 +20,7 @@ One subtask one copy. After producing report, advance or send back per verdict.
 | Decision table compliance | | | | |
 | Mount point wiring | | | | |
 
-## Stage 2 · Code Quality
+### Stage 2 · Code Quality
 
 | Check Item | Result | Severity | Location | Improvement Suggestion |
 | --- | --- | --- | --- | --- |
@@ -28,7 +30,7 @@ One subtask one copy. After producing report, advance or send back per verdict.
 | Correctness (boundary/error/regression) | | | | |
 | Spec compliance (spec) | | | | |
 
-## Issue Summary (by severity)
+### Issue Summary (by severity)
 
 - **Critical (blocking)**:
   - <location + issue + how to fix>
@@ -37,7 +39,7 @@ One subtask one copy. After producing report, advance or send back per verdict.
 - **Minor (record for later)**:
   - <...>
 
-## Verdict
+### Verdict
 
 - [ ] Has critical → send back to `trellis-implement-tdd`, only fix flagged items, after fix re-review
 - [ ] Only major/minor → pass; major suggest fix this round, minor note to task remarks

@@ -17,6 +17,8 @@ description: |
 
 触发：`trellis-implement-tdd-zh` 收尾自检全绿、交接评审时。
 
+每次评审都写入任务目录下固定的 `<task-dir>/review-report.md`。第一次评审时从 `references/review-report-template.md` 创建，后续重审在同一个文件里追加新的 review round 块；不要改 skill 目录里的模板文件。
+
 ## 约束
 
 - **评审基于 diff + `prd.md`**，不重读整个需求文档。
@@ -57,7 +59,7 @@ description: |
 
 ### 4. 出报告并裁决
 
-用 `references/review-report-template.md` 出报告：
+用 `references/review-report-template.md` 生成/更新 `<task-dir>/review-report.md`：
 
 - 有 **critical** → 阻断，打回 `trellis-implement-tdd-zh`，只修标注项，修后回到第 1 步重审。
 - 仅 major/minor → 可放行；major 建议本轮修，minor 记入任务备注/后续。
@@ -74,4 +76,4 @@ description: |
 
 - `references/review-stage1-checklist.md` —— 规范符合机械核对清单，Stage 1 读取。
 - `references/review-stage2-checklist.md` —— 代码质量与设计纪律清单（含编排-计算分离/结构健康度），Stage 2 读取。
-- `references/review-report-template.md` —— 按严重度分级的问题报告与裁决记录，出报告时读取。
+- `references/review-report-template.md` —— `<task-dir>/review-report.md` 的只读模板；出报告时更新任务目录下的固定文件。

@@ -102,7 +102,7 @@ Execute in order; each step is independently verifiable. Steps must be concrete 
 3. <e.g. add <specific validation/branch> in <specific method>; pin which branch is taken>
 4. <e.g. compile passes>
 
-## Requirements
+## Behavior Constraints
 
 - <required behavior, written as a decidable assertion>
 - <boundary condition: exact behavior for empty/oversized/duplicate input>

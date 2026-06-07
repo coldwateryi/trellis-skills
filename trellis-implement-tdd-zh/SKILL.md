@@ -12,7 +12,7 @@ description: |
 
 本技能由**编排会话（主会话，通常强模型）调用**，去驱动**实现执行体（可为 qwen3.6 35b 小模型）**。流程由本技能"夹着走"，执行体只做有客观信号的机械步骤，不需要自己判断"做完没有"——**测试变绿就是做完**。
 
-输入：一个 `status` 为进行中、依赖已满足的子任务目录（含 `prd.md`，可能含 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`）。产出：通过测试的代码改动 + 回写的进度，**不执行 git commit**（Trellis 实现执行体禁止 commit/push/merge）。
+输入：一个 `status` 为进行中、依赖已满足的子任务目录（含 `prd.md`，可能含 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`）。产出：通过测试的代码改动 + 回写到 `<task-dir>/tdd-progress.md` 的进度，**不执行 git commit**（Trellis 实现执行体禁止 commit/push/merge）。
 
 ## 约束
 
@@ -37,7 +37,9 @@ description: |
 3. 若存在 `design.md`：读`编排-计算分离`与`挂载点清单`两节，确认每个新代码的落点。
 4. 若存在 `.trellis/spec/<相关层>`：读与本任务直接相关的规范。
 
-把 `prd.md` 的每条 `AC-xxx` 抽成一个**待办测试清单**，写入 `references/tdd-progress-template.md` 的进度表。
+开始编辑前，先把 `references/tdd-progress-template.md` 复制为 `<task-dir>/tdd-progress.md`。这个任务目录下的文件才是可写进度记录；skill 目录里的模板保持只读。
+
+把 `prd.md` 的每条 `AC-xxx` 抽成一个**待办测试清单**，写入 `<task-dir>/tdd-progress.md`。
 
 ### 2. 对每条 AC 跑红绿循环
 
@@ -49,7 +51,7 @@ description: |
 3. GREEN ── 写"刚好让它变绿"的最小代码；落点按文件清单+编排分层，决策按决策表，不自由发挥
 4. 看绿 ── 再次运行该测试，看到通过（客观信号）
 5. 自检 ── 运行 prd.md「自检命令」全集，确认没弄坏已绿的 AC（无回归）
-6. 记录 ── 进度表把 AC-xxx 标记为 done，暂存改动（不 commit）
+6. 记录 ── 在 `<task-dir>/tdd-progress.md` 里把 AC-xxx 标记为 done，暂存改动（不 commit）
 7. 下一条 AC
 ```
 
@@ -61,7 +63,7 @@ description: |
 
 1. 运行 `prd.md` 全部自检命令 + 项目 lint / type-check，全绿。
 2. 对照 `design.md` 的`挂载点清单`逐项确认已接线（路由注册 / 配置项 / 事件订阅 / DI 绑定等），防止"写了实现没接线"。
-3. 进度表所有 AC 为 done，无遗留红灯。
+3. `<task-dir>/tdd-progress.md` 所有 AC 为 done，无遗留红灯。
 
 ### 4. 交接评审
 
@@ -77,4 +79,4 @@ description: |
 ## 参考文件
 
 - `references/tdd-loop-protocol.md` —— 每条 AC 的红绿循环详规、铁律与反模式，开始实现前读取。
-- `references/tdd-progress-template.md` —— 逐 AC 红/绿/done 进度表，载入任务后创建并全程回写。
+- `references/tdd-progress-template.md` —— `<task-dir>/tdd-progress.md` 的只读模板；全程更新任务目录下的副本。

@@ -51,9 +51,7 @@
 
 脚本会优先检查当前目录是否存在 `.trellis/`。如果当前目录是已初始化的 Trellis 项目，默认安装到该项目的项目级 skill 目录；如果当前目录不是 Trellis 项目，会提示输入目标项目目录。若用户输入的目录仍未发现 `.trellis/`，脚本会询问是否改为安装到全局 skill 目录。
 
-随后询问是否安装中文版 skill：选择是仅安装 `trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`；选择否仅安装英文版。
-
-> **执行期技能**（`trellis-implement-tdd-zh`、`trellis-debug-systematic-zh`、`trellis-review-twostage-zh`）不通过安装脚本分发，直接从本仓库手动复制到项目的 `.agents/skills/` 或 `.claude/skills/` 目录即可。
+随后询问是否安装中文版 skill：选择是安装 5 个中文版 skill（`trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`、`trellis-implement-tdd-zh`、`trellis-debug-systematic-zh`、`trellis-review-twostage-zh`）；选择否安装 5 个英文版 skill（`trellis-zero-to-mvp`、`trellis-mvp-to-delivery`、`trellis-implement-tdd`、`trellis-debug-systematic`、`trellis-review-twostage`）。
 
 项目级默认安装位置：
 

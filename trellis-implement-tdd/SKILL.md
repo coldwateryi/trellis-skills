@@ -12,7 +12,7 @@ Implement a planned Trellis subtask by going through its `prd.md` acceptance cri
 
 This skill is **invoked by the orchestration session (main session, typically a strong model)** to drive **the implementation executor (which may be a small model like qwen3.6 35b)**. The flow is "held" by this skill; the executor only performs mechanically verifiable steps without needing to judge "am I done?"—**test turns green = done**.
 
-Input: A subtask directory with `status` in-progress and dependencies satisfied (contains `prd.md`, may contain `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`). Output: Code changes passing tests + progress written back, **without executing git commit** (Trellis implementation executors forbid commit/push/merge).
+Input: A subtask directory with `status` in-progress and dependencies satisfied (contains `prd.md`, may contain `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`). Output: Code changes passing tests + progress written back to `<task-dir>/tdd-progress.md`, **without executing git commit** (Trellis implementation executors forbid commit/push/merge).
 
 ## Constraints
 
@@ -37,7 +37,9 @@ Read in order, loading only "must-read-before-editing" stable context to control
 3. If `design.md` exists: read `Orchestration-Computation Separation` and `Mount Point Checklist` sections to confirm each new code's landing point.
 4. If `.trellis/spec/<relevant-layer>` exists: read specs directly related to this task.
 
-Extract each `AC-xxx` from `prd.md` into a **TODO test list**, write to `references/tdd-progress-template.md` progress table.
+Before editing code, copy `references/tdd-progress-template.md` to `<task-dir>/tdd-progress.md`. This task-local file is the writable progress record; the template under the skill directory stays read-only.
+
+Extract each `AC-xxx` from `prd.md` into a **TODO test list**, write to `<task-dir>/tdd-progress.md`.
 
 ### 2. Run RED-GREEN loop for each AC
 
@@ -49,7 +51,7 @@ For each AC in order, execute the loop from `references/tdd-loop-protocol.md`:
 3. GREEN ── Write "just enough to turn it green" minimal code; landing point per file manifest+orchestration layering, decisions per decision table, no free improvisation
 4. See green ── Run the test again, see it pass (objective signal)
 5. Self-check ── Run prd.md「Self-Check Commands」full set, confirm no breakage of already-green ACs (no regression)
-6. Record ── Mark AC-xxx as done in progress table, stage changes (no commit)
+6. Record ── Mark AC-xxx as done in `<task-dir>/tdd-progress.md`, stage changes (no commit)
 7. Next AC
 ```
 
@@ -61,7 +63,7 @@ After all ACs turn green:
 
 1. Run all `prd.md` self-check commands + project lint / type-check, all green.
 2. Check `design.md` `Mount Point Checklist` item by item to confirm wiring (route registration / config item / event subscription / DI binding, etc.), preventing "wrote implementation but didn't wire it".
-3. Progress table shows all ACs as done, no remaining red lights.
+3. `<task-dir>/tdd-progress.md` shows all ACs as done, no remaining red lights.
 
 ### 4. Handoff to review
 
@@ -77,4 +79,4 @@ After implementation self-check all green, **do not mark task complete on your o
 ## Reference files
 
 - `references/tdd-loop-protocol.md` —— Detailed RED-GREEN loop per AC, iron rules and anti-patterns, read before starting implementation.
-- `references/tdd-progress-template.md` —— Red/green/done progress table per AC, create after loading task and write back throughout.
+- `references/tdd-progress-template.md` —— Read-only template for `<task-dir>/tdd-progress.md`; update the task-local file throughout execution.
