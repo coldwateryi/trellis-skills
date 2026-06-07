@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis TDD 落地"
+  short_description: "用红绿重构把子任务的验收标准逐条落成代码"
+  default_prompt: "Use $trellis-implement-tdd-zh to implement this Trellis subtask via strict TDD, one acceptance criterion at a time."

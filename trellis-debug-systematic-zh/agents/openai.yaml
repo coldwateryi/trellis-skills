@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trellis 系统化调试"
+  short_description: "用刚性 4 步脚本定位根因并最小修复"
+  default_prompt: "Use $trellis-debug-systematic-zh to systematically root-cause and minimally fix this failing test or check."
