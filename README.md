@@ -2,6 +2,27 @@
 
 本仓库为 Codex CLI、Claude Code 以及其他支持 skill 的 CLI 工具提供一套 Trellis 工作流技能，覆盖从原始需求文档到完整交付的全流程——**分析 → 规划 → 追踪 → 审计 → 补缺 → 验收**。
 
+## 快速开始
+
+在 Trellis 项目根目录运行安装脚本，选择中文或英文 skill：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```
+
+如果你还没有 MVP，从需求文档开始：
+
+```text
+需求文档在 docs/requirements.md。
+请使用 trellis-zero-to-mvp-zh 进行只读分析，输出 MVP 任务计划，先不要写代码。
+```
+
+如果 MVP 已经完成，进入完整交付 loop：
+
+```text
+MVP 已完成。请使用 trellis-mvp-to-delivery-zh 以 L1 模式执行首次 full audit，输出完整 Requirements Gap Matrix，并初始化 .trellis/delivery-state.md。
+```
+
 ## 技能概览
 
 | 技能 | 语言 | 用途 |
@@ -17,219 +38,112 @@
 | `trellis-debug-systematic-zh` | ZH | 同上（中文版） |
 | `trellis-review-twostage-zh` | ZH | 同上（中文版） |
 
-### ✨ 新功能：自我评审循环与设计左移
+## 由浅到深的使用路径
 
-**所有技能现已支持自我评审循环机制，并把复杂任务的设计、实现步骤和稳定上下文清单前置到规划阶段，确保输出满足小参数模型（如 qwen3.6 35b）的执行要求。**
+先把这套技能理解成一条交付流水线，而不是一组彼此独立的提示词：
 
-**工作原理**：
-1. 🔍 **分析** - 生成初版需求追踪矩阵、任务拆分和 PRD
-2. ✅ **自我评审** - 对照 45-60 项检查清单逐项检查
-3. 🔧 **针对性改进** - 只修复标记的问题，不全量重做
-4. 🔄 **循环收敛** - 重复 2-3 轮直到所有检查通过
-5. ✅ **用户确认** - 达标后才创建任务树
-
-**核心优势**：
-- ✅ **小模型友好** - 消除占位符、提供具体路径和步骤
-- ✅ **设计左移** - 对中/高复杂度任务补充 Context Manifest、Decision Table、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`
-- ✅ **质量保证** - 45-60 项精准检查，问题定位到具体行
-- ✅ **成本可控** - ROI > 5:1（规划多花 45k tokens，执行少花 200k tokens）
-- ✅ **效果显著** - 执行成功率提升 30%-50%
-
-详见：[优化提案](doc/OPTIMIZATION_PROPOSAL.md) 和 [实施总结](doc/FINAL_SUMMARY.md)
-
-## Trellis 0.6 Beta 适配
-
-本技能集仍兼容 Trellis 的核心任务结构（`.trellis/tasks/`、`.trellis/spec/`、`task.py create --parent`），同时增加对 0.6 beta 工作流的适配：
-
-- 如存在 `.trellis/workflow.md`，优先把它作为项目本地工作流契约读取。
-- 如存在 `.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer`、`.trellis/workspace/`，在规划前纳入上下文。
-- 对依赖 `.trellis/spec/` 的任务先检查 spec 新鲜度；缺失、泛化或过期时，先规划 spec refresh/bootstrap。
-- 对中/高复杂度任务，除 `prd.md` 外，按项目工作流补充 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`。
-- 首次初始化优先使用 `trellis init -u <name>`，并按项目需要添加平台参数；`init_developer.py` 只作为旧版兜底。
-
-## 从 GitHub 安装
-
-脚本会优先检查当前目录是否存在 `.trellis/`。如果当前目录是已初始化的 Trellis 项目，默认安装到该项目的项目级 skill 目录；如果当前目录不是 Trellis 项目，会提示输入目标项目目录。若用户输入的目录仍未发现 `.trellis/`，脚本会询问是否改为安装到全局 skill 目录。
-
-随后询问是否安装中文版 skill：选择是安装 5 个中文版 skill（`trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`、`trellis-implement-tdd-zh`、`trellis-debug-systematic-zh`、`trellis-review-twostage-zh`）；选择否安装 5 个英文版 skill（`trellis-zero-to-mvp`、`trellis-mvp-to-delivery`、`trellis-implement-tdd`、`trellis-debug-systematic`、`trellis-review-twostage`）。
-
-项目级默认安装位置：
-
-- `.agents/skills/`：Codex CLI / Trellis agent 兼容目录
-- `.claude/skills/`：Claude Code 项目级 skill 自动发现目录
-
-全局回退安装位置：
-
-- `$CODEX_HOME/skills`，未设置 `CODEX_HOME` 时为 `~/.codex/skills`：Codex CLI 全局 skill 目录
-- `~/.claude/skills`：Claude Code 用户级 skill 目录
-
-如只想安装到单个平台目录，可设置 `TRELLIS_SKILLS_AGENT_TARGETS=codex` 或 `TRELLIS_SKILLS_AGENT_TARGETS=claude`。未设置时默认值为 `both`。
-
-如果在本仓库的 `scripts/` 目录直接执行脚本，脚本会先从 GitHub 更新父级 `trellis-skills` 目录的 `main` 分支源码，然后再按上述逻辑安装。更新使用 fast-forward 合并；如果本地有未提交改动或分支无法快进，脚本会停止，避免覆盖本地修改。
-
-### macOS / Linux / Git Bash
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```text
+源需求文档
+  └─ trellis-zero-to-mvp-zh：只读分析 → MVP 任务树
+       └─ trellis-implement-tdd-zh / debug-systematic-zh / review-twostage-zh：实现 MVP
+            └─ trellis-mvp-to-delivery-zh：L1 full audit → L2 批次补缺 → delta audit → final acceptance
 ```
 
-仅安装 Codex / Trellis agent 目录：
+### 先选哪个 skill
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=codex bash
+| 你现在的状态 | 应使用的 skill | 本轮产物 |
+| --- | --- | --- |
+| 只有需求文档，还没形成 Trellis 任务树 | `trellis-zero-to-mvp-zh` | Requirements Traceability Matrix、MVP 边界、父/子任务 PRD |
+| 已经有 MVP，要对比完整需求 | `trellis-mvp-to-delivery-zh` | 完整 Requirements Gap Matrix、交付状态、第一批补缺建议 |
+| 已经有 Trellis 子任务，要开始写代码 | `trellis-implement-tdd-zh` | 按 AC 红绿循环落地代码和测试 |
+| 测试该绿不绿或自检失败 | `trellis-debug-systematic-zh` | 稳定复现、单一假设、最小修复 |
+| 子任务自检全绿，要过门 | `trellis-review-twostage-zh` | Stage 1 规范符合 + Stage 2 代码质量评审 |
+
+### 路径 A：从完整需求开始做 MVP
+
+适用于新项目、重构项目或已有需求文档但尚未形成 Trellis 任务树的场景。
+
+```text
+需求文档在 docs/requirements.md。
+
+请使用 trellis-zero-to-mvp-zh 进行只读分析：
+- 为每条源需求分配稳定 REQ ID
+- 输出 Requirements Traceability Matrix
+- 明确 MVP 边界和暂不纳入范围
+- 按依赖顺序拆分 Trellis 父任务和子任务
+- 先不要写代码，等我确认后再创建任务树
 ```
 
-仅安装 Claude Code 目录：
+`trellis-zero-to-mvp-zh` 会在规划阶段运行自我评审循环，重点检查占位符、文件路径、Implementation Steps、验收断言和复杂任务拆分。确认分析结果后，再让它创建 Trellis 任务树。
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=claude bash
-```
+如果项目已经手工实现了一部分功能，可以改用下面的提示词：
 
-macOS 默认 zsh 也可以直接执行：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | zsh
-```
-
-脚本主要支持 `bash` 和 `zsh`。如果使用其他不兼容 shell（例如 `sh`/`dash`）执行，脚本会直接提示改用 `bash` 或 `zsh`。脚本会从当前终端读取交互输入，即使通过 `curl | bash` 或 `curl | zsh` 管道执行，也可以正常选择目标目录和语言。
-
-安装过程中会输出带 `[trellis-skills]` 前缀的步骤日志。遇到问题时，请保留完整安装输出，便于定位当前 shell、工作目录、目标目录、源码来源和失败步骤。
-
-本地脚本方式：
-
-```bash
-cd /path/to/trellis-skills/scripts
-bash ./install-trellis-skills.sh
-# 或
-zsh ./install-trellis-skills.sh
-
-# 仅安装到 Claude Code 项目级 skill 目录
-TRELLIS_SKILLS_AGENT_TARGETS=claude bash ./install-trellis-skills.sh
-```
-
-### PowerShell
-
-```powershell
-irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
-```
-
-仅安装 Claude Code 目录：
-
-```powershell
-$env:TRELLIS_SKILLS_AGENT_TARGETS = "claude"
-irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
-```
-
-本地脚本方式：
-
-```powershell
-cd C:\path\to\trellis-skills\scripts
-.\install-trellis-skills.ps1
-
-# 仅安装到 Claude Code 项目级 skill 目录
-.\install-trellis-skills.ps1 -AgentTargets claude
-```
-
-## Claude Code 兼容性
-
-Claude Code 会从项目的 `.claude/skills/<skill-name>/SKILL.md` 自动发现项目级 skill，也会读取用户级 `~/.claude/skills/<skill-name>/SKILL.md`。当前四个技能目录已经包含 Claude Code 所需的 `SKILL.md` 入口和引用资料目录；`agents/openai.yaml` 是面向 Codex/OpenAI 兼容运行器的附加配置，Claude Code 可忽略该文件。
-
-安装脚本在项目级安装时默认同时写入 `.agents/skills/` 和 `.claude/skills/`，因此同一 Trellis 项目可以被 Codex CLI 和 Claude Code 分别识别。只有当前目录和用户指定目录都不是 Trellis 项目且用户确认后，脚本才会安装到全局目录。若团队只使用其中一个运行器，通过 `TRELLIS_SKILLS_AGENT_TARGETS` 或 PowerShell 的 `-AgentTargets` 参数限制安装目标即可。
-
-## 推荐工作流
-
-```
-需求文档 ──→ [Zero to MVP] ──→ MVP 任务树 ──→ 编码实现 MVP
-                                                    │
-                                                    ▼
-                              需求文档 ──→ [MVP to Delivery] ──→ 补缺任务 ──→ 交付验收
-```
-
-### 阶段一：Zero → MVP
-
-当你拿到一份完整的需求文档（PRD / 产品说明 / 功能规格），还没有开始写代码时：
-
-1. 将需求文档放到项目中
-2. 调用 `trellis-zero-to-mvp`（或中文版 `trellis-zero-to-mvp-zh`）
-3. 技能会执行**只读分析**，输出：
-   - 需求追踪矩阵（Requirements Traceability Matrix）
-   - 模块依赖图
-   - 按能力拆分的任务清单
-   - 按依赖排序的 MVP 开发顺序
-   - 父/子任务 PRD 草案
-4. **确认分析结果后**，技能创建 Trellis 任务树
-5. 按推荐顺序开始编码
-
-### 阶段二：MVP → Delivery
-
-MVP 实现完成后，回到源需求文档做完整交付：
-
-1. 调用 `trellis-mvp-to-delivery`（或中文版 `trellis-mvp-to-delivery-zh`）
-2. 技能执行**差距审计**，逐条对照需求文档检查 MVP：
-   - 需求追踪矩阵（含 DONE / PARTIAL / MISSING / UNTESTED / UNCLEAR 状态）
-   - MVP 完成度摘要
-   - 按依赖排序的补缺任务计划
-   - 自动化测试覆盖要求
-3. **确认审计结果后**，创建补缺 Trellis 任务
-4. 按优先级补齐功能、测试，执行最终验收
-
-## 推荐用法
-
-### 场景 1：全新项目启动
-
-```
-你是一个新项目，需求文档在 docs/requirements.md。
-
-请使用 trellis-zero-to-mvp-zh 将其转化为 MVP 任务计划。
-```
-
-技能会先做只读分析——不会写任何代码。确认任务拆分和 MVP 边界后，才会创建 Trellis 任务树。
-
-**✨ 自我评审循环**：分析过程中会自动进行 2-3 轮质量检查，确保：
-- ✅ 所有 `<...>` 占位符已被具体值替换
-- ✅ File Manifest 包含精确的文件路径
-- ✅ Implementation Steps 是可执行的具体动作
-- ✅ 复杂任务已拆分到适合小模型执行
-
-### 场景 2：已有 MVP，准备完整交付
-
-```
-MVP 已实现完成，源需求文档在 docs/requirements.md。
-
-请使用 trellis-mvp-to-delivery-zh 审计 MVP，规划完整交付。
-```
-
-技能会逐条对照需求文档检查现有实现和测试，找出所有缺口，然后创建补缺任务。
-
-**✨ 自我评审循环**：审计过程中会自动进行质量检查，确保：
-- ✅ 每个 DONE 状态都有实现证据和测试证据
-- ✅ 补缺任务的 PRD 明确不破坏 MVP 行为
-- ✅ Regression Tests 覆盖 MVP 核心流程
-- ✅ Bug 修复的分支逻辑已明确定死
-
-### 场景 3：已手工实现部分功能，但还没有形成 MVP
-
-```
+```text
 需求文档在 docs/requirements.md，项目中已经手工实现了一部分功能，并且中途运行过 trellis init。
 
 请使用 trellis-zero-to-mvp-zh 基于现有代码、.trellis/spec/ 和需求文档，只规划剩余 MVP 功能任务。
+已实现且有证据的需求标记为 DONE；已实现但缺测试的标记为 UNTESTED；只为 PARTIAL/MISSING 创建后续任务。
 ```
 
-技能会先生成 Existing Implementation Baseline（已有实现基线），再按状态处理需求：
+### 路径 B：MVP 已完成，进入可持续 Delivery Loop
 
-- `DONE`：不创建实现任务，只作为已有依赖证据。
-- `UNTESTED`：只创建测试补齐任务。
-- `PARTIAL`：只创建缺失行为的补缺任务。
-- `MISSING`：创建新实现任务。
+适用于已经跑完 MVP、现在要从“能用”推进到“完整交付”的场景。`trellis-mvp-to-delivery-zh` 不是一次性审计工具，而是外层交付状态机：先完整对比需求和 MVP，再按有边界的批次推进。
 
-### 场景 4：持续迭代
+#### 第 1 轮：L1 full audit
 
-在实际开发中，两个技能可以循环使用：
+首次运行仍然必须完整对比 MVP 与实际需求，并输出完整差异矩阵。它会初始化 `.trellis/delivery-state.md` 和 `.trellis/delivery-run-log.jsonl`，作为后续 loop 的持久记忆。
 
-1. 用 `zero-to-mvp` 规划首个可交付版本
-2. 编码实现 MVP
-3. 用 `mvp-to-delivery` 审计差距，补齐到完整交付
-4. 如果有新增需求，回到步骤 1，针对新需求再次使用 `zero-to-mvp`
+```text
+MVP 已完成。请使用 trellis-mvp-to-delivery-zh 以 L1 模式执行首次 full audit：
+- 对比 docs/requirements.md 与当前 MVP
+- 输出完整 Requirements Gap Matrix，覆盖每条源需求
+- 标记 DONE / PARTIAL / MISSING / UNTESTED / UNCLEAR
+- 初始化 .trellis/delivery-state.md
+- 初始化 .trellis/delivery-run-log.jsonl
+- 只给出第一批补缺建议，不创建实现任务
+```
+
+#### 第 2-N 轮：L2 batch progress
+
+确认差距矩阵后，每轮只推进一个批次。默认每批最多 3 个补缺任务，最多 1 个高风险任务；代码变更任务必须带 worktree、verifier 和 `trellis-review-twostage-zh` 门。
+
+```text
+请使用 trellis-mvp-to-delivery-zh 以 L2 模式推进当前 delivery batch：
+- 读取 .trellis/delivery-state.md
+- 只处理 current_batch
+- 每个代码变更任务都要求 worktree + verifier + trellis-review-twostage-zh
+- 不直接实现功能，只创建或更新本批次 Trellis tasks 和 PRD
+- 更新 .trellis/delivery-state.md
+- 追加 .trellis/delivery-run-log.jsonl
+```
+
+#### 后续审计：delta audit 或 early-exit
+
+当已经存在 delivery state，且源需求没有变化时，后续不应反复 full audit。只检查 `last_audited_commit` 之后与 open gaps 相关的代码、测试和 Trellis task 变化；如果没有相关变化，直接 early-exit。
+
+```text
+请使用 trellis-mvp-to-delivery-zh 执行 delta audit：
+- 从 .trellis/delivery-state.md 读取 last_audited_commit
+- 从 last_audited_commit 到当前 HEAD 检查与 open gaps 相关的代码、测试和 task 变化
+- 更新 Requirements Gap Matrix 中受影响的 REQ
+- 如果没有相关变化，early-exit 并只追加 .trellis/delivery-run-log.jsonl
+```
+
+#### 收尾轮：final acceptance
+
+所有 P0/P1 缺口完成或被人工明确延期后，再进入最终验收。最终验收不新增功能，只分类阻塞 bug。
+
+```text
+所有 P0/P1 补缺任务已完成或已明确延期。
+
+请使用 trellis-mvp-to-delivery-zh 执行 final acceptance：
+- 读取 final-acceptance-template.md
+- 验证 Requirements Gap Matrix 中所有交付范围内 REQ
+- 汇总自动化测试、回归测试和人工验收证据
+- 不新增功能，只分类阻塞 bug
+```
+
+典型项目一般 3-6 个外层 loop 收敛：首次 full audit → P0/foundation batch → P1/core behavior batch → regression/final acceptance。超过 6 轮、同一 REQ 连续 2 轮无进展、verifier 两次失败或 review 出现 critical 时，应暂停并人工确认范围或基线。
 
 ## 执行期技能详细使用说明
 
@@ -239,15 +153,15 @@ MVP 已实现完成，源需求文档在 docs/requirements.md。
 
 | 技能 | 触发时机 | 核心价值 | 小模型适配 |
 | --- | --- | --- | --- |
-| `trellis-implement-tdd` | 子任务进入实现阶段 | 把"实现需求"变成"让测试变绿"的机械循环，每步有客观信号 | ✅ 窄路径+客观信号，小模型只需追"让断言变绿" |
-| `trellis-debug-systematic` | 测试该绿不绿、自检失败 | 刚性 4 步脚本（复现→定位→假设验证→最小修复），防小模型乱改 | ✅ 铁律"一次一处、改完必重跑、禁止猜" |
-| `trellis-review-twostage` | 实现自检全绿后 | 规范符合(可小模型)+代码质量(强模型)双阶段门，critical 阻断 | ✅ 角色分层：Stage 1 小模型、Stage 2 强模型 |
+| `trellis-implement-tdd` | 子任务进入实现阶段 | 把"实现需求"变成"让测试变绿"的机械循环，每步有客观信号 | 窄路径+客观信号，小模型只需追"让断言变绿" |
+| `trellis-debug-systematic` | 测试该绿不绿、自检失败 | 刚性 4 步脚本（复现→定位→假设验证→最小修复），防小模型乱改 | 铁律"一次一处、改完必重跑、禁止猜" |
+| `trellis-review-twostage` | 实现自检全绿后 | 规范符合(小模型)+代码质量(强模型)双阶段门，critical 阻断 | 角色分层：Stage 1 小模型、Stage 2 强模型 |
 
 ### 典型工作流：从任务到完成
 
 假设你已用 `trellis-zero-to-mvp-zh` 创建了任务树，现在要实现第一个子任务：
 
-#### 1️⃣ 启动 TDD 循环
+#### 1. 启动 TDD 循环
 
 ```
 现在开始实现子任务 .trellis/tasks/feature-user-auth/01-implement-login/
@@ -272,7 +186,7 @@ MVP 已实现完成，源需求文档在 docs/requirements.md。
 - 不动文件清单/禁止事项之外的文件
 - 不执行 `git commit`（Trellis 实现执行体禁止 commit）
 
-#### 2️⃣ 遇到红灯时调试
+#### 2. 遇到红灯时调试
 
 如果某条 AC 的测试该绿不绿，或自检命令失败：
 
@@ -298,7 +212,7 @@ AC-003 的测试该绿却一直红，错误信息是 "AssertionError: Expected 2
 - 禁止猜（定位只用三招）
 - 超 3 轮仍红 → 停止，升级给强模型
 
-#### 3️⃣ 完成后评审
+#### 3. 完成后评审
 
 所有 AC 变绿、自检全绿后：
 
@@ -386,43 +300,91 @@ AC-003 的测试该绿却一直红，错误信息是 "AssertionError: Expected 2
 3. 评审通过 → 推进任务状态 → 下一个子任务
 4. 所有子任务完成 → **`trellis-mvp-to-delivery-zh`** 最终验收 + 架构档案回写
 
-### 全自动触发场景提示词
+### 尽量全自动执行模式
 
-为了避免对每个子任务手动调用执行期技能，可以使用以下**全自动编排提示词**，让 AI 自动驱动完整的实现→调试→评审闭环：
+“尽量全自动”指的是：AI 自动推进到下一个安全门，而不是跳过确认门无人值守。适合任务树较大、希望少手动点名 skill 的场景。
 
-#### 中文版全自动提示词
+默认自动继续的范围：
 
+- 读取需求、代码、测试、`.trellis/` 和相关 spec。
+- 选择下一个依赖已满足的子任务或 delivery batch。
+- 对实现任务自动执行 `trellis-implement-tdd-zh` → `trellis-debug-systematic-zh` → `trellis-review-twostage-zh`。
+- 自检失败时自动调试，单任务最多 3 轮假设/修复。
+- 评审通过后推进到下一个 ready task 或下一轮 delta audit。
+- 追加 `.trellis/delivery-run-log.jsonl` 并更新 `.trellis/delivery-state.md`。
+
+必须停下询问的安全门：
+
+- 首次只读分析后，创建或修改 Trellis 任务树前。
+- `mvp-to-delivery` 首次 L1 full audit 后，确认差距矩阵和第一批补缺范围前。
+- 需要改动 File Manifest 外的文件，或需求/schema/auth/payment/security/infrastructure 决策不清晰。
+- verifier 连续失败 2 次、调试超过 3 轮仍未变绿、review 出现 critical。
+- 当前小模型走到 `trellis-review-twostage-zh` Stage 2，或需要强模型判断设计质量。
+- 任何 destructive git 操作、commit、push、tag、release；除非用户在当前请求中明确授权。
+- 外层 delivery loop 超过 6 轮，或同一 `REQ-*` 连续 2 轮无进展。
+
+#### 样例 A：从需求到 MVP，尽量全自动落地
+
+```text
+请尽量全自动执行 Trellis 需求落地流程，自动推进到下一个安全门。
+
+目标：
+- 需求文档在 docs/requirements.md
+- 先创建 MVP 任务树
+- 然后按依赖顺序落地所有 MVP 子任务
+- MVP 完成后运行 trellis-mvp-to-delivery-zh 的 L1 full audit
+
+执行规则：
+1. 使用 trellis-zero-to-mvp-zh 先做只读分析，输出 Requirements Traceability Matrix、MVP 边界、任务拆分和 PRD 草案。
+2. 创建或修改 Trellis 任务树前停下，等待我确认。
+3. 我确认后，按依赖顺序自动选择下一个 ready 子任务。
+4. 每个子任务使用 trellis-implement-tdd-zh 逐 AC 红绿循环。
+5. 测试该绿不绿或自检失败时，自动使用 trellis-debug-systematic-zh；超过 3 轮仍失败时停下。
+6. 子任务自检全绿后，自动使用 trellis-review-twostage-zh；Stage 2 需要强模型时停下提示。
+7. 评审通过后推进任务状态，继续下一个子任务。
+8. 所有 MVP 子任务完成后，使用 trellis-mvp-to-delivery-zh 执行 L1 full audit，输出完整 Requirements Gap Matrix，并初始化 .trellis/delivery-state.md 和 .trellis/delivery-run-log.jsonl。
+
+除上述安全门外，请不要每一步都问我。
 ```
-任务树已创建完成。现在按依赖顺序自动落地所有子任务，对每个子任务：
 
-1. 使用 trellis-implement-tdd-zh 进行 TDD 实现，逐条 AC 红绿循环
-2. 测试该绿不绿或自检失败时，自动切换到 trellis-debug-systematic-zh 定位修复
-3. 实现自检全绿后，自动调用 trellis-review-twostage-zh 进行双阶段评审
-4. 评审通过后推进任务状态，继续下一个子任务
-5. 所有子任务完成后，使用 trellis-mvp-to-delivery-zh 执行最终验收
+#### 样例 B：已有 MVP，尽量全自动跑 Delivery Loop
 
-请自动执行上述流程，遇到需要人工决策的点时停下询问。
+```text
+MVP 已完成。请尽量全自动运行 trellis-mvp-to-delivery-zh 交付 loop，自动推进到下一个安全门。
+
+目标：
+- 对比 docs/requirements.md 和当前 MVP
+- 完成首次 L1 full audit
+- 按批次补齐 P0/P1 缺口
+- 每批结束后执行 delta audit
+- 条件满足后执行 final acceptance
+
+执行规则：
+1. 如果 .trellis/delivery-state.md 不存在，先执行 L1 full audit，输出完整 Requirements Gap Matrix，并初始化 delivery state/run log。
+2. L1 审计后停下，等待我确认差距矩阵、延期项和第一批补缺范围。
+3. 我确认后，进入 L2 batch progress；每轮只处理 current_batch，最多 3 个 gap tasks，最多 1 个高风险任务。
+4. 需要写代码的任务必须使用隔离 worktree，并要求 verifier + trellis-review-twostage-zh。
+5. 对批次内每个任务自动执行 trellis-implement-tdd-zh → trellis-debug-systematic-zh → trellis-review-twostage-zh。
+6. 批次完成后自动执行 delta audit，更新 Requirements Gap Matrix、.trellis/delivery-state.md 和 .trellis/delivery-run-log.jsonl。
+7. 如果没有相关变化，early-exit，只追加 run log。
+8. 当所有 P0/P1 缺口 DONE 或被我明确延期后，执行 final acceptance；最终验收不新增功能，只分类阻塞 bug。
+
+遇到 critical review、verifier 两次失败、同一 REQ 两轮无进展、需要改 File Manifest 外文件、或外层 loop 超过 6 轮时停下。
 ```
 
-#### 英文版全自动提示词
+#### 样例 C：已有任务树，只自动跑一个子任务
 
-```
-Task tree created. Now automatically land all subtasks in dependency order, for each subtask:
+```text
+对子任务 .trellis/tasks/feature-user-auth/01-implement-login/ 执行尽量全自动闭环：
 
-1. Use trellis-implement-tdd for TDD implementation, AC-by-AC RED-GREEN loop
-2. When test should be green but stays red or self-check fails, auto-switch to trellis-debug-systematic
-3. After implementation self-check all green, auto-invoke trellis-review-twostage for two-stage review
-4. After review passes, advance task status and continue to next subtask
-5. After all subtasks complete, use trellis-mvp-to-delivery for final acceptance
+trellis-implement-tdd-zh（TDD 实现）→ trellis-debug-systematic-zh（遇红灯时）→ trellis-review-twostage-zh（评审）→ 推进状态。
 
-Please execute the above flow automatically, stop to ask when hitting points requiring human decision.
+只处理这个子任务，不扩大范围。遇到 critical review、调试超过 3 轮、需要改 File Manifest 外文件或需要强模型 Stage 2 判断时停下。
 ```
 
-#### 小模型专用全自动提示词（角色分层）
+#### 小模型专用自动执行提示词
 
-如果你在 qwen3.6 35b 等小模型环境中使用，可以在提示词中明确角色分层：
-
-```
+```text
 任务树已创建。现在由我（qwen3.6 35b 小模型）负责实现和机械核对，遇到需要判断的环节时自动提示切换到强模型。
 
 对每个子任务：
@@ -435,27 +397,12 @@ Please execute the above flow automatically, stop to ask when hitting points req
 请按上述角色分工自动执行，到 Stage 2 评审时提示"请切换到强模型继续 Stage 2 评审"。
 ```
 
-#### 单子任务快速触发（已有任务树时）
+使用尽量全自动模式的价值：
 
-如果任务树已存在，只想对某个特定子任务执行完整闭环：
-
-```
-对子任务 .trellis/tasks/feature-user-auth/01-implement-login/ 执行完整实现闭环：
-
-trellis-implement-tdd-zh（TDD 实现）→ trellis-debug-systematic-zh（遇红灯时）→ trellis-review-twostage-zh（评审）→ 推进状态
-
-请自动执行，遇阻塞时报告。
-```
-
-#### 自动化的价值
-
-使用全自动提示词的好处：
-- ✅ **减少手动调用**：一次提示覆盖完整流程，无需逐个技能手动调用
-- ✅ **流程标准化**：保证每个子任务都经过 TDD→调试→评审的完整质量门
-- ✅ **角色自动切换**：明确何时用小模型、何时升级强模型，成本最优
-- ✅ **适合批量落地**：任务树有 10+ 子任务时，全自动模式显著提效
-
-> **注意**：全自动模式下，AI 仍会在遇到无法自动判断的点时停下询问（如评审发现 critical 问题、调试超 3 轮未解决、需要补充 PRD 信息等），并非完全无人值守。
+- **减少手动调用**：一次提示覆盖规划、实现、调试、评审和下一轮审计。
+- **流程标准化**：保证每个子任务都经过 TDD→调试→评审的完整质量门。
+- **状态可恢复**：通过 `.trellis/delivery-state.md` 和 `.trellis/delivery-run-log.jsonl` 支持后续 delta audit。
+- **边界清晰**：自动执行只发生在已确认范围内，遇到高风险判断或破坏性操作会停下。
 
 ## 需求状态说明
 
@@ -468,6 +415,117 @@ trellis-implement-tdd-zh（TDD 实现）→ trellis-debug-systematic-zh（遇红
 | `MISSING` | 尚未实现 |
 | `UNTESTED` | 已实现但缺少充分测试 |
 | `UNCLEAR` | 需求不够清晰，无法实施 |
+
+## 安装与兼容性
+
+脚本会优先检查当前目录是否存在 `.trellis/`。如果当前目录是已初始化的 Trellis 项目，默认安装到该项目的项目级 skill 目录；如果当前目录不是 Trellis 项目，会提示输入目标项目目录。若用户输入的目录仍未发现 `.trellis/`，脚本会询问是否改为安装到全局 skill 目录。
+
+随后询问是否安装中文版 skill：选择是安装 5 个中文版 skill（`trellis-zero-to-mvp-zh`、`trellis-mvp-to-delivery-zh`、`trellis-implement-tdd-zh`、`trellis-debug-systematic-zh`、`trellis-review-twostage-zh`）；选择否安装 5 个英文版 skill（`trellis-zero-to-mvp`、`trellis-mvp-to-delivery`、`trellis-implement-tdd`、`trellis-debug-systematic`、`trellis-review-twostage`）。
+
+项目级默认安装位置：
+
+- `.agents/skills/`：Codex CLI / Trellis agent 兼容目录
+- `.claude/skills/`：Claude Code 项目级 skill 自动发现目录
+
+全局回退安装位置：
+
+- `$CODEX_HOME/skills`，未设置 `CODEX_HOME` 时为 `~/.codex/skills`：Codex CLI 全局 skill 目录
+- `~/.claude/skills`：Claude Code 用户级 skill 目录
+
+如只想安装到单个平台目录，可设置 `TRELLIS_SKILLS_AGENT_TARGETS=codex` 或 `TRELLIS_SKILLS_AGENT_TARGETS=claude`。未设置时默认值为 `both`。
+
+### macOS / Linux / Git Bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```
+
+仅安装 Codex / Trellis agent 目录：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=codex bash
+```
+
+仅安装 Claude Code 目录：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=claude bash
+```
+
+macOS 默认 zsh 也可以直接执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | zsh
+```
+
+本地脚本方式：
+
+```bash
+cd /path/to/trellis-skills/scripts
+bash ./install-trellis-skills.sh
+# 或
+zsh ./install-trellis-skills.sh
+```
+
+### PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
+仅安装 Claude Code 目录：
+
+```powershell
+$env:TRELLIS_SKILLS_AGENT_TARGETS = "claude"
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
+本地脚本方式：
+
+```powershell
+cd C:\path\to\trellis-skills\scripts
+.\install-trellis-skills.ps1
+.\install-trellis-skills.ps1 -AgentTargets claude
+```
+
+脚本主要支持 `bash` 和 `zsh`。如果使用其他不兼容 shell（例如 `sh`/`dash`）执行，脚本会直接提示改用 `bash` 或 `zsh`。脚本会从当前终端读取交互输入，即使通过 `curl | bash` 或 `curl | zsh` 管道执行，也可以正常选择目标目录和语言。
+
+如果在本仓库的 `scripts/` 目录直接执行脚本，脚本会先从 GitHub 更新父级 `trellis-skills` 目录的 `main` 分支源码，然后再按上述逻辑安装。更新使用 fast-forward 合并；如果本地有未提交改动或分支无法快进，脚本会停止，避免覆盖本地修改。
+
+Claude Code 会从项目的 `.claude/skills/<skill-name>/SKILL.md` 自动发现项目级 skill，也会读取用户级 `~/.claude/skills/<skill-name>/SKILL.md`。`agents/openai.yaml` 是面向 Codex/OpenAI 兼容运行器的附加配置，Claude Code 可忽略该文件。
+
+## 进阶机制
+
+### 自我评审循环与设计左移
+
+所有技能支持自我评审循环机制，并把复杂任务的设计、实现步骤和稳定上下文清单前置到规划阶段，确保输出满足小参数模型（如 qwen3.6 35b）的执行要求。
+
+工作原理：
+
+1. **分析**：生成初版需求追踪矩阵、任务拆分和 PRD
+2. **自我评审**：对照 45-60 项检查清单逐项检查
+3. **针对性改进**：只修复标记的问题，不全量重做
+4. **循环收敛**：重复 2-3 轮直到所有检查通过
+5. **用户确认**：达标后才创建任务树
+
+核心优势：
+
+- 小模型友好：消除占位符、提供具体路径和步骤
+- 设计左移：对中/高复杂度任务补充 Context Manifest、Decision Table、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`
+- 质量保证：45-60 项精准检查，问题定位到具体行
+- 成本可控：ROI > 5:1（规划多花 45k tokens，执行少花 200k tokens）
+
+详见：[优化提案](doc/OPTIMIZATION_PROPOSAL.md) 和 [实施总结](doc/FINAL_SUMMARY.md)。
+
+### Trellis 0.6 Beta 适配
+
+本技能集仍兼容 Trellis 的核心任务结构（`.trellis/tasks/`、`.trellis/spec/`、`task.py create --parent`），同时增加对 0.6 beta 工作流的适配：
+
+- 如存在 `.trellis/workflow.md`，优先把它作为项目本地工作流契约读取。
+- 如存在 `.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer`、`.trellis/workspace/`，在规划前纳入上下文。
+- 对依赖 `.trellis/spec/` 的任务先检查 spec 新鲜度；缺失、泛化或过期时，先规划 spec refresh/bootstrap。
+- 对中/高复杂度任务，除 `prd.md` 外，按项目工作流补充 `design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`。
+- 首次初始化优先使用 `trellis init -u <name>`，并按项目需要添加平台参数；`init_developer.py` 只作为旧版兜底。
 
 ## 目录结构
 
@@ -491,6 +549,10 @@ trellis-skills/
 │   │   └── openai.yaml
 │   └── references/
 │       ├── gap-audit-template.md         # 差距审计模板
+│       ├── delivery-loop-policy.md       # 可持续交付 loop 策略
+│       ├── delivery-loop-state-template.md # .trellis/delivery-state.md 模板
+│       ├── delivery-batch-template.md    # 单轮补缺批次模板
+│       ├── delivery-run-log-template.md  # .trellis/delivery-run-log.jsonl 模板
 │       ├── delivery-task-prd-template.md # 补缺任务 PRD 模板
 │       ├── planning-artifacts-template.md # 0.6 beta 设计/实现/上下文清单模板
 │       ├── test-coverage-matrix-template.md  # 测试覆盖矩阵模板

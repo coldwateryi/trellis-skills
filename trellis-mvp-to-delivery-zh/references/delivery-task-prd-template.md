@@ -32,6 +32,27 @@
 - 缺口：
 - 风险：
 
+## 交付 Loop 控制
+
+- 交付批次：<delivery-batch-id>
+- Loop 模式：<L1/L2/L3>
+- 需要 worktree：<是/否；L2/L3 实现任务默认是>
+- 需要 verifier：<是/否；任何改代码任务默认是>
+- 实现技能：`trellis-implement-tdd-zh`
+- 调试技能：`trellis-debug-systematic-zh`
+- 评审技能：`trellis-review-twostage-zh`
+- 人工门：<需要/不需要及原因>
+- 最大修复尝试次数：<默认 2>
+- 最大调试假设轮数：<默认 3>
+- 回滚触发：
+  - verifier critical issue
+  - 测试回归
+  - 改动了 File Manifest 外的文件
+  - 破坏 MVP 兼容性契约
+- 必须更新状态：
+  - 更新 `.trellis/delivery-state.md`
+  - 追加 `.trellis/delivery-run-log.jsonl`
+
 ## 复杂度与规划产物
 
 - 复杂度：<低/中/高，按执行模型能力评估>
@@ -181,6 +202,8 @@
 - 不要新建已有的基类/工具类，必须复用参考实现指向的现有实现。
 - 不要改动文件清单之外的文件。
 - 不要引入未在技术备注列出的新依赖或新框架。
+- 当 `需要 worktree` 为是时，不要在要求的 worktree 之外实现。
+- 未通过 `trellis-review-twostage-zh` 前不要标记任务完成；实现者不能评审自己的工作。
 - <其他项目特定红线>
 
 ## 技术备注

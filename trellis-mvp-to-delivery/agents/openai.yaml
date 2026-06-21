@@ -1,4 +1,4 @@
 interface:
   display_name: "Trellis MVP to Delivery"
-  short_description: "Audit an MVP and plan final delivery"
-  default_prompt: "Use $trellis-mvp-to-delivery to audit this MVP against the requirements and plan final delivery tasks."
+  short_description: "Audit MVP gaps and run a sustainable delivery loop"
+  default_prompt: "Use $trellis-mvp-to-delivery to run an L1 full gap audit, initialize delivery state, and plan the next delivery batch."

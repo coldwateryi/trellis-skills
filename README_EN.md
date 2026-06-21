@@ -2,6 +2,27 @@
 
 This repository provides a set of Trellis workflow skills for Codex CLI, Claude Code, and other skill-capable CLI tools, covering the full lifecycle from raw requirements documents to complete delivery — **Analyze → Plan → Trace → Audit → Close Gaps → Accept**.
 
+## Quick Start
+
+Run the installer from a Trellis project root, then choose Chinese or English skills:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```
+
+If you do not have an MVP yet, start from the requirements document:
+
+```text
+The requirements are in docs/requirements.md.
+Use trellis-zero-to-mvp for read-only analysis and output an MVP task plan. Do not write code yet.
+```
+
+If the MVP is already complete, enter the full delivery loop:
+
+```text
+The MVP is complete. Use trellis-mvp-to-delivery in L1 mode for the first full audit, output the complete Requirements Gap Matrix, and initialize .trellis/delivery-state.md.
+```
+
 ## Skill Overview
 
 | Skill | Language | Purpose |
@@ -17,219 +38,112 @@ This repository provides a set of Trellis workflow skills for Codex CLI, Claude 
 | `trellis-debug-systematic-zh` | ZH | Same as above (Chinese) |
 | `trellis-review-twostage-zh` | ZH | Same as above (Chinese) |
 
-### ✨ New Feature: Self-Review Loop and Design Shift-left
+## Progressive Usage Path
 
-**All skills now support a self-review loop and shift complex-task design, implementation steps, and stable context manifests into the planning phase, so output can meet execution requirements for small parameter models (e.g., qwen3.6 35b).**
+Treat this repository as a delivery pipeline, not as a set of unrelated prompts:
 
-**How It Works**:
-1. 🔍 **Analyze** - Generate initial requirements traceability matrix, task split, and PRDs
-2. ✅ **Self-Review** - Check against 45-60 item checklist
-3. 🔧 **Targeted Improvements** - Fix only marked issues, not full redo
-4. 🔄 **Iterative Convergence** - Repeat 2-3 rounds until all checks pass
-5. ✅ **User Confirmation** - Create task tree only after meeting standards
-
-**Key Benefits**:
-- ✅ **Small Model Friendly** - Eliminates placeholders, provides concrete paths and steps
-- ✅ **Design Shift-left** - Adds Context Manifest, Decision Table, `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` for medium/high complexity tasks
-- ✅ **Quality Assurance** - 45-60 precise checks, issues located to specific lines
-- ✅ **Cost Effective** - ROI > 5:1 (planning costs +45k tokens, execution saves 200k tokens)
-- ✅ **Proven Results** - Execution success rate improves 30%-50%
-
-See: [Optimization Proposal](doc/OPTIMIZATION_PROPOSAL.md) and [Final Summary](doc/FINAL_SUMMARY.md)
-
-## Trellis 0.6 Beta Compatibility
-
-These skills remain compatible with the core Trellis task layout (`.trellis/tasks/`, `.trellis/spec/`, `task.py create --parent`) and now include 0.6 beta workflow support:
-
-- If `.trellis/workflow.md` exists, treat it as the local workflow contract.
-- If `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, or `.trellis/workspace/` exist, include them in planning context.
-- Check `.trellis/spec/` freshness before planning implementation-heavy tasks; plan spec refresh/bootstrap when specs are missing, generic, or stale.
-- For medium/high complexity tasks, add `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` in addition to `prd.md` when the project workflow expects them.
-- Prefer `trellis init -u <name>` for first-time setup, with the project platform flag when needed; keep `init_developer.py` as a legacy fallback.
-
-## Install From GitHub
-
-The installer first checks whether the current directory contains `.trellis/`. If the current directory is an initialized Trellis project, it installs to that project's project-level skill directories by default. If the current directory is not a Trellis project, it asks for the target project directory. If the user-provided directory still does not contain `.trellis/`, the installer asks whether to install to global skill directories instead.
-
-It then asks whether to install Chinese skills: yes installs `trellis-zero-to-mvp-zh`, `trellis-mvp-to-delivery-zh`, and the three execution-phase skills (`trellis-implement-tdd-zh`, `trellis-debug-systematic-zh`, `trellis-review-twostage-zh`); no installs only the English variants (5 skills total).
-
-Default project-level install locations:
-
-- `.agents/skills/`: Codex CLI / Trellis agent compatible directory
-- `.claude/skills/`: Claude Code project-level skill discovery directory
-
-Global fallback install locations:
-
-- `$CODEX_HOME/skills`, or `~/.codex/skills` when `CODEX_HOME` is unset: Codex CLI global skill directory
-- `~/.claude/skills`: Claude Code user-level skill directory
-
-To install to only one platform directory, set `TRELLIS_SKILLS_AGENT_TARGETS=codex` or `TRELLIS_SKILLS_AGENT_TARGETS=claude`. When unset, the default is `both`.
-
-If you run the script directly from this repository's `scripts/` directory, it first updates the parent `trellis-skills` directory from the GitHub `main` branch, then continues with the install flow above. The update uses fast-forward merge; if local changes exist or the branch cannot fast-forward, the script stops instead of overwriting local work.
-
-### macOS / Linux / Git Bash
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```text
+Source requirements
+  └─ trellis-zero-to-mvp: read-only analysis → MVP task tree
+       └─ trellis-implement-tdd / debug-systematic / review-twostage: build the MVP
+            └─ trellis-mvp-to-delivery: L1 full audit → L2 gap batches → delta audit → final acceptance
 ```
 
-Install only to the Codex / Trellis agent directory:
+### Which skill should I use?
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=codex bash
+| Current state | Skill to use | Output for this round |
+| --- | --- | --- |
+| You only have requirements and no Trellis task tree yet | `trellis-zero-to-mvp` | Requirements Traceability Matrix, MVP boundary, parent/child task PRDs |
+| You have an MVP and need to compare it with full requirements | `trellis-mvp-to-delivery` | Complete Requirements Gap Matrix, delivery state, first batch recommendation |
+| You have a Trellis subtask and need to write code | `trellis-implement-tdd` | AC-by-AC red/green implementation and tests |
+| A test should be green but stays red, or self-check fails | `trellis-debug-systematic` | Stable reproduction, single hypothesis, minimal fix |
+| A subtask is self-check green and needs a gate | `trellis-review-twostage` | Stage 1 spec compliance + Stage 2 code quality review |
+
+### Path A: Start from complete requirements
+
+Use this for new projects, rewrite projects, or any project that has requirements but not yet a Trellis task tree.
+
+```text
+The requirements are in docs/requirements.md.
+
+Use trellis-zero-to-mvp for read-only analysis:
+- Assign stable REQ IDs to every source requirement
+- Output a Requirements Traceability Matrix
+- Define the MVP boundary and explicitly excluded scope
+- Split Trellis parent and child tasks in dependency order
+- Do not write code; wait for my confirmation before creating the task tree
 ```
 
-Install only to the Claude Code directory:
+`trellis-zero-to-mvp` runs a self-review loop during planning. It checks placeholders, file paths, implementation steps, acceptance assertions, and whether complex work is split small enough for execution models. After you confirm the analysis, ask it to create the Trellis task tree.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=claude bash
-```
+If the project already has manually implemented functionality, use this version:
 
-macOS default zsh also works:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | zsh
-```
-
-The script primarily supports `bash` and `zsh`. If it is run with another incompatible shell such as `sh` or `dash`, it exits with a prompt to use `bash` or `zsh`. The script reads interactive answers from the current terminal, so target-directory and language prompts work even when the installer is run through `curl | bash` or `curl | zsh`.
-
-During installation, the script prints step logs with a `[trellis-skills]` prefix. If something fails, keep the full installer output so the shell, working directory, target directory, source location, and failed step can be diagnosed.
-
-Local script mode:
-
-```bash
-cd /path/to/trellis-skills/scripts
-bash ./install-trellis-skills.sh
-# or
-zsh ./install-trellis-skills.sh
-
-# Install only to the Claude Code project-level skill directory
-TRELLIS_SKILLS_AGENT_TARGETS=claude bash ./install-trellis-skills.sh
-```
-
-### PowerShell
-
-```powershell
-irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
-```
-
-Install only to the Claude Code directory:
-
-```powershell
-$env:TRELLIS_SKILLS_AGENT_TARGETS = "claude"
-irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
-```
-
-Local script mode:
-
-```powershell
-cd C:\path\to\trellis-skills\scripts
-.\install-trellis-skills.ps1
-
-# Install only to the Claude Code project-level skill directory
-.\install-trellis-skills.ps1 -AgentTargets claude
-```
-
-## Claude Code Compatibility
-
-Claude Code discovers project-level skills from `.claude/skills/<skill-name>/SKILL.md` and user-level skills from `~/.claude/skills/<skill-name>/SKILL.md`. The four skill directories already contain the required `SKILL.md` entry point and reference files; `agents/openai.yaml` is additional configuration for Codex/OpenAI-compatible runners and can be ignored by Claude Code.
-
-For project-level installs, the installers write to both `.agents/skills/` and `.claude/skills/` by default, so the same Trellis project can be recognized by Codex CLI and Claude Code. The installers use global directories only when both the current directory and the user-provided directory are not Trellis projects and the user confirms the global fallback. If a team uses only one runner, limit the target with `TRELLIS_SKILLS_AGENT_TARGETS` or the PowerShell `-AgentTargets` parameter.
-
-## Recommended Workflow
-
-```
-Requirements ──→ [Zero to MVP] ──→ MVP Task Tree ──→ Build the MVP
-                                                          │
-                                                          ▼
-                              Requirements ──→ [MVP to Delivery] ──→ Gap Tasks ──→ Delivery & Acceptance
-```
-
-### Phase 1: Zero → MVP
-
-When you have a complete requirements document (PRD / product brief / feature spec) and haven't started coding yet:
-
-1. Place the requirements document in the project
-2. Invoke `trellis-zero-to-mvp` (or the Chinese variant `trellis-zero-to-mvp-zh`)
-3. The skill performs a **read-only analysis** and outputs:
-   - Requirements Traceability Matrix
-   - Module dependency graph
-   - Capability-based task split
-   - Dependency-ordered MVP development sequence
-   - Draft parent and child PRDs
-4. **After confirming the analysis**, the skill creates the Trellis task tree
-5. Start coding in the recommended order
-
-### Phase 2: MVP → Delivery
-
-After the MVP is implemented, return to the source requirements document for complete delivery:
-
-1. Invoke `trellis-mvp-to-delivery` (or the Chinese variant `trellis-mvp-to-delivery-zh`)
-2. The skill performs a **gap audit**, checking the MVP against every requirement:
-   - Requirements Traceability Matrix (with DONE / PARTIAL / MISSING / UNTESTED / UNCLEAR statuses)
-   - MVP completion summary
-   - Dependency-ordered gap-closing task plan
-   - Automated test coverage requirements
-3. **After confirming the audit**, the skill creates gap-closing Trellis tasks
-4. Close gaps by priority, add tests, and run final acceptance
-
-## Recommended Usage
-
-### Scenario 1: New Project Kickoff
-
-```
-We're starting a new project. The requirements are in docs/requirements.md.
-
-Use trellis-zero-to-mvp to turn this into an MVP task plan.
-```
-
-The skill starts with a read-only analysis — no code is written. Only after you confirm the task split and MVP boundary will it create the Trellis task tree.
-
-**✨ Self-Review Loop**: The analysis process automatically performs 2-3 rounds of quality checks to ensure:
-- ✅ All `<...>` placeholders replaced with concrete values
-- ✅ File Manifest contains precise file paths
-- ✅ Implementation Steps are executable concrete actions
-- ✅ Complex tasks split to fit small model execution
-
-### Scenario 2: MVP Ready for Full Delivery
-
-```
-The MVP is complete. Source requirements are in docs/requirements.md.
-
-Use trellis-mvp-to-delivery to audit the MVP and plan full delivery.
-```
-
-The skill checks existing implementation and tests against the requirements document, identifies every gap, and creates gap-closing tasks.
-
-**✨ Self-Review Loop**: The audit process automatically performs quality checks to ensure:
-- ✅ Each DONE status has implementation evidence and test evidence
-- ✅ Gap-closing task PRDs explicitly state not breaking MVP behavior
-- ✅ Regression Tests cover MVP core flows
-- ✅ Bug fix branch logic clearly pinned down
-
-### Scenario 3: Partially Implemented Project Before MVP
-
-```
+```text
 Requirements are in docs/requirements.md. The project already has some manually implemented functionality, and trellis init was run midway.
 
 Use trellis-zero-to-mvp to inspect existing code, .trellis/spec/, and the requirements document, then plan only the remaining MVP tasks.
+Mark implemented requirements with evidence as DONE; implemented requirements without tests as UNTESTED; create follow-up tasks only for PARTIAL and MISSING items.
 ```
 
-The skill first produces an Existing Implementation Baseline, then handles requirement statuses as follows:
+### Path B: MVP is complete, enter the sustainable Delivery Loop
 
-- `DONE`: creates no implementation task; uses evidence as an existing dependency.
-- `UNTESTED`: creates only test coverage tasks.
-- `PARTIAL`: creates only gap-closing tasks for missing behavior.
-- `MISSING`: creates new implementation tasks.
+Use this once the MVP exists and you need to move from "usable" to "fully delivered". `trellis-mvp-to-delivery` is no longer just a one-shot audit. It is the outer delivery state machine: first compare the full requirements against the MVP, then advance bounded batches.
 
-### Scenario 4: Iterative Development
+#### Round 1: L1 full audit
 
-In practice, the two skills can be used in cycles:
+The first run must still compare the MVP against the real requirements and output a complete gap matrix. It initializes `.trellis/delivery-state.md` and `.trellis/delivery-run-log.jsonl` as persistent memory for later loops.
 
-1. Use `zero-to-mvp` to plan the first shippable version
-2. Build the MVP
-3. Use `mvp-to-delivery` to audit gaps and close them for full delivery
-4. If new requirements arrive, return to step 1 and run `zero-to-mvp` again for the new scope
+```text
+The MVP is complete. Use trellis-mvp-to-delivery in L1 mode for the first full audit:
+- Compare docs/requirements.md against the current MVP
+- Output the complete Requirements Gap Matrix, covering every source requirement
+- Mark DONE / PARTIAL / MISSING / UNTESTED / UNCLEAR
+- Initialize .trellis/delivery-state.md
+- Initialize .trellis/delivery-run-log.jsonl
+- Recommend the first gap batch only; do not create implementation tasks
+```
+
+#### Round 2-N: L2 batch progress
+
+After you confirm the gap matrix, advance one batch per round. The default batch limit is 3 gap tasks and at most 1 high-risk task; code-changing tasks must require worktree, verifier, and the `trellis-review-twostage` gate.
+
+```text
+Use trellis-mvp-to-delivery in L2 mode to advance the current delivery batch:
+- Read .trellis/delivery-state.md
+- Process only current_batch
+- Require worktree + verifier + trellis-review-twostage for every code-changing task
+- Do not implement functionality directly; only create or update Trellis tasks and PRDs for this batch
+- Update .trellis/delivery-state.md
+- Append .trellis/delivery-run-log.jsonl
+```
+
+#### Later audits: delta audit or early exit
+
+Once delivery state exists and source requirements have not changed, later runs should not repeat full audit. They should inspect only code, tests, and Trellis task changes related to open gaps since `last_audited_commit`; if nothing relevant changed, they should early-exit.
+
+```text
+Use trellis-mvp-to-delivery to run a delta audit:
+- Read last_audited_commit from .trellis/delivery-state.md
+- Inspect code, tests, and task changes related to open gaps from last_audited_commit to HEAD
+- Update only affected REQ entries in the Requirements Gap Matrix
+- If there are no relevant changes, early-exit and only append .trellis/delivery-run-log.jsonl
+```
+
+#### Closing round: final acceptance
+
+After all P0/P1 gaps are done or explicitly deferred by a human, run final acceptance. Final acceptance must not add features; it only classifies blocking bugs.
+
+```text
+All P0/P1 gap tasks are complete or explicitly deferred.
+
+Use trellis-mvp-to-delivery for final acceptance:
+- Read final-acceptance-template.md
+- Verify every in-scope REQ in the Requirements Gap Matrix
+- Summarize automated test, regression test, and manual acceptance evidence
+- Do not add functionality; only classify blocking bugs
+```
+
+Most projects should converge in 3-6 outer loops: first full audit → P0/foundation batch → P1/core behavior batch → regression/final acceptance. Pause for human confirmation if the loop exceeds 6 rounds, the same REQ has no progress for 2 rounds, a verifier fails twice, or review reports critical.
 
 ## Execution-Phase Skills Detailed Usage
 
@@ -239,15 +153,15 @@ After planning skills (`zero-to-mvp` / `mvp-to-delivery`) create the task tree, 
 
 | Skill | Trigger Timing | Core Value | Small-Model Adaptation |
 | --- | --- | --- | --- |
-| `trellis-implement-tdd` | Subtask enters implementation | Turn "implement requirement" into "make test green" mechanical loop, objective signal per step | ✅ Narrow path + objective signals, small model just chases "make assertion green" |
-| `trellis-debug-systematic` | Test should be green but stays red, self-check fails | Rigid 4-step script (reproduce→pinpoint→verify→fix), prevents small model from changing everywhere | ✅ Iron rules: "one change at a time, must re-run after change, no guessing" |
-| `trellis-review-twostage` | Implementation self-check all green | Spec compliance (small model) + code quality (strong model) two-stage gate, critical blocks | ✅ Role layering: Stage 1 small model, Stage 2 strong model |
+| `trellis-implement-tdd` | Subtask enters implementation | Turn "implement requirement" into "make test green" mechanical loop, objective signal per step | Narrow path + objective signals; small model only chases "make assertion green" |
+| `trellis-debug-systematic` | Test should be green but stays red, self-check fails | Rigid 4-step script (reproduce→pinpoint→verify→fix), prevents small model from changing everywhere | Iron rules: one change at a time, re-run after every change, no guessing |
+| `trellis-review-twostage` | Implementation self-check all green | Spec compliance (small model) + code quality (strong model) two-stage gate, critical blocks | Role layering: Stage 1 small model, Stage 2 strong model |
 
 ### Typical Workflow: From Task to Done
 
 Assume you've created a task tree with `trellis-zero-to-mvp` and now want to implement the first subtask:
 
-#### 1️⃣ Start TDD Loop
+#### 1. Start TDD Loop
 
 ```
 Now implement subtask .trellis/tasks/feature-user-auth/01-implement-login/
@@ -272,7 +186,7 @@ Please use trellis-implement-tdd for TDD landing.
 - Don't touch files outside file manifest / forbidden list
 - Don't execute `git commit` (Trellis implementation executors forbid commit)
 
-#### 2️⃣ Debug When Red
+#### 2. Debug When Red
 
 If an AC's test should be green but stays red, or self-check command fails:
 
@@ -298,7 +212,7 @@ Please use trellis-debug-systematic to pinpoint and fix.
 - No guessing (pinpointing uses only three tricks)
 - Beyond 3 rounds still red → Stop, escalate to strong model
 
-#### 3️⃣ Review After Done
+#### 3. Review After Done
 
 After all ACs turn green and self-check all green:
 
@@ -344,62 +258,109 @@ Please use trellis-review-twostage to review this change.
 - Execution phase only faces narrow-path mechanical tasks like "make assertion green", "change one at a time", "check list item by item"
 - Each step has objective signal (test red/green, command exit code), doesn't rely on small model's subjective judgment
 
-### Auto-Trigger Scenario Prompts
+### As-Automatic-As-Possible Mode
 
-To avoid manually invoking execution-phase skills per subtask, use the following **auto-orchestration prompts** to let AI automatically drive the complete implement→debug→review loop:
+"As automatic as possible" means the AI advances to the next safety gate, not that it skips confirmation gates unattended. Use it when the task tree is large and you want to avoid manually naming each skill.
 
-#### English Auto-Orchestration Prompt
+The AI should continue automatically by default for:
 
-\`\`\`
-Task tree created. Now automatically land all subtasks in dependency order, for each subtask:
+- Reading requirements, code, tests, `.trellis/`, and related specs.
+- Selecting the next dependency-ready subtask or delivery batch.
+- Running `trellis-implement-tdd` → `trellis-debug-systematic` → `trellis-review-twostage` for implementation tasks.
+- Debugging self-check failures, with a maximum of 3 hypothesis/fix rounds per task.
+- Advancing to the next ready task or next delta audit after review passes.
+- Appending `.trellis/delivery-run-log.jsonl` and updating `.trellis/delivery-state.md`.
 
-1. Use trellis-implement-tdd for TDD implementation, AC-by-AC RED-GREEN loop
-2. When test should be green but stays red or self-check fails, auto-switch to trellis-debug-systematic
-3. After implementation self-check all green, auto-invoke trellis-review-twostage for two-stage review
-4. After review passes, advance task status and continue to next subtask
-5. After all subtasks complete, use trellis-mvp-to-delivery for final acceptance
+The AI must stop and ask at these safety gates:
 
-Please execute the above flow automatically, stop to ask when hitting points requiring human decision.
-\`\`\`
+- After first read-only analysis, before creating or modifying the Trellis task tree.
+- After the first `mvp-to-delivery` L1 full audit, before confirming the gap matrix and first gap batch.
+- When a task needs files outside the File Manifest, or requirement/schema/auth/payment/security/infrastructure decisions are unclear.
+- When a verifier fails twice, debugging exceeds 3 rounds, or review reports critical.
+- When a small model reaches `trellis-review-twostage` Stage 2, or design-quality judgment requires a strong model.
+- Before any destructive git operation, commit, push, tag, or release unless the user explicitly authorized it in the current request.
+- When the outer delivery loop exceeds 6 rounds, or the same `REQ-*` has no progress for 2 rounds.
 
-#### Small-Model Auto-Prompt (Role Layering)
+#### Example A: Requirements to MVP, Mostly Automatic
 
-If using qwen3.6 35b or similar small models, explicitly specify role layering in the prompt:
+```text
+Please run the Trellis requirements landing flow as automatically as possible, advancing to the next safety gate.
 
-\`\`\`
-Task tree created. Now I (qwen3.6 35b small model) handle implementation and mechanical checks, auto-prompt to switch to strong model when hitting judgment-requiring points.
+Goal:
+- Requirements are in docs/requirements.md
+- Create the MVP task tree first
+- Then land all MVP subtasks in dependency order
+- After the MVP is complete, run trellis-mvp-to-delivery L1 full audit
+
+Execution rules:
+1. Use trellis-zero-to-mvp for read-only analysis first, outputting Requirements Traceability Matrix, MVP boundary, task split, and draft PRDs.
+2. Stop before creating or modifying the Trellis task tree, and wait for my confirmation.
+3. After I confirm, automatically select the next ready subtask in dependency order.
+4. For each subtask, use trellis-implement-tdd for AC-by-AC red/green loops.
+5. When a test should be green but stays red or self-check fails, automatically use trellis-debug-systematic; stop if still failing after 3 rounds.
+6. After subtask self-check is green, automatically use trellis-review-twostage; stop when Stage 2 needs a strong model.
+7. After review passes, advance task status and continue to the next subtask.
+8. After all MVP subtasks are done, use trellis-mvp-to-delivery for L1 full audit, output the complete Requirements Gap Matrix, and initialize .trellis/delivery-state.md plus .trellis/delivery-run-log.jsonl.
+
+Except for the safety gates above, do not ask me at every step.
+```
+
+#### Example B: Existing MVP, Mostly Automatic Delivery Loop
+
+```text
+The MVP is complete. Please run the trellis-mvp-to-delivery delivery loop as automatically as possible, advancing to the next safety gate.
+
+Goal:
+- Compare docs/requirements.md against the current MVP
+- Complete the first L1 full audit
+- Close P0/P1 gaps by batch
+- Run delta audit after each batch
+- Run final acceptance when conditions are met
+
+Execution rules:
+1. If .trellis/delivery-state.md does not exist, run L1 full audit first, output the complete Requirements Gap Matrix, and initialize delivery state/run log.
+2. After L1 audit, stop and wait for my confirmation on the gap matrix, deferred items, and first gap batch.
+3. After I confirm, enter L2 batch progress; process only current_batch per round, max 3 gap tasks, max 1 high-risk task.
+4. Code-changing tasks must use an isolated worktree and require verifier + trellis-review-twostage.
+5. For each task in the batch, automatically run trellis-implement-tdd → trellis-debug-systematic → trellis-review-twostage.
+6. After the batch is complete, automatically run delta audit and update Requirements Gap Matrix, .trellis/delivery-state.md, and .trellis/delivery-run-log.jsonl.
+7. If there are no relevant changes, early-exit and only append run log.
+8. When all P0/P1 gaps are DONE or explicitly deferred by me, run final acceptance. Final acceptance must not add functionality; only classify blocking bugs.
+
+Stop on critical review, two verifier failures, the same REQ having no progress for two rounds, a needed change outside File Manifest, or outer loop > 6 rounds.
+```
+
+#### Example C: Existing Task Tree, One Subtask Only
+
+```text
+For subtask .trellis/tasks/feature-user-auth/01-implement-login/, run the as-automatic-as-possible loop:
+
+trellis-implement-tdd (TDD implementation) → trellis-debug-systematic (when red) → trellis-review-twostage (review) → advance status.
+
+Only handle this subtask. Stop on critical review, debugging beyond 3 rounds, required changes outside File Manifest, or Stage 2 judgment needing a strong model.
+```
+
+#### Small-Model Auto-Prompt
+
+```text
+Task tree created. I am using qwen3.6 35b as the small model for implementation and mechanical checks; prompt me to switch to a strong model when a judgment-heavy step appears.
 
 For each subtask:
 1. [Small model] Use trellis-implement-tdd for TDD implementation
-2. [Small model] Use trellis-debug-systematic when red (prompt to escalate strong model beyond 3 rounds)
-3. [Small model] trellis-review-twostage Stage 1 spec compliance check
-4. [Prompt to switch strong model] trellis-review-twostage Stage 2 code quality review
+2. [Small model] Use trellis-debug-systematic when red; prompt to escalate beyond 3 rounds
+3. [Small model] Run trellis-review-twostage Stage 1 spec compliance check
+4. [Prompt to switch strong model] Run trellis-review-twostage Stage 2 code quality review
 5. [Small model] Advance task status after review passes
 
-Please execute per above role assignment, prompt "switch to strong model to continue Stage 2 review" when reaching Stage 2 review.
-\`\`\`
+Execute per this role assignment, and prompt "switch to strong model to continue Stage 2 review" when reaching Stage 2.
+```
 
-#### Single-Subtask Quick Trigger
+Value of this mode:
 
-If task tree already exists and you only want to execute the full loop for one specific subtask:
-
-\`\`\`
-For subtask .trellis/tasks/feature-user-auth/01-implement-login/ execute full implementation loop:
-
-trellis-implement-tdd (TDD implementation) → trellis-debug-systematic (when red) → trellis-review-twostage (review) → advance status
-
-Please execute automatically, report when blocked.
-\`\`\`
-
-#### Value of Automation
-
-Benefits of using auto-trigger prompts:
-- ✅ **Reduce manual invocation**: One prompt covers full flow, no need to manually invoke each skill
-- ✅ **Standardize flow**: Guarantee every subtask goes through complete TDD→Debug→Review quality gate
-- ✅ **Auto role switching**: Clear when to use small model, when to escalate strong model, cost optimal
-- ✅ **Batch landing friendly**: With 10+ subtasks in task tree, auto mode significantly improves efficiency
-
-> **Note**: In auto mode, AI still stops to ask when hitting points it cannot automatically decide (review finds critical issue, debugging beyond 3 rounds unresolved, needs to supplement PRD info, etc.), not fully unattended.
+- **Reduce manual invocation**: One prompt covers planning, implementation, debugging, review, and next-round audit.
+- **Standardize flow**: Every subtask passes through the TDD→debug→review quality gate.
+- **Recoverable state**: `.trellis/delivery-state.md` and `.trellis/delivery-run-log.jsonl` support later delta audit.
+- **Clear boundaries**: Automation stays inside confirmed scope and stops for high-risk judgment or destructive operations.
 
 ### Integration with Planning Skills
 
@@ -425,6 +386,117 @@ Both skills use a unified set of requirement statuses:
 | `UNTESTED` | Implemented but lacking adequate tests |
 | `UNCLEAR` | Requirement is not clear enough to implement |
 
+## Installation and Compatibility
+
+The installer first checks whether the current directory contains `.trellis/`. If the current directory is an initialized Trellis project, it installs to that project's project-level skill directories by default. If the current directory is not a Trellis project, it asks for the target project directory. If the user-provided directory still does not contain `.trellis/`, the installer asks whether to install to global skill directories instead.
+
+It then asks whether to install Chinese skills: yes installs `trellis-zero-to-mvp-zh`, `trellis-mvp-to-delivery-zh`, and the three execution-phase skills (`trellis-implement-tdd-zh`, `trellis-debug-systematic-zh`, `trellis-review-twostage-zh`); no installs only the English variants (5 skills total).
+
+Default project-level install locations:
+
+- `.agents/skills/`: Codex CLI / Trellis agent compatible directory
+- `.claude/skills/`: Claude Code project-level skill discovery directory
+
+Global fallback install locations:
+
+- `$CODEX_HOME/skills`, or `~/.codex/skills` when `CODEX_HOME` is unset: Codex CLI global skill directory
+- `~/.claude/skills`: Claude Code user-level skill directory
+
+To install to only one platform directory, set `TRELLIS_SKILLS_AGENT_TARGETS=codex` or `TRELLIS_SKILLS_AGENT_TARGETS=claude`. When unset, the default is `both`.
+
+### macOS / Linux / Git Bash
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | bash
+```
+
+Install only to the Codex / Trellis agent directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=codex bash
+```
+
+Install only to the Claude Code directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | TRELLIS_SKILLS_AGENT_TARGETS=claude bash
+```
+
+macOS default zsh also works:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.sh | zsh
+```
+
+Local script mode:
+
+```bash
+cd /path/to/trellis-skills/scripts
+bash ./install-trellis-skills.sh
+# or
+zsh ./install-trellis-skills.sh
+```
+
+### PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
+Install only to the Claude Code directory:
+
+```powershell
+$env:TRELLIS_SKILLS_AGENT_TARGETS = "claude"
+irm https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scripts/install-trellis-skills.ps1 | iex
+```
+
+Local script mode:
+
+```powershell
+cd C:\path\to\trellis-skills\scripts
+.\install-trellis-skills.ps1
+.\install-trellis-skills.ps1 -AgentTargets claude
+```
+
+The script primarily supports `bash` and `zsh`. If it is run with another incompatible shell such as `sh` or `dash`, it exits with a prompt to use `bash` or `zsh`. The script reads interactive answers from the current terminal, so target-directory and language prompts work even when the installer is run through `curl | bash` or `curl | zsh`.
+
+If you run the script directly from this repository's `scripts/` directory, it first updates the parent `trellis-skills` directory from the GitHub `main` branch, then continues with the install flow above. The update uses fast-forward merge; if local changes exist or the branch cannot fast-forward, the script stops instead of overwriting local work.
+
+Claude Code discovers project-level skills from `.claude/skills/<skill-name>/SKILL.md` and user-level skills from `~/.claude/skills/<skill-name>/SKILL.md`. `agents/openai.yaml` is additional configuration for Codex/OpenAI-compatible runners and can be ignored by Claude Code.
+
+## Advanced Mechanisms
+
+### Self-Review Loop and Design Shift-left
+
+All skills support a self-review loop and shift complex-task design, implementation steps, and stable context manifests into the planning phase, so output can meet execution requirements for small parameter models such as qwen3.6 35b.
+
+How it works:
+
+1. **Analyze**: generate the first requirements traceability matrix, task split, and PRDs
+2. **Self-review**: check against a 45-60 item checklist
+3. **Targeted improvement**: fix only marked issues, not a full redo
+4. **Converge**: repeat 2-3 rounds until checks pass
+5. **User confirmation**: create the task tree only after the output meets standards
+
+Key benefits:
+
+- Small-model friendly: removes placeholders and provides concrete paths and steps
+- Design shift-left: adds Context Manifest, Decision Table, `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` for medium/high complexity tasks
+- Quality assurance: precise checks with issues located to specific lines
+- Cost control: ROI > 5:1 (planning costs +45k tokens, execution saves 200k tokens)
+
+See [Optimization Proposal](doc/OPTIMIZATION_PROPOSAL.md) and [Final Summary](doc/FINAL_SUMMARY.md).
+
+### Trellis 0.6 Beta Compatibility
+
+These skills remain compatible with the core Trellis task layout (`.trellis/tasks/`, `.trellis/spec/`, `task.py create --parent`) and include 0.6 beta workflow support:
+
+- If `.trellis/workflow.md` exists, treat it as the local workflow contract.
+- If `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, or `.trellis/workspace/` exist, include them in planning context.
+- Check `.trellis/spec/` freshness before planning implementation-heavy tasks; plan spec refresh/bootstrap when specs are missing, generic, or stale.
+- For medium/high complexity tasks, add `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` in addition to `prd.md` when the project workflow expects them.
+- Prefer `trellis init -u <name>` for first-time setup, with the project platform flag when needed; keep `init_developer.py` as a legacy fallback.
+
 ## Directory Structure
 
 ```
@@ -447,6 +519,10 @@ trellis-skills/
 │   │   └── openai.yaml
 │   └── references/
 │       ├── gap-audit-template.md         # Gap audit template
+│       ├── delivery-loop-policy.md       # Sustainable delivery loop policy
+│       ├── delivery-loop-state-template.md # .trellis/delivery-state.md template
+│       ├── delivery-batch-template.md    # Single-run gap batch template
+│       ├── delivery-run-log-template.md  # .trellis/delivery-run-log.jsonl template
 │       ├── delivery-task-prd-template.md # Gap-closing task PRD template
 │       ├── planning-artifacts-template.md # 0.6 beta design/implementation/context manifest template
 │       ├── test-coverage-matrix-template.md  # Test coverage matrix template

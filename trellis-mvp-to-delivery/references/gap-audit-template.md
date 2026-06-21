@@ -12,6 +12,17 @@ Use this template for the first pass after an MVP exists. Do not write code or c
 | Developer identity | <from `.trellis/.developer` or "not initialized"> | <action needed if missing> |
 | Spec freshness | <fresh/stale/missing/unknown> | <spec files read or refresh task needed> |
 
+## Delivery Loop Metadata
+
+| Item | Value | Notes |
+| --- | --- | --- |
+| Loop mode | <L1/L2/L3> | <why this mode> |
+| Audit scope | <full/delta> | <first run must be full> |
+| MVP baseline commit | <git-sha> | <source of baseline> |
+| Last audited commit | <git-sha or none> | <from delivery state if present> |
+| Current round | <number> | <from delivery state or 1> |
+| Early-exit eligible | <yes/no> | <reason> |
+
 ## Execution Profile
 
 | Profile | Value |
@@ -60,6 +71,14 @@ List only questions that block implementation. Do not ask questions answerable f
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 |  |  |  |  |  |  | P0 | low | prd.md |
 
+## Delivery Batch Recommendation
+
+Use `delivery-batch-template.md` to recommend at most one batch for this run.
+
+| Batch ID | Scope | Included REQs | Excluded REQs | Risk | Next Action |
+| --- | --- | --- | --- | --- | --- |
+| delivery-batch-001 | <P0 foundation / P1 core behavior / regression / final acceptance> | <REQ list> | <REQ list + reason> | low/medium/high | create-tasks/update-existing-tasks/pause |
+
 Complexity (assessed against the execution model's capability; drives split granularity and PRD detail):
 
 - `low`: standard CRUD, config, an existing example to copy. A weak model can do it independently.
@@ -81,5 +100,5 @@ For every medium/high complexity gap-closing task, also draft the required Trell
 End with:
 
 ```text
-Confirm this gap audit and delivery task plan? If yes, I will create Trellis tasks and PRDs without implementing features yet.
+Confirm this gap audit, delivery state update, and selected batch? If yes, I will create or update Trellis tasks and PRDs for this batch without implementing features yet.
 ```

@@ -32,6 +32,27 @@ Close the verified gap for these requirements without expanding unrelated scope.
 - Gap:
 - Risk:
 
+## Delivery Loop Controls
+
+- Delivery batch: <delivery-batch-id>
+- Loop mode: <L1/L2/L3>
+- Worktree required: <yes/no; yes for L2/L3 implementation work>
+- Verifier required: <yes/no; yes for any code-changing task>
+- Implementation skill: `trellis-implement-tdd`
+- Debug skill: `trellis-debug-systematic`
+- Review skill: `trellis-review-twostage`
+- Human gate: <required/not required and reason>
+- Max fix attempts: <default 2>
+- Max debug hypothesis rounds: <default 3>
+- Rollback trigger:
+  - verifier critical issue
+  - test regression
+  - file outside File Manifest changed
+  - MVP compatibility contract broken
+- State update required:
+  - update `.trellis/delivery-state.md`
+  - append `.trellis/delivery-run-log.jsonl`
+
 ## Complexity and Planning Artifacts
 
 - Complexity: <low/medium/high, assessed against the execution model capability>
@@ -173,6 +194,8 @@ Negative constraints for the execution model, to stop it improvising:
 - Do not create base/utility classes that already exist; reuse the existing ones the Reference Implementation points to.
 - Do not touch files outside the File Manifest.
 - Do not introduce new dependencies or frameworks not listed in Technical Notes.
+- Do not implement outside the required worktree when `Worktree required` is yes.
+- Do not mark this task complete without `trellis-review-twostage` passing; the implementer must not grade its own work.
 - <other project-specific red lines>
 
 ## Technical Notes

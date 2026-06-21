@@ -12,6 +12,17 @@
 | Developer identity | <来自 `.trellis/.developer` 或 "not initialized"> | <缺失时要做什么> |
 | Spec 新鲜度 | <fresh/stale/missing/unknown> | <已读 spec 文件或需要的刷新任务> |
 
+## 交付 Loop 元数据
+
+| 项目 | 值 | 备注 |
+| --- | --- | --- |
+| Loop 模式 | <L1/L2/L3> | <为什么选择此模式> |
+| 审计范围 | <full/delta> | <首次运行必须 full> |
+| MVP baseline commit | <git-sha> | <基线来源> |
+| Last audited commit | <git-sha or none> | <来自 delivery state，如存在> |
+| 当前轮次 | <number> | <来自 delivery state 或 1> |
+| 是否可 early-exit | <yes/no> | <原因> |
+
 ## 执行模型画像
 
 | 项目 | 值 |
@@ -60,6 +71,14 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 |  |  |  |  |  |  | P0 | 低 | prd.md |
 
+## 交付批次建议
+
+使用 `delivery-batch-template.md` 为本轮最多推荐一个批次。
+
+| Batch ID | 范围 | 纳入 REQ | 排除 REQ | 风险 | 下一步动作 |
+| --- | --- | --- | --- | --- | --- |
+| delivery-batch-001 | <P0 foundation / P1 core behavior / regression / final acceptance> | <REQ list> | <REQ list + reason> | low/medium/high | create-tasks/update-existing-tasks/pause |
+
 复杂度（按执行模型能力评估，决定拆分粒度和 PRD 详细度）：
 
 - `低`：标准 CRUD、配置、有现成范例可照抄。弱模型可独立完成。
@@ -81,5 +100,5 @@
 最后输出：
 
 ```text
-请确认这个差距审计和交付任务计划。如果确认，我将创建 Trellis tasks 和 PRD，但暂不实现功能。
+请确认这个差距审计、交付状态更新和选定批次。如果确认，我将为本批次创建或更新 Trellis tasks 和 PRD，但暂不实现功能。
 ```
