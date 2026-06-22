@@ -79,9 +79,13 @@ function Test-TrellisSkillsSource {
         "trellis-implement-tdd",
         "trellis-debug-systematic",
         "trellis-review-twostage",
+        "trellis-delivery-controller",
+        "trellis-skill-assimilator",
         "trellis-implement-tdd-zh",
         "trellis-debug-systematic-zh",
-        "trellis-review-twostage-zh"
+        "trellis-review-twostage-zh",
+        "trellis-delivery-controller-zh",
+        "trellis-skill-assimilator-zh"
     )
 
     foreach ($dir in $requiredDirs) {
@@ -241,7 +245,9 @@ function Install-TrellisSkills {
             "trellis-mvp-to-delivery-zh",
             "trellis-implement-tdd-zh",
             "trellis-debug-systematic-zh",
-            "trellis-review-twostage-zh"
+            "trellis-review-twostage-zh",
+            "trellis-delivery-controller-zh",
+            "trellis-skill-assimilator-zh"
         )
     }
     else {
@@ -250,7 +256,9 @@ function Install-TrellisSkills {
             "trellis-mvp-to-delivery",
             "trellis-implement-tdd",
             "trellis-debug-systematic",
-            "trellis-review-twostage"
+            "trellis-review-twostage",
+            "trellis-delivery-controller",
+            "trellis-skill-assimilator"
         )
     }
 

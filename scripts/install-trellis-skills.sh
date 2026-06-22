@@ -81,9 +81,13 @@ is_trellis_skills_source() {
     [ -d "$1/trellis-implement-tdd" ] &&
     [ -d "$1/trellis-debug-systematic" ] &&
     [ -d "$1/trellis-review-twostage" ] &&
+    [ -d "$1/trellis-delivery-controller" ] &&
+    [ -d "$1/trellis-skill-assimilator" ] &&
     [ -d "$1/trellis-implement-tdd-zh" ] &&
     [ -d "$1/trellis-debug-systematic-zh" ] &&
-    [ -d "$1/trellis-review-twostage-zh" ]
+    [ -d "$1/trellis-review-twostage-zh" ] &&
+    [ -d "$1/trellis-delivery-controller-zh" ] &&
+    [ -d "$1/trellis-skill-assimilator-zh" ]
 }
 
 detect_local_source_dir() {
@@ -318,6 +322,8 @@ install_skills() {
         'trellis-implement-tdd-zh'
         'trellis-debug-systematic-zh'
         'trellis-review-twostage-zh'
+        'trellis-delivery-controller-zh'
+        'trellis-skill-assimilator-zh'
       )
       ;;
     en)
@@ -327,6 +333,8 @@ install_skills() {
         'trellis-implement-tdd'
         'trellis-debug-systematic'
         'trellis-review-twostage'
+        'trellis-delivery-controller'
+        'trellis-skill-assimilator'
       )
       ;;
     *)

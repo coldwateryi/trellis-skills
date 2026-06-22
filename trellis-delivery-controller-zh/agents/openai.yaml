@@ -1,0 +1,3 @@
+display_name: Trellis Delivery Controller ZH
+short_description: Route Trellis delivery work across planning, implementation, debugging, review, and acceptance stages.
+default_prompt: "Use $trellis-delivery-controller-zh to identify the current Trellis delivery stage and route to the next safe action."

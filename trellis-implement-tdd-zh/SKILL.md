@@ -8,7 +8,7 @@ description: |
 
 ## 概览
 
-把一个已规划好的 Trellis 子任务，按其 `prd.md` 的验收标准（AC）逐条用 TDD 实现：先写失败测试看到红，再写最小代码看到绿，跑自检确认没弄坏别的，记录进度，进入下一条 AC。
+把一个已规划好的 Trellis 子任务，按其 `prd.md` 的验收标准（AC）逐条用 TDD 实现：先写失败测试看到红，再写最小代码看到绿，跑自检确认没弄坏别的，执行最小实现收敛，记录进度，进入下一条 AC。
 
 本技能由**编排会话（主会话，通常强模型）调用**，去驱动**实现执行体（可为 qwen3.6 35b 小模型）**。流程由本技能"夹着走"，执行体只做有客观信号的机械步骤，不需要自己判断"做完没有"——**测试变绿就是做完**。
 
@@ -23,6 +23,8 @@ description: |
 - **不要改文件清单 / 禁止事项之外的文件**。需要动别的文件时，停下来报告，不要自行扩散。
 - **不执行 `git commit` / `git push` / `git merge`**。完成一条 AC 后只做暂存/记录。
 - **红绿信号是唯一完成判据**。测试没看到红，说明测试没写对，停下来修测试，不要写实现去"凑绿"。
+- **绿灯后必须收敛复杂度**。测试全绿不等于可以保留无用抽象、重复实现、新依赖或未来扩展点；按 `references/minimal-implementation-pass.md` 删除不必要复杂度。
+- **不要为了最小化削掉安全和验证**。输入校验、错误处理、安全、可访问性、已声明边界和回归保护不能被简化掉。
 - 测试该绿却仍红、或自检命令失败时，**改用 `trellis-debug-systematic-zh`**，不要在本循环里乱试。
 - 若 `prd.md` 缺少可执行的测试定义或自检命令（违反规划期质量门槛），停止并回报，要求先补规划产物，不要硬上。
 
@@ -51,8 +53,9 @@ description: |
 3. GREEN ── 写"刚好让它变绿"的最小代码；落点按文件清单+编排分层，决策按决策表，不自由发挥
 4. 看绿 ── 再次运行该测试，看到通过（客观信号）
 5. 自检 ── 运行 prd.md「自检命令」全集，确认没弄坏已绿的 AC（无回归）
-6. 记录 ── 在 `<task-dir>/tdd-progress.md` 里把 AC-xxx 标记为 done，暂存改动（不 commit）
-7. 下一条 AC
+6. 收敛 ── 若本 AC 引入抽象/依赖/新文件/重复代码，按 `references/minimal-implementation-pass.md` 删除不必要复杂度
+7. 记录 ── 在 `<task-dir>/tdd-progress.md` 里把 AC-xxx 标记为 done，暂存改动（不 commit）
+8. 下一条 AC
 ```
 
 任一步失败且不显然时 → 触发 `trellis-debug-systematic-zh`，修复后回到失败的那一步重跑。
@@ -62,8 +65,9 @@ description: |
 所有 AC 变绿后：
 
 1. 运行 `prd.md` 全部自检命令 + 项目 lint / type-check，全绿。
-2. 对照 `design.md` 的`挂载点清单`逐项确认已接线（路由注册 / 配置项 / 事件订阅 / DI 绑定等），防止"写了实现没接线"。
-3. `<task-dir>/tdd-progress.md` 所有 AC 为 done，无遗留红灯。
+2. 读取 `references/minimal-implementation-pass.md`，执行完整最小实现收敛：删除无用抽象、避免新依赖、优先标准库/平台/已有依赖，保留安全和验证。
+3. 对照 `design.md` 的`挂载点清单`逐项确认已接线（路由注册 / 配置项 / 事件订阅 / DI 绑定等），防止"写了实现没接线"。
+4. `<task-dir>/tdd-progress.md` 所有 AC 为 done，无遗留红灯，并记录最小实现收敛结果。
 
 ### 4. 交接评审
 
@@ -79,4 +83,5 @@ description: |
 ## 参考文件
 
 - `references/tdd-loop-protocol.md` —— 每条 AC 的红绿循环详规、铁律与反模式，开始实现前读取。
+- `references/minimal-implementation-pass.md` —— 绿灯后删除不必要复杂度、复用标准库/平台/已有依赖、保留安全验证边界时读取。
 - `references/tdd-progress-template.md` —— `<task-dir>/tdd-progress.md` 的只读模板；全程更新任务目录下的副本。

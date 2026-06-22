@@ -1,14 +1,14 @@
 ---
 name: trellis-mvp-to-delivery-zh
 description: |
-  根据源需求文档审计已有 MVP，并运行可持续的 Trellis 完整交付 loop。用于 Codex 被要求在 MVP 后继续、补齐剩余需求、首次执行完整差距审计、维护 Requirements Traceability Matrix、分类 DONE/PARTIAL/MISSING/UNTESTED/UNCLEAR 条目、初始化或更新 .trellis/delivery-state.md、选择 full/delta/early-exit 审计范围、规划有边界的补缺批次、要求 worktree + verifier 门、设计自动化测试覆盖、分类发现的 bug，或在交付前执行最终验收的场景。
+  根据源需求文档审计已有 MVP，并执行 Trellis 完整交付 loop 的审计、状态维护、批次规划和最终验收。用于 Codex 被要求在 MVP 后继续、补齐剩余需求、执行 full/delta 差距审计、维护 Requirements Traceability Matrix、分类 DONE/PARTIAL/MISSING/UNTESTED/UNCLEAR 条目、初始化或更新 .trellis/delivery-state.md、规划有边界的补缺批次、要求 worktree + verifier 门、设计自动化测试覆盖、分类发现的 bug，或在交付前执行最终验收的场景。若由 trellis-delivery-controller-zh 调用，则遵循控制器已选定的 loop 模式和审计范围；若单独调用，则按本技能的 delivery-loop-policy 自行判定。
 ---
 
 # Trellis 从 MVP 到完整交付
 
 ## 概览
 
-通过回到源需求文档、审计证据、维护交付状态文件、规划有边界的补缺批次和最终验收，将已有 MVP 推进到完整交付。第一轮始终是只读审计，并且必须输出完整的"需求 vs MVP"差异矩阵；后续轮次在没有相关变化时可以 delta audit 或 early-exit。
+通过回到源需求文档、审计证据、维护交付状态文件、规划有边界的补缺批次和最终验收，将已有 MVP 推进到完整交付。第一轮始终是只读审计，并且必须输出完整的"需求 vs MVP"差异矩阵；后续轮次在没有相关变化时可以 delta audit 或 early-exit。若使用 `trellis-delivery-controller-zh`，阶段路由和安全门由控制器负责，本技能执行控制器选定的交付阶段。
 
 ## 约束
 
@@ -22,7 +22,7 @@ description: |
 - 不要把所有测试都推到最终兜底任务。每个功能任务必须包含自己的基础测试。
 - 最终验证任务只能在功能补缺任务规划完成后创建。
 - 如果 bug 不阻塞当前需求验收，先分类，再创建或建议独立 bug task。
-- 将本技能视为交付控制器，而不是实现者。实现交给 `trellis-implement-tdd-zh`；调试交给 `trellis-debug-systematic-zh`；完成前评审交给 `trellis-review-twostage-zh`。
+- 将本技能视为交付审计和状态维护者，而不是实现者。阶段路由优先交给 `trellis-delivery-controller-zh`；实现交给 `trellis-implement-tdd-zh`；调试交给 `trellis-debug-systematic-zh`；完成前评审交给 `trellis-review-twostage-zh`。
 - 对 L2/L3 补缺实现任务，必须要求隔离 worktree 和 verifier/review 门。禁止实现者自行标记任务完成。
 - 作为重复运行的 delivery loop 时，必须持续更新 `.trellis/delivery-state.md` 和 `.trellis/delivery-run-log.jsonl`。
 - 当自 `last_audited_commit` 后没有相关变化时 early-exit，禁止无意义 full audit 消耗 token。
@@ -42,9 +42,9 @@ description: |
 
 如果 `.trellis/delivery-run-log.jsonl` 不存在，读取 `references/delivery-run-log-template.md`，并计划在本轮结束时创建它。
 
-### 1. 判断 Loop 模式和审计范围
+### 1. 接收或判断 Loop 模式和审计范围
 
-使用 `references/delivery-loop-policy.md` 选择：
+如果由 `trellis-delivery-controller-zh` 调用，使用控制器已经选定的 loop 模式和审计范围，并只做一致性检查。如果用户直接调用本技能，使用 `references/delivery-loop-policy.md` 选择：
 
 - Loop 模式：`L1` 只审计、`L2` 辅助交付、`L3` 受控持续运行。
 - 审计范围：`full`、`delta` 或 `early-exit`。
@@ -55,7 +55,7 @@ description: |
 - full audit 必须对比源需求和 MVP，并输出完整 Requirements Traceability Matrix。
 - 只有已有 delivery state 且源需求未变化时，才允许 delta audit。
 - 当自 `last_audited_commit` 后需求证据、task 状态、代码或测试都没有相关变化时，追加 run log 并 early-exit。
-- 如果 `current_round` 超过 `max_rounds`、需求 carry-over 过多、verifier 两次失败或存在 critical review issue，停止并询问用户。
+- 如果 `current_round` 超过 `max_rounds`、需求 carry-over 过多、verifier 两次失败或存在 critical review issue，停止并询问用户；若由控制器调用，返回 `pause-human-needed` 所需证据。
 
 ### 2. 发现证据
 
@@ -123,7 +123,7 @@ description: |
 - 只修改标记为问题的部分，不重新审计整个 MVP
 - 保持已通过部分不变
 - 特别关注 MVP 兼容性（不破坏已有行为）
-- 完成改进后，回到步骤2.1，进入第 N+1 轮评审
+- 完成改进后，回到步骤3.1，进入第 N+1 轮评审
 
 **评审循环原则**：
 - 逐轮收敛，不全量重做
@@ -215,7 +215,7 @@ full audit、delta audit、创建任务、暂停、final-acceptance-ready 和 ea
 
 ## 参考文件
 
-- `references/delivery-loop-policy.md` - 每轮重复交付运行前读取，用于选择 loop mode、full/delta/early-exit 审计范围、批次限制和停止条件。
+- `references/delivery-loop-policy.md` - 单独调用本技能或校验控制器路由时读取，用于 loop mode、full/delta/early-exit 审计范围、批次限制和停止条件。
 - `references/delivery-loop-state-template.md` - 初始化或更新 `.trellis/delivery-state.md` 时读取。
 - `references/delivery-batch-template.md` - 为每轮选择唯一补缺批次时读取。
 - `references/delivery-run-log-template.md` - 追加 `.trellis/delivery-run-log.jsonl` 时读取。

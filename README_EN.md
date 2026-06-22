@@ -17,6 +17,12 @@ The requirements are in docs/requirements.md.
 Use trellis-zero-to-mvp for read-only analysis and output an MVP task plan. Do not write code yet.
 ```
 
+If you want one entrypoint that detects the current stage:
+
+```text
+Use trellis-delivery-controller to identify the current Trellis delivery stage and advance to the next safe gate.
+```
+
 If the MVP is already complete, enter the full delivery loop:
 
 ```text
@@ -34,6 +40,8 @@ The MVP is complete. Use trellis-mvp-to-delivery in L1 mode for the first full a
 | `trellis-implement-tdd` | EN | Execution: strict RED-GREEN-REFACTOR per AC (small-model friendly) |
 | `trellis-debug-systematic` | EN | Execution: rigid 4-step debugging — reproduce→pinpoint→verify→fix |
 | `trellis-review-twostage` | EN | Execution: spec compliance (small model) + code quality (strong model) gate |
+| `trellis-delivery-controller` | EN | Entrypoint: detect current stage, route to planning, implementation, debugging, review, or acceptance, and enforce safety gates |
+| `trellis-skill-assimilator` | EN | Governance: analyze external GitHub skill projects and produce capability absorption cards, Trellis targets, and verification requirements |
 | `trellis-implement-tdd-zh` | ZH | Same as above (Chinese) |
 | `trellis-debug-systematic-zh` | ZH | Same as above (Chinese) |
 | `trellis-review-twostage-zh` | ZH | Same as above (Chinese) |
@@ -43,6 +51,9 @@ The MVP is complete. Use trellis-mvp-to-delivery in L1 mode for the first full a
 Treat this repository as a delivery pipeline, not as a set of unrelated prompts:
 
 ```text
+trellis-delivery-controller (optional entrypoint)
+  └─ Detect current stage → route to the next safety gate
+
 Source requirements
   └─ trellis-zero-to-mvp: read-only analysis → MVP task tree
        └─ trellis-implement-tdd / debug-systematic / review-twostage: build the MVP
@@ -58,6 +69,8 @@ Source requirements
 | You have a Trellis subtask and need to write code | `trellis-implement-tdd` | AC-by-AC red/green implementation and tests |
 | A test should be green but stays red, or self-check fails | `trellis-debug-systematic` | Stable reproduction, single hypothesis, minimal fix |
 | A subtask is self-check green and needs a gate | `trellis-review-twostage` | Stage 1 spec compliance + Stage 2 code quality review |
+| You are not sure which stage applies | `trellis-delivery-controller` | Stage decision, next skill, automatic progress boundary, and safety gates |
+| You want to absorb an external GitHub skill project | `trellis-skill-assimilator` | Source analysis, absorption card, Trellis target map, and verification requirements |
 
 ### Path A: Start from complete requirements
 
@@ -87,7 +100,7 @@ Mark implemented requirements with evidence as DONE; implemented requirements wi
 
 ### Path B: MVP is complete, enter the sustainable Delivery Loop
 
-Use this once the MVP exists and you need to move from "usable" to "fully delivered". `trellis-mvp-to-delivery` is no longer just a one-shot audit. It is the outer delivery state machine: first compare the full requirements against the MVP, then advance bounded batches.
+Use this once the MVP exists and you need to move from "usable" to "fully delivered". If you use `trellis-delivery-controller`, the controller decides full/delta/early-exit behavior and safety gates; `trellis-mvp-to-delivery` executes gap audit, delivery state maintenance, batch planning, and final acceptance. If invoked directly, `trellis-mvp-to-delivery` can still choose audit scope from its local delivery policy.
 
 #### Round 1: L1 full audit
 
@@ -556,6 +569,26 @@ trellis-skills/
 │       ├── review-stage1-checklist.md # Stage 1 spec compliance checklist
 │       ├── review-stage2-checklist.md # Stage 2 code quality checklist
 │       └── review-report-template.md  # Review report template
+├── trellis-delivery-controller/  # Controller: stage routing and safety gates (English)
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── route-policy.md
+│       ├── delivery-loop-routing.md
+│       ├── stage-transition-gates.md
+│       └── model-role-policy.md
+├── trellis-skill-assimilator/    # Governance: external skill capability absorption (English)
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── source-analysis-template.md
+│       ├── absorption-card-template.md
+│       ├── capability-taxonomy.md
+│       ├── trellis-target-map.md
+│       ├── license-safety-policy.md
+│       └── update-scan-policy.md
 ├── trellis-implement-tdd-zh/     # Execution: TDD Implementation (Chinese)
 │   └── (same structure as trellis-implement-tdd)
 ├── trellis-debug-systematic-zh/  # Execution: Systematic Debugging (Chinese)

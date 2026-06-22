@@ -17,6 +17,12 @@ curl -fsSL https://raw.githubusercontent.com/coldwateryi/trellis-skills/main/scr
 请使用 trellis-zero-to-mvp-zh 进行只读分析，输出 MVP 任务计划，先不要写代码。
 ```
 
+如果你希望只调用一个入口，让技能自动判断当前阶段：
+
+```text
+请使用 trellis-delivery-controller-zh 判断当前 Trellis 交付阶段，并推进到下一个安全门。
+```
+
 如果 MVP 已经完成，进入完整交付 loop：
 
 ```text
@@ -37,12 +43,17 @@ MVP 已完成。请使用 trellis-mvp-to-delivery-zh 以 L1 模式执行首次 f
 | `trellis-implement-tdd-zh` | ZH | 同上（中文版） |
 | `trellis-debug-systematic-zh` | ZH | 同上（中文版） |
 | `trellis-review-twostage-zh` | ZH | 同上（中文版） |
+| `trellis-delivery-controller-zh` | ZH | 总入口：判断当前阶段，路由到规划、实现、调试、评审或验收，并控制安全门 |
+| `trellis-skill-assimilator-zh` | ZH | 治理入口：分析外部 GitHub skill 项目，提取可吸收能力、Trellis 落点和验证场景 |
 
 ## 由浅到深的使用路径
 
 先把这套技能理解成一条交付流水线，而不是一组彼此独立的提示词：
 
 ```text
+trellis-delivery-controller-zh（可选总入口）
+  └─ 判断当前阶段 → 路由到下一个安全门
+
 源需求文档
   └─ trellis-zero-to-mvp-zh：只读分析 → MVP 任务树
        └─ trellis-implement-tdd-zh / debug-systematic-zh / review-twostage-zh：实现 MVP
@@ -58,6 +69,145 @@ MVP 已完成。请使用 trellis-mvp-to-delivery-zh 以 L1 模式执行首次 f
 | 已经有 Trellis 子任务，要开始写代码 | `trellis-implement-tdd-zh` | 按 AC 红绿循环落地代码和测试 |
 | 测试该绿不绿或自检失败 | `trellis-debug-systematic-zh` | 稳定复现、单一假设、最小修复 |
 | 子任务自检全绿，要过门 | `trellis-review-twostage-zh` | Stage 1 规范符合 + Stage 2 代码质量评审 |
+| 不确定当前该用哪个阶段 | `trellis-delivery-controller-zh` | 阶段判断、下一步 skill、自动推进范围和安全门 |
+| 要吸收外部 GitHub skill 项目能力 | `trellis-skill-assimilator-zh` | source analysis、absorption card、Trellis 落点和验证要求 |
+
+### 总入口：trellis-delivery-controller-zh
+
+`trellis-delivery-controller-zh` 是 Trellis 技能集的总入口和流程控制器。它不替代 `zero-to-mvp`、`mvp-to-delivery`、`implement-tdd`、`debug-systematic` 或 `review-twostage`，而是先判断当前项目处于哪个交付阶段，再路由到唯一的下一步 skill，并说明本轮最多能自动推进到哪个安全门。控制器只做阶段判定、路由和安全门约束；具体分析、任务创建、代码实现、状态文件更新和评审报告仍由对应的专用 skill 执行。
+
+适合在这些场景使用：
+
+- 你不确定当前应该调用哪个 Trellis skill。
+- 你希望只写一个提示词，让模型读取项目状态后自动判断下一步。
+- 项目已经存在 `.trellis/delivery-state.md`，需要判断本轮应 full audit、delta audit 还是 early-exit。
+- 子任务实现到一半中断了，需要判断下一步是继续 TDD、进入系统调试、提交双阶段评审，还是暂停等人工确认。
+- 当前模型能力较弱，希望通过更明确的阶段边界、安全门和 evidence pack 降低乱推进风险。
+
+它会重点读取这些上下文：
+
+- 源需求：`docs/requirements.md` 或用户指定的需求文档。
+- Trellis 规划产物：`.trellis/tasks/`、`.trellis/spec/`、`.trellis/workflow.md`。
+- Delivery Loop 状态：`.trellis/delivery-state.md`、`.trellis/delivery-run-log.jsonl`。
+- 当前子任务证据：`prd.md`、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`、`tdd-progress.md`、`review-report.md`、失败日志和已运行命令。
+
+每轮输出应包含：
+
+- 当前阶段，例如 `zero-to-mvp-readonly`、`mvp-to-delivery-delta-audit`、`implement-tdd`、`debug-systematic`、`review-twostage-stage1`、`final-acceptance`。
+- 下一步应调用的 Trellis skill。
+- 阶段判断依据和已读取证据。
+- 自动推进范围，例如“只做只读分析”“只执行 delta audit”“只推进一个 AC 的 TDD 红绿循环”。
+- 必须停下的安全门，例如首次创建任务前确认、首次 full audit 后确认、File Manifest 越界、强模型评审缺失、debug 超 3 轮仍失败、critical review issue 等。
+
+常用提示词：
+
+```text
+请使用 trellis-delivery-controller-zh 判断当前 Trellis 交付阶段，并推进到下一个安全门。
+```
+
+从零开始的案例：
+
+```text
+需求文档在 docs/requirements.md。
+
+请使用 trellis-delivery-controller-zh 判断当前阶段，并推进到下一个安全门。
+```
+
+预期行为：控制器发现尚未形成 Trellis MVP 任务树时，会路由到 `trellis-zero-to-mvp-zh` 的只读分析阶段；输出 Requirements Traceability Matrix、MVP 边界和任务树建议后暂停，等待用户确认是否创建任务文件。
+
+MVP 后首次交付审计案例：
+
+```text
+MVP 已完成。
+
+请使用 trellis-delivery-controller-zh 判断是否需要 L1 full audit，并推进到下一个安全门。
+```
+
+预期行为：如果尚无 `.trellis/delivery-state.md`，控制器会路由到 `trellis-mvp-to-delivery-zh` 的首次 full audit；要求完整对比需求与 MVP，生成 Requirements Gap Matrix，并在确认差距矩阵和第一批补缺范围前暂停。
+
+已有交付状态的增量审计案例：
+
+```text
+请使用 trellis-delivery-controller-zh 基于 .trellis/delivery-state.md 判断本轮是 delta audit 还是 early-exit。
+```
+
+预期行为：控制器读取 `last_audited_commit`、open gaps 和相关代码/测试/task 变化；如果存在相关变化，路由到 `trellis-mvp-to-delivery-zh` 执行 delta audit；如果没有相关变化，路由到 `trellis-mvp-to-delivery-zh` 执行 early-exit，由该 skill 只追加 run log，避免重复 full audit。
+
+子任务中断恢复案例：
+
+```text
+子任务 .trellis/tasks/feature-user-auth/01-implement-login/ 已经部分实现。
+
+请使用 trellis-delivery-controller-zh 判断下一步是继续 TDD、进入调试，还是提交评审。
+```
+
+预期行为：控制器读取该子任务的 `prd.md`、`design.md`、TDD 进度、测试结果和 review 报告；如果有稳定失败信号，先路由到 `trellis-debug-systematic-zh`；如果仍有未完成 AC，路由到 `trellis-implement-tdd-zh`；如果 AC 与自检全绿但未评审，路由到 `trellis-review-twostage-zh` 的 Stage 1；如果 Stage 1 已通过但 Stage 2 未完成，则继续路由到 Stage 2 或在缺少强模型/人工复核时暂停。
+
+### 治理入口：trellis-skill-assimilator-zh
+
+`trellis-skill-assimilator-zh` 用于分析外部 GitHub skill 项目，把其中值得学习的工程能力转化为 Trellis 可治理的能力项。它的目标不是复制第三方 skill 原文，而是提炼“解决了什么问题、Trellis 哪里需要这种能力、应该落到哪个 reference 或安全门、如何验证吸收后真的变好”。
+
+适合在这些场景使用：
+
+- 你想吸收某个 GitHub skill 项目的设计思路，例如 superpowers、gsd、CodeStable、loop-engineering、ponytail 等。
+- 某个已吸收的开源 skill 项目更新了，需要只扫描新变化并判断 Trellis 是否要跟进。
+- 你想比较多个外部 skill 的能力差异，避免按项目名粗暴合并。
+- 你需要判断某个能力是否适合 Trellis 当前架构，而不是让实现期 skill 继续堆提示词。
+
+它有两种主要模式：
+
+- `Initial Assimilation`：首次分析一个外部项目，读取 README、`SKILL.md`、references、scripts、docs 和 license，输出完整吸收卡片。
+- `Update Scan`：已分析过的项目更新后，基于 `last_analyzed_ref` 只分析新增或变化内容，输出 delta absorption report。
+
+每次运行应输出：
+
+- Source Analysis：外部项目结构、目标用户、核心流程和关键约束。
+- Capability Extraction：按能力项提炼，而不是按文件或项目名搬运。
+- Absorption Card：能力名、问题、Trellis 落点、改动建议、风险和回滚条件。
+- Trellis Target Map：应落到哪个 skill、哪个 reference、哪个检查门或验证场景。
+- License and Safety Notes：license、复制边界、脚本搬运风险和人工复核要求。
+- Evaluation Requirements：至少一个能证明能力有效的验证场景。
+- Recommendation：`absorb`、`watch`、`reject` 或 `needs-human-review`。
+
+吸收边界：
+
+- 不直接复制第三方 skill 的大段原文、脚本或模板。
+- 没有明确 Trellis 落点的能力不吸收。
+- 没有验证场景的能力不合并。
+- license 不清晰、强 copyleft、商业限制或来源不可信时，只做思路级总结，并标记人工复核。
+- 默认先输出吸收计划，不直接修改 Trellis 核心 skill；用户确认后再进入实现。
+
+首次吸收外部项目案例：
+
+```text
+请使用 trellis-skill-assimilator-zh 分析 https://github.com/DietrichGebert/ponytail：
+- 只提取适合 Trellis 实现期的能力
+- 不复制原文
+- 输出 absorption card、Trellis 落点和验证场景
+```
+
+预期行为：吸收器会把外部项目中的优势拆成能力项，例如“最小实现通过”“避免过度抽象”“实现期代码简化检查”等；再判断这些能力是否适合落到 `trellis-implement-tdd-zh`、`trellis-review-twostage-zh` 或新的 evaluation scenario。若建议吸收，输出要改的 Trellis 文件、验证方式和回滚条件。
+
+已吸收项目的更新扫描案例：
+
+```text
+上次分析 superpowers 的 ref 是 <last_analyzed_ref>。
+
+请使用 trellis-skill-assimilator-zh 对 https://github.com/obra/superpowers 做 update-scan：
+- 只分析 <last_analyzed_ref> 之后的新变化
+- 判断是否影响已吸收能力
+- 输出 delta absorption report
+```
+
+预期行为：吸收器只关注 README、`SKILL.md`、references、scripts、docs、license、release notes 或 changelog 的变化；如果没有值得吸收的变化，输出 `no-op`；如果有新能力但尚不适合当前 Trellis，输出 `watch`；如果 license 或安全边界变化，输出 `risk-review` 或 `needs-human-review`。
+
+拒绝或观望案例：
+
+```text
+请使用 trellis-skill-assimilator-zh 分析某个包含重型运行时和大量自动执行脚本的 skill 项目是否适合吸收。
+```
+
+预期行为：如果该项目的能力与 Trellis 的任务状态模型、文件清单、安全门或小模型友好约束冲突，吸收器应输出 `watch` 或 `reject`，并说明可以保留的思路级启发、不能直接引入的部分，以及未来重新评估的触发条件。
 
 ### 路径 A：从完整需求开始做 MVP
 
@@ -87,7 +237,7 @@ MVP 已完成。请使用 trellis-mvp-to-delivery-zh 以 L1 模式执行首次 f
 
 ### 路径 B：MVP 已完成，进入可持续 Delivery Loop
 
-适用于已经跑完 MVP、现在要从“能用”推进到“完整交付”的场景。`trellis-mvp-to-delivery-zh` 不是一次性审计工具，而是外层交付状态机：先完整对比需求和 MVP，再按有边界的批次推进。
+适用于已经跑完 MVP、现在要从“能用”推进到“完整交付”的场景。若使用 `trellis-delivery-controller-zh`，由控制器判断 full/delta/early-exit 和安全门；`trellis-mvp-to-delivery-zh` 负责执行差距审计、维护交付状态、规划批次和最终验收。若单独调用 `trellis-mvp-to-delivery-zh`，它仍可按本地 delivery policy 自行判定审计范围。
 
 #### 第 1 轮：L1 full audit
 
@@ -586,6 +736,26 @@ trellis-skills/
 │       ├── review-stage1-checklist.md # Stage 1 规范符合检查清单
 │       ├── review-stage2-checklist.md # Stage 2 代码质量检查清单
 │       └── review-report-template.md  # 评审报告模板
+├── trellis-delivery-controller-zh/ # 控制器技能：阶段路由与安全门（中文）
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── route-policy.md
+│       ├── delivery-loop-routing.md
+│       ├── stage-transition-gates.md
+│       └── model-role-policy.md
+├── trellis-skill-assimilator-zh/ # 治理技能：外部 skill 能力吸收（中文）
+│   ├── SKILL.md
+│   ├── agents/
+│   │   └── openai.yaml
+│   └── references/
+│       ├── source-analysis-template.md
+│       ├── absorption-card-template.md
+│       ├── capability-taxonomy.md
+│       ├── trellis-target-map.md
+│       ├── license-safety-policy.md
+│       └── update-scan-policy.md
 ├── trellis-implement-tdd-zh/     # 执行期技能：TDD 实现（中文）
 │   └── （结构同 trellis-implement-tdd）
 ├── trellis-debug-systematic-zh/  # 执行期技能：系统化调试（中文）

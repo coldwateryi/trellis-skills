@@ -1,0 +1,3 @@
+display_name: Trellis Skill Assimilator
+short_description: Analyze external GitHub skill projects and produce safe Trellis absorption plans.
+default_prompt: "Use $trellis-skill-assimilator to analyze this GitHub skill project and produce an absorption card with Trellis targets and verification requirements."
