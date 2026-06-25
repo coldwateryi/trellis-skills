@@ -18,6 +18,7 @@
 - [ ] 每个子任务都有测试要求。
 - [ ] 依赖关系明确。
 - [ ] Trellis task 依赖和已有基线依赖已分开表达。
+- [ ] 已区分规划期逻辑标识（如 `T01`、`REQ-001`、`<child-slug>`）和 Trellis 真实任务目录（`task.py create` 输出的 `.trellis/tasks/<MM-DD-slug>/`）。
 - [ ] 每个子任务已标注复杂度（低/中/高），高复杂度任务已拆碎或在 PRD 里把每步定死。
 - [ ] 每个子任务 PRD 的所有 `<...>` 占位符已替换为具体值，无"待定/视情况而定"。
 - [ ] 每个子任务 PRD 含参考实现路径、文件清单、有序实现步骤、自检命令。
@@ -30,6 +31,8 @@
 python ./.trellis/scripts/task.py create "<parent title>" --slug <parent-slug>
 python ./.trellis/scripts/task.py create "<child title>" --slug <child-slug> --parent "<parent-task-dir>"
 ```
+
+执行命令时必须记录每条 `task.py create` 的 stdout 返回路径，并把它作为写入产物的唯一可信路径。不要根据 slug、日期或 Task ID 自行拼接目录。
 
 如果 `task.py create` 报告未设置 developer，停止并要求用户先初始化 Trellis：
 
@@ -49,9 +52,14 @@ python ./.trellis/scripts/init_developer.py <name>
 
 ## 创建任务后
 
-- [ ] 写入父任务 `prd.md`。
-- [ ] 写入每个子任务 `prd.md`。
-- [ ] 对复杂度/风险要求且项目工作流支持的子任务，写入或起草 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。
+- [ ] 每个已创建任务目录都包含 `task.json`。
+- [ ] 写入父任务真实目录下的 `prd.md`。
+- [ ] 写入每个子任务真实目录下的 `prd.md`。
+- [ ] 写入前后都没有把完整 PRD 放进 `.trellis/tasks/<logical-task-id>/`、`.trellis/tasks/tXX-*/` 等无 `task.json` 的旁路目录。
+- [ ] 没有创建或使用 `<task-dir>/prd/` 子目录作为 PRD 容器；PRD 文件路径必须是 `<task-dir>/prd.md`。
+- [ ] 对复杂度/风险要求且项目工作流支持的子任务，写入或起草 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`，且这些产物位于同一个真实任务目录。
+- [ ] `python ./.trellis/scripts/task.py list` 能显示父任务和全部子任务，父子关系正确。
+- [ ] 新写入的父/子任务 `prd.md` 不再保留 `TBD`、`<...>`、"待定"或"视情况而定"。
 - [ ] 输出任务树。
 - [ ] 输出按依赖排序的执行计划。
 - [ ] 输出被阻塞任务列表。

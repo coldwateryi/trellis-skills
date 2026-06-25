@@ -24,6 +24,9 @@ description: |
 - 对已有部分实现的项目，任务创建规则固定为：`DONE` -> 不建任务；`UNTESTED` -> 只建测试补齐任务；`PARTIAL` -> 只为缺失行为创建补缺任务；`MISSING` -> 创建新实现任务；`UNCLEAR` -> 阻塞问题或澄清任务。
 - 对 Trellis 0.6 beta 项目，如果存在 `.trellis/workflow.md`，必须把它当作当前项目的本地工作流契约。不要在项目已声明 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl` 产物时仍按旧的纯 task/PRD 工作流假设执行。
 - Trellis 的父子任务关系只表达任务结构。严格依赖必须写入每个子任务的 `prd.md`。
+- 创建任务目录只能通过 `task.py create`。不要手工 `mkdir` 或直接写入 `.trellis/tasks/<logical-task-id>/`、`.trellis/tasks/t01-.../` 这类未由 Trellis 创建的目录。
+- `T01`、`REQ-001`、`<child-slug>` 只是规划期逻辑标识；真实任务目录以 `task.py create` 输出的 `.trellis/tasks/<MM-DD-slug>/` 为准。后续写 PRD、`design.md`、`implement.md`、JSONL 和汇报路径时必须使用这个真实目录。
+- 每个任务的 PRD 只能写到真实任务目录根部的 `<task-dir>/prd.md`，且该目录必须包含 `task.json`。不要创建 `<task-dir>/prd/` 子目录，也不要把完整 PRD 写进没有 `task.json` 的旁路目录。
 - 如果 `task.py create` 因 developer identity 未初始化而失败，停止并提示用户运行 `trellis init -u <name>`（加上项目使用的平台参数，例如 `--codex`），或让用户提供明确的 assignee。只有 Trellis CLI 不可用时，才把 `python ./.trellis/scripts/init_developer.py <name>` 作为旧版兜底方式。
 
 ## 工作流
@@ -116,12 +119,15 @@ description: |
 用户确认后：
 
 1. 为整体项目创建一个父任务。
-2. 使用 `--parent <parent-task-dir>` 创建子任务。
-3. 使用 `references/parent-prd-template.md` 写入父任务 `prd.md`。
-4. 使用 `references/child-prd-template.md` 写入每个子任务 `prd.md`。
-5. 对中/高复杂度子任务，如果 `.trellis/workflow.md` 或现有任务显示项目期望这些产物，写入或起草 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。写入前必须先读取已有产物，禁止盲目覆盖。
-6. 精确保留需求 ID 和依赖关系。
-7. 不要开始实现。
+2. 记录 `task.py create` 输出的父任务真实目录，例如 `.trellis/tasks/06-25-szwater-platform/`；后续不要用逻辑 slug 重新拼路径。
+3. 使用 `--parent <parent-task-dir>` 创建子任务；逐个记录每条命令输出的子任务真实目录，形成 `逻辑 Task ID/slug -> 真实任务目录` 映射。
+4. 写入任何产物前，确认目标目录存在 `task.json`。若没有，说明路径错了，停止并修正映射，不要继续写文件。
+5. 使用 `references/parent-prd-template.md` 写入父任务真实目录下的 `prd.md`。
+6. 使用 `references/child-prd-template.md` 写入每个子任务真实目录下的 `prd.md`。
+7. 对中/高复杂度子任务，如果 `.trellis/workflow.md` 或现有任务显示项目期望这些产物，写入或起草 `design.md`、`implement.md`、`implement.jsonl` 和 `check.jsonl`。这些产物也必须写入同一个真实任务目录；写入前必须先读取已有产物，禁止盲目覆盖。
+8. 父任务 PRD、依赖表和最终汇报可以保留 `T01/T02` 逻辑编号，但涉及文件路径、任务启动路径和 Trellis child link 时必须使用真实任务目录名。
+9. 精确保留需求 ID 和依赖关系。
+10. 不要开始实现。
 
 使用：
 
@@ -129,6 +135,13 @@ description: |
 python ./.trellis/scripts/task.py create "<parent title>" --slug <parent-slug>
 python ./.trellis/scripts/task.py create "<child title>" --slug <child-slug> --parent "<parent-task-dir>"
 ```
+
+创建后执行一次路径完整性自检：
+
+- `task.py list` 中能看到父任务和全部子任务。
+- 每个需要执行的子任务目录都有 `task.json` 和填充后的 `prd.md`。
+- `.trellis/tasks/` 下没有新生成的、无 `task.json` 的 `tXX-*` 目录承载完整 PRD。
+- 不存在空的 `<task-dir>/prd/` 子目录作为 PRD 容器。
 
 ### 5. 汇报下一步
 

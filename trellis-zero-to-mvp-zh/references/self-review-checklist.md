@@ -38,6 +38,7 @@
 - [ ] `MISSING` 需求创建新实现任务
 - [ ] 需求追踪矩阵每一行都有与当前状态匹配的任务动作（`none`、`test-only`、`gap-task`、`new-task` 或 `clarify`）
 - [ ] 作为依赖的已有能力以 `existing:<path-or-capability>` 形式列入基线依赖
+- [ ] 任务拆分和 PRD 写回路径以 `task.py create` 返回的真实任务目录为准，不是按逻辑 Task ID/slug 另造一棵目录树
 
 ---
 
