@@ -41,8 +41,18 @@ NEEDS_IMPLEMENT_RE = re.compile(
     re.IGNORECASE,
 )
 
-HIGH_COMPLEXITY_RE = re.compile(r"复杂度\s*[:：]\s*高")
-MEDIUM_COMPLEXITY_RE = re.compile(r"复杂度\s*[:：]\s*中")
+HIGH_COMPLEXITY_RE = re.compile(
+    r"复杂度\s*[:：]\s*高|Complexity\s*:\s*high", re.IGNORECASE
+)
+MEDIUM_COMPLEXITY_RE = re.compile(
+    r"复杂度\s*[:：]\s*中|Complexity\s*:\s*medium", re.IGNORECASE
+)
+DESIGN_SURFACE_SECTION_RE = re.compile(
+    r"^##\s+(任务影响面矩阵|Task Impact Matrix)\s*$", re.MULTILINE
+)
+MARKDOWN_HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$", re.MULTILINE)
+
+YES_VALUES = {"是", "yes", "y", "true", "1", "涉及", "需要", "involved", "required"}
 
 
 def read_text(path: Path) -> str:
@@ -192,8 +202,119 @@ def declared_artifact_scan(
     }
 
 
+def markdown_section(text: str, heading_pattern: re.Pattern[str]) -> str:
+    marker = heading_pattern.search(text)
+    if not marker:
+        return ""
+    next_heading = re.search(r"^##\s+", text[marker.end() :], re.MULTILINE)
+    if not next_heading:
+        return text[marker.end() :]
+    return text[marker.end() : marker.end() + next_heading.start()]
+
+
+def parse_markdown_table(section: str) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or "---" in stripped:
+            continue
+        parts = [part.strip() for part in stripped.strip("|").split("|")]
+        if len(parts) >= 5:
+            rows.append(parts)
+    if rows and rows[0][0] in {"影响面", "Surface"}:
+        rows = rows[1:]
+    return rows
+
+
+def heading_from_location(location: str) -> tuple[str | None, str | None]:
+    value = location.strip().strip("`")
+    if not value or value.lower() in {"none", "not-applicable", "不适用"}:
+        return None, None
+    if "#" not in value:
+        return value, None
+    filename, heading = value.split("#", 1)
+    return filename.strip() or None, heading.strip() or None
+
+
+def has_heading(path: Path, heading: str | None) -> bool:
+    if not path.exists():
+        return False
+    if not heading:
+        return True
+    text = read_text(path)
+    normalized = heading.strip().lower()
+    for match in MARKDOWN_HEADING_RE.finditer(text):
+        candidate = match.group(1).strip().lower()
+        if candidate == normalized:
+            return True
+    return False
+
+
+def design_surface_scan(
+    tasks_root: Path,
+    dirs: list[Path],
+    parent_dir: Path | None,
+    sample_limit: int,
+) -> dict:
+    missing: list[str] = []
+    declared_count = 0
+    satisfied_count = 0
+    prd_with_matrix = 0
+    prd_without_matrix: list[str] = []
+
+    for task_dir in dirs:
+        if parent_dir is not None and task_dir == parent_dir:
+            continue
+        prd = task_dir / "prd.md"
+        if not prd.exists():
+            continue
+        text = read_text(prd)
+        section = markdown_section(text, DESIGN_SURFACE_SECTION_RE)
+        if not section:
+            prd_without_matrix.append(rel(prd, tasks_root))
+            continue
+        prd_with_matrix += 1
+        for row in parse_markdown_table(section):
+            surface, involved, design_location, implement_location, *rest = row
+            if involved.strip().lower() not in YES_VALUES:
+                continue
+            declared_count += 1
+            row_missing: list[str] = []
+
+            design_file, design_heading = heading_from_location(design_location)
+            if design_file:
+                design_path = task_dir / design_file
+                if not has_heading(design_path, design_heading):
+                    row_missing.append(f"{design_file}#{design_heading or ''}")
+
+            implement_file, implement_heading = heading_from_location(implement_location)
+            if implement_file:
+                implement_path = task_dir / implement_file
+                if not has_heading(implement_path, implement_heading):
+                    row_missing.append(f"{implement_file}#{implement_heading or ''}")
+
+            if row_missing:
+                missing.append(
+                    f"{rel(task_dir, tasks_root)}:{surface}: missing {', '.join(row_missing)}"
+                )
+            else:
+                satisfied_count += 1
+
+    return {
+        "design_surface_prd_with_matrix": prd_with_matrix,
+        "design_surface_prd_without_matrix": len(prd_without_matrix),
+        "design_surface_prd_without_matrix_examples": first_examples(
+            prd_without_matrix, sample_limit
+        ),
+        "design_surface_declared_count": declared_count,
+        "design_surface_satisfied_count": satisfied_count,
+        "design_surface_missing_hits": len(missing),
+        "design_surface_missing_examples": first_examples(missing, sample_limit),
+    }
+
+
 def requirement_section(text: str) -> str:
-    marker = re.search(r"^##\s+需求 ID\s*$", text, re.MULTILINE)
+    marker = re.search(r"^##\s+(需求 ID|Requirement IDs)\s*$", text, re.MULTILINE)
     if not marker:
         return ""
     next_heading = re.search(r"^##\s+", text[marker.end() :], re.MULTILINE)
@@ -225,10 +346,14 @@ def coverage_scan(parent_prd: Path | None) -> dict:
         status_counts[parts[3]] += 1
 
     mismatches: list[str] = []
-    summary_match = re.search(r"\|\s*原始功能点总数\s*\|\s*(\d+)\s*\|", text)
-    if summary_match and rows and int(summary_match.group(1)) != rows:
+    summary_match = re.search(
+        r"\|\s*(原始功能点总数|Source requirement count)\s*\|\s*(\d+)\s*\|",
+        text,
+        re.IGNORECASE,
+    )
+    if summary_match and rows and int(summary_match.group(2)) != rows:
         mismatches.append(
-            f"原始功能点总数={summary_match.group(1)} but requirement rows={rows}"
+            f"source requirement count={summary_match.group(2)} but requirement rows={rows}"
         )
 
     declared_gate = re.search(r"\|\s*coverage_count_mismatch_hits\s*\|\s*(\d+)\s*\|", text)
@@ -257,6 +382,10 @@ def declared_gate_mismatch(parent_prd: Path | None, actual: dict) -> dict:
         "coverage_count_mismatch_hits": actual.get("coverage_count_mismatch_hits", 0),
         "high_complexity_missing_artifacts": actual.get("high_complexity_missing_artifacts", 0),
         "missing_declared_artifacts": actual.get("missing_declared_artifacts", 0),
+        "design_surface_prd_without_matrix": actual.get(
+            "design_surface_prd_without_matrix", 0
+        ),
+        "design_surface_missing_hits": actual.get("design_surface_missing_hits", 0),
         "external_config_hits": actual.get("external_config_hits", 0),
     }
 
@@ -339,6 +468,12 @@ def main() -> int:
         parent_task_json.parent if parent_task_json else None,
         args.sample_limit,
     )
+    design_surface_counts = design_surface_scan(
+        tasks_root,
+        dirs,
+        parent_task_json.parent if parent_task_json else None,
+        args.sample_limit,
+    )
     coverage_counts = coverage_scan(parent_prd)
 
     result = {
@@ -347,6 +482,7 @@ def main() -> int:
         "expected_tasks": expected_task_count(parent_task_json),
         **file_counts,
         **artifact_counts,
+        **design_surface_counts,
         **coverage_counts,
     }
     result.update(declared_gate_mismatch(parent_prd, result))
@@ -369,6 +505,8 @@ def main() -> int:
         "coverage_count_mismatch_hits",
         "high_complexity_missing_artifacts",
         "missing_declared_artifacts",
+        "design_surface_prd_without_matrix",
+        "design_surface_missing_hits",
         "declared_gate_mismatch_hits",
         "external_config_hits",
         "scanned_task_mismatch_hits",

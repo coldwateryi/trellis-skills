@@ -56,6 +56,7 @@ If any condition below is true, stop the current phase and output a `FAIL` repor
 - A child task violates Small Model Mode granularity without explicit user confirmation.
 - Before user confirmation, any MVP `TASK` child task is not `READY_TO_CONFIRM`, `BLOCKED`, or `OUT_OF_SCOPE`.
 - PRD declares `design.md`, `implement.md`, `implement.jsonl`, or `check.jsonl` as required, but the real task directory lacks that file.
+- A child PRD `Task Impact Matrix` declares a surface as involved, but `design.md` or `implement.md` lacks the corresponding section.
 - In sub-agent dispatch mode or when the artifact matrix declares JSONL required, `implement.jsonl` or `check.jsonl` contains `_example`; in Codex inline mode, seed JSONL must be deleted or explained as `NOT_NEEDED_WITH_REASON`, and Gate must run with `--jsonl-mode inline`.
 - Artifacts contain `{Entity}`, `{domain}`, `{entity}`, `<PageComponent>`, `<path>`, `TBD`, `depends`, `as needed`, `YOUR_KEY`, `API_KEY_HERE`, `to be provided`, `pending config`, or equivalent unresolved placeholders.
 - Contract Snapshot forbidden tokens appear in parent/child PRD, `design.md`, `implement.md`, or JSONL.
@@ -117,6 +118,7 @@ Read `references/analysis-output-template.md` and produce the complete planning 
 - Parent PRD draft.
 - Child PRD drafts.
 - Draft `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` for medium/high complexity tasks, or explicit not-needed reasons.
+- Child task `Task Impact Matrix` rows and matching design surface sections. When a task touches database, API, inter-module interaction, external systems, UI, permissions, state, validation, transactions, tests, or similar surfaces, read `references/design-surface-template.md` and fill the required `design.md` / `implement.md` sections.
 
 If sub-agent triggers apply, read `references/subagent-planning-template.md`. The main agent owns dispatch, merge, conflict resolution, and final Gate. Sub-agents only produce read-only planning drafts.
 
@@ -227,6 +229,7 @@ Recommended role split: strong model for planning, small model for implementatio
 - `references/self-review-checklist.md` - read for self-review after each analysis round.
 - `references/self-review-report-template.md` - read when generating review reports.
 - `references/planning-artifacts-template.md` - read when drafting Trellis 0.6+ design, implementation, and context manifest artifacts for medium/high complexity tasks.
+- `references/design-surface-template.md` - read when a child task touches database, API, inter-module interaction, external systems, UI, permissions, state, validation, transactions, tests, or similar design surfaces; provides required `design.md` and `implement.md` section templates.
 - `references/parent-prd-template.md` - read when drafting or writing the parent task PRD.
 - `references/child-prd-template.md` - read when drafting or writing child task PRDs.
 - `references/task-creation-checklist.md` - read before creating the task tree.

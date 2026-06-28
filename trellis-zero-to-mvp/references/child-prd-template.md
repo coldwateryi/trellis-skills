@@ -4,15 +4,18 @@
 
 This PRD is filled during planning and may be implemented by a capability-limited local model. It must pin requirements, contracts, boundaries, acceptance, and dependencies, but it must not replace Trellis 0.6+ `design.md` / `implement.md`.
 
-- Replace every `<...>` placeholder with a concrete value.
-- Do not leave `{Entity}`, `{domain}`, `{entity}`, `<PageComponent>`, `TBD`, `depends`, or equivalent template residue.
+- Replace every `<...>` placeholder with a concrete value. Do not leave placeholders or "TBD/as needed" for the execution phase.
+- Do not leave generic template placeholders such as `{Entity}`, `{domain}`, `{entity}`, or `<PageComponent>`.
 - By default, PRD contains requirements, constraints, scope, dependencies, and acceptance. Technical design goes in `design.md`; file plan, ordered steps, self-check commands, rollback, and review gates go in `implement.md`.
 - Only low-complexity tasks may keep a compact execution appendix in PRD, and only when the local workflow permits PRD-only and the artifact matrix says `implement.md: not required`.
 - Every reasoning decision (naming, paths, API/command/route, schema, state branch, external config) must be pinned during planning; PRD pins behavior contract, `design.md` / `implement.md` pin technical placement.
 - Child tasks must reference the parent Project Contract Lock. Do not invent names, paths, APIs, commands, packages/modules, routes, tables, or permission models.
 - Copy relevant Contract Snapshot adopted values and forbidden tokens. PRD, `design.md`, `implement.md`, and JSONL must not hit forbidden tokens.
-- In Small Model Mode, one child task covers only one primary entity CRUD, one endpoint group, one state transition, one frontend page, or one backend aggregate query.
-- External config and third-party keys must be `FIXED`, `BASELINE`, `BLOCKED`, or `OUT_OF_SCOPE`. Do not leave `YOUR_KEY`, `API_KEY_HERE`, or "to be provided".
+- In Small Model Mode, one child task covers only one primary entity CRUD, one endpoint group, one state transition, one frontend page, or one backend aggregate query. Split otherwise.
+- Every child task must fill the `Task Impact Matrix`. If any surface is `yes`, `design.md` must contain the matching design section and `implement.md` must contain the matching implementation-plan section. Section names come from `design-surface-template.md`.
+- External config and third-party keys must be fixed config names, existing baseline evidence, `BLOCKED`, or `OUT_OF_SCOPE`. Do not leave `YOUR_KEY`, `API_KEY_HERE`, or "to be provided" placeholders.
+- If something cannot be pinned during planning, put it in `Out of Scope` or split it into a separate task. Do not leave it for the execution model to decide.
+- `Complexity and Planning Artifacts` must match the analysis-phase Planning Artifact Matrix. Any artifact marked required must exist after task creation.
 
 ## Template
 
@@ -68,7 +71,7 @@ Use concrete values. Keep these consistent with Project Contract Reference, acce
 | Primary object count | <n, usually 1 in Small Model Mode> |
 | Independent capability count | <n, usually 1 in Small Model Mode> |
 | Includes high-complexity combination | <yes/no; if yes, explain why not split> |
-| Needs split | <no/yes; yes unless user explicitly approved merge> |
+| Needs split | <no/yes; if a forbidden combination is present, write yes unless the user explicitly approved the merge and it is recorded in dependencies/risks> |
 
 ## Gap Source
 
@@ -103,6 +106,33 @@ Use concrete values. Keep these consistent with Project Contract Reference, acce
 - Trellis 0.6+ artifact boundary: <file plan, steps, and self-check commands are in implement.md; or low-complexity PRD-only appendix>
 - Spec freshness: <which `.trellis/spec/` files were read; if stale, name refresh task>
 
+## Task Impact Matrix
+
+This matrix declares impact surfaces only; do not expand detailed technical design in PRD. If any row is `yes`, write the corresponding sections in `design.md` and `implement.md`. If the task is low complexity and the local workflow permits PRD-only, still keep the matrix and clearly explain all `no` rows. Do not omit the matrix.
+
+| Surface | Involved | Design Location | Implementation Plan Location | Gate |
+| --- | --- | --- | --- | --- |
+| Database / data model | yes/no | design.md#Database Schema Design | implement.md#Database Migration Plan | DATABASE_SCHEMA_MISSING |
+| API interface | yes/no | design.md#API Contract Design | implement.md#API Implementation Plan | API_CONTRACT_MISSING |
+| Inter-module interaction | yes/no | design.md#Inter-Module Interaction Design | implement.md#Inter-Module Wiring Plan | INTER_MODULE_CONTRACT_MISSING |
+| External system interface | yes/no | design.md#External System Interface Design | implement.md#External Adapter Plan | EXTERNAL_INTERFACE_CONTRACT_MISSING |
+| UI / project style | yes/no | design.md#UI Design and Style Contract | implement.md#UI Implementation Plan | UI_DESIGN_MISSING |
+| Permission / data scope | yes/no | design.md#Permission and Data Scope Design | implement.md#Permission Wiring Plan | PERMISSION_CONTRACT_MISSING |
+| Dictionary / state machine | yes/no | design.md#Dictionary and State Design | implement.md#State Implementation Plan | STATE_TRANSITION_MISSING |
+| Query / import / export | yes/no | design.md#Query and Import Export Design | implement.md#Query Export Plan | QUERY_CONTRACT_MISSING |
+| Validation / error semantics | yes/no | design.md#Validation and Error Semantics | implement.md#Validation Implementation Plan | VALIDATION_CONTRACT_MISSING |
+| Transaction / concurrency / idempotency | yes/no | design.md#Transaction Concurrency and Idempotency Design | implement.md#Transaction Implementation Plan | TRANSACTION_CONTRACT_MISSING |
+| Async job / event | yes/no | design.md#Async Job and Event Design | implement.md#Job Event Plan | ASYNC_JOB_CONTRACT_MISSING |
+| Audit / logging | yes/no | design.md#Audit and Logging Design | implement.md#Audit Implementation Plan | AUDIT_LOG_CONTRACT_MISSING |
+| Initialization / migration | yes/no | design.md#Data Initialization and Migration Design | implement.md#Migration Plan | MIGRATION_COMPATIBILITY_MISSING |
+| Test strategy | yes/no | design.md#Test Strategy Design | implement.md#Test Implementation Plan | TEST_STRATEGY_MISSING |
+| Performance / capacity | yes/no | design.md#Performance and Capacity Design | implement.md#Performance Verification Plan | PERFORMANCE_CONSTRAINT_MISSING |
+| Security / sensitive data | yes/no | design.md#Security and Sensitive Data Design | implement.md#Security Verification Plan | SECURITY_CONTRACT_MISSING |
+| Configuration / environment | yes/no | design.md#Configuration Design | implement.md#Configuration Plan | CONFIG_CONTRACT_MISSING |
+| Framework conventions | yes/no | design.md#Framework Convention Design | implement.md#Framework Implementation Plan | FRAMEWORK_CONVENTION_MISSING |
+| Manual acceptance | yes/no | design.md#Manual Acceptance Design | implement.md#Manual Verification Plan | MANUAL_ACCEPTANCE_UNCLEAR |
+| Documentation / operations | yes/no | design.md#Documentation and Operations Handoff | implement.md#Docs Ops Plan | OPS_DOC_CONTRACT_MISSING |
+
 ## Context Manifest
 
 The execution model must read these before editing:
@@ -135,10 +165,10 @@ If a `BLOCKED` external config is required for implementation, this task must be
 
 During execution, prefer copying these examples and replacing only this task's names/fields:
 
-- Business/interface example: <path or "none, build from design.md / implement.md">
+- Business/interface example: <existing file path to copy; if none, write "none, build from design.md / implement.md">
 - Data/state/config example: <schema / mapper / template / config / workflow path or none>
 - UI/CLI/SDK example: <page, component, command, SDK API, or template path or none>
-- Replacement notes: <replace Xxx with Yyy; detailed file replacement is in implement.md>
+- Replacement notes: <replace Xxx with this task's Yyy; detailed file replacement is in implement.md>
 
 ## Implementation Plan Location
 
@@ -167,7 +197,7 @@ Delete this subsection for non-PRD-only tasks and fill `implement.md` instead.
 
 ## Mount Points
 
-These make the capability visible. Rule: "if this line disappears, the feature disappears from the user/system point of view."
+These make the capability visible. Rule: "if this line disappears, the feature disappears from the user/system point of view." Usually list 3-5 entries. Execution wires each one, and review checks each one to prevent implementation that is never connected.
 
 | Mount Point | Type | Location | Exact Wiring Action |
 | --- | --- | --- | --- |
@@ -235,7 +265,7 @@ Use machine-checkable or individually tickable assertions:
 - Do not change Project Contract Reference names, paths, APIs, commands, packages/modules, routes, tables, or permission models.
 - Do not use Contract Snapshot forbidden tokens.
 - Do not implement adjacent domains opportunistically; adjacent work needs dependency or separate task.
-- Do not leave `YOUR_KEY`, `API_KEY_HERE`, `TBD`, `depends`, `as needed`, or unresolved placeholders.
+- Do not leave `YOUR_KEY`, `API_KEY_HERE`, `TBD`, `to be provided`, `as needed`, or unresolved placeholders.
 - <other project-specific red lines>
 
 ## Technical Notes

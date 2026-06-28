@@ -26,7 +26,7 @@ project_contract_profile:
 
 Lock implementation contracts from user requirements, README, module README, AGENTS.md, `.trellis/spec/`, and existing code. Later artifacts must follow this table and cannot switch naming systems.
 
-| Contract Item | Profile Field | Adopted Value | Evidence Path | Forbidden Tokens | Notes |
+| Contract Item | Profile Field | adopted_value | evidence_path | forbidden_tokens | Notes |
 | --- | --- | --- | --- | --- | --- |
 | <item> | <profile field> | <specific value or not-applicable> | <path> | <tokens or none> | <notes> |
 
@@ -41,7 +41,7 @@ Example fields by profile, use only those that apply:
 
 Convert Project Contract Lock into a mechanically scannable snapshot. `forbidden_tokens` must come from conflicts, old wrong tasks, framework-default misreads, or values inconsistent with README/spec/code.
 
-| Profile Field | Adopted Value | Forbidden Tokens | Evidence Path | Notes |
+| Profile Field | Adopted Value (must use) | Forbidden Tokens | Evidence Path | Notes |
 | --- | --- | --- | --- | --- |
 | <field> | <specific path/command/API/name> | <conflict tokens or none> | <path> | <notes> |
 
@@ -66,10 +66,10 @@ Use this section when the repository already contains manually implemented funct
 Rules:
 
 - Source requirements are the source of truth; existing code and `.trellis/spec/` are evidence, not substitute requirements.
-- `DONE` -> no implementation task.
-- `UNTESTED` -> test-only task unless evidence is weak.
-- `PARTIAL` -> gap-closing task for missing behavior only.
-- `MISSING` -> new implementation task.
+- If a requirement is `DONE`, do not create an implementation task for that scope.
+- If a requirement is `UNTESTED`, create only a test-coverage task unless implementation evidence is weak.
+- If a requirement is `PARTIAL`, create a gap-closing task for missing behavior only.
+- If a requirement is `MISSING`, create a new implementation task.
 
 ## Trellis Workflow Context
 
@@ -122,7 +122,11 @@ stage_state:
     - <none or failure codes>
 ```
 
-If Stage State Packet disagrees with Full Requirement Matrix, MVP Coverage Matrix, Subtask Planning Ledger, or real directories, output `STATE_DRIFT` and do Drift Reset.
+Rules:
+
+- `next_legal_action` can contain only one action.
+- If `stop_gate_failures` is non-empty, do not ask for user confirmation, create tasks, or recommend development.
+- If Stage State Packet disagrees with Full Requirement Matrix, MVP Coverage Matrix, Subtask Planning Ledger, or real directories, output `STATE_DRIFT` and do Drift Reset.
 
 ## Source Requirement List
 
@@ -140,27 +144,45 @@ This table reflects source truth only. Every source-verifiable requirement must 
 | --- | --- | --- | --- | --- | --- | --- |
 | REQ-001 | <section/point> | <summary> | MISSING | <path or none> | <path or none> | <gap> |
 
-Allowed statuses: `DONE`, `PARTIAL`, `MISSING`, `UNTESTED`, `UNCLEAR`.
+Allowed statuses:
+
+- `DONE`: fully implemented and tested.
+- `PARTIAL`: partially implemented.
+- `MISSING`: not implemented.
+- `UNTESTED`: implemented but lacks enough tests.
+- `UNCLEAR`: requirement is too unclear to implement.
 
 ## MVP Coverage Matrix
 
 This table describes how the current MVP handles each full requirement. Do not report MVP coverage count as the original source requirement count.
 
-After generation, mechanically count `TASK`, `MERGED`, `BASELINE`, `OUT_OF_SCOPE`, and `BLOCKED`; their sum must equal Full Requirement Matrix rows. Reuse these counts in the parent PRD.
+After generation, mechanically count `TASK`, `MERGED`, `BASELINE`, `OUT_OF_SCOPE`, and `BLOCKED`; their sum must equal Full Requirement Matrix rows. Reuse these counts in the parent PRD. Do not hand-estimate them again.
 
 | ID | Requirement Summary | Coverage Status | Task Action | Target Task/Baseline/Scope Note | Covering AC | MVP/Backlog Note |
 | --- | --- | --- | --- | --- | --- | --- |
 | REQ-001 | <summary> | TASK | new-task | T01 | AC-001 | MVP |
 
-Coverage status: `TASK`, `MERGED`, `BASELINE`, `OUT_OF_SCOPE`, `BLOCKED`.
+Coverage status:
 
-Task actions: `none`, `test-only`, `gap-task`, `new-task`, `clarify`.
+- `TASK`: create an independent child task.
+- `MERGED`: merge into another child task; name the target task and covering AC.
+- `BASELINE`: covered by existing implementation; cite baseline evidence.
+- `OUT_OF_SCOPE`: not in current MVP; explain why and surface during user confirmation.
+- `BLOCKED`: blocked; explain issue and next step.
+
+Task actions:
+
+- `none`: requirement is `DONE`; keep as baseline evidence.
+- `test-only`: requirement is `UNTESTED`; create only a test-coverage task, not reimplementation.
+- `gap-task`: requirement is `PARTIAL`; implement only missing behavior.
+- `new-task`: requirement is `MISSING`; create a new implementation task.
+- `clarify`: requirement is `UNCLEAR`; ask a blocking question or create a clarification task before implementation.
 
 ## Full Platform Scope vs MVP Boundary
 
 | Scope Block | Full Platform Requirement | Current MVP Handling | Difference/Risk |
 | --- | --- | --- | --- |
-| <PC/IOC/integration/mobile/report/etc.> | <source scope> | <TASK/MERGED/OUT_OF_SCOPE/BLOCKED> | <risk> |
+| <PC/IOC/integration/mobile/report/etc.> | <source scope> | <TASK/MERGED/OUT_OF_SCOPE> | <risk> |
 
 ## Task Merge/Split Record
 
@@ -174,7 +196,7 @@ Handling values: `SPLIT`, `MERGED`, `BASELINE`, `OUT_OF_SCOPE`, `BLOCKED`.
 
 ## Backlog / Later Scope
 
-Every `OUT_OF_SCOPE` requirement must appear here.
+Every `OUT_OF_SCOPE` requirement must appear here and must not disappear from traceability.
 
 | Requirement ID | Source Point | Exclusion Reason | Recommended Stage | Conditions to Re-enter Scope | Depends on MVP Tasks |
 | --- | --- | --- | --- | --- | --- |
@@ -190,22 +212,47 @@ Every `OUT_OF_SCOPE` requirement must appear here.
 
 | Task ID | Title | Goal | Type | Requirement IDs | Source Status | Depends On | Baseline Dependencies | Priority | Complexity | Small Model Granularity | Planning Artifacts | Parallelizable | Acceptance Criteria | Likely Areas |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T01 |  |  | docs | REQ-001 | MISSING | none | none | P0 | low | one entity CRUD / endpoint group / state transition / page / aggregate query | prd.md | no |  |  |
+| T01 |  |  | docs | REQ-001 | MISSING | none | none | P0 | low | one entity CRUD / one endpoint group / one state transition / one page / one aggregate query | prd.md | no |  |  |
 
 Allowed task types: `backend`, `frontend`, `fullstack`, `cli`, `sdk`, `template`, `workflow`, `script`, `docs`, `test`, `infra`.
 
-Complexity:
+Complexity is assessed against execution-model capability and determines split granularity and PRD detail:
 
-- `low`: standard CRUD/config or a direct example to copy.
-- `medium`: some business logic; needs `design.md` and `implement.md` or a detailed low-risk plan.
-- `high`: complex transaction/concurrency/cross-module/domain logic; split first or require full design/implement/JSONL context.
+- `low`: standard CRUD/config, or a direct example to copy. Weak model can complete independently.
+- `medium`: some business validation or cross-table logic; needs explicit implementation steps. Weak model can complete with detailed PRD.
+- `high`: complex transaction/concurrency/cross-module consistency or much implicit domain knowledge. Weak model is unlikely to complete independently; split into low/medium tasks or pin every step in PRD/design/implement so no reasoning is needed.
+
+Priority rules:
+
+- `P0`: blocks other modules or core correctness.
+- `P1`: core business loop.
+- `P2`: experience, reports, notifications, enhancements.
+- `P3`: non-essential optimization.
+
+Ordering rules:
+
+1. Data structures, API contracts, and config first.
+2. Tasks that block other modules before dependent tasks.
+3. High-risk and unknown-heavy tasks early for validation.
+4. UI polish, docs, and experience enhancements later.
+5. Do not mark mutually dependent tasks as parallelizable.
 
 Small Model Mode rules:
 
+0. The model must not keep oversized tasks by claiming "strong coupling", "same flow", or "splitting adds dependencies" on its own. Only explicitly user-approved merges are exceptions, and the risk column must record them.
+
 1. A child task covers at most one primary entity CRUD, one endpoint group, one state transition, one frontend page, or one backend aggregate query.
-2. Split tasks that combine multiple primary entities, multiple CRUD sets, CRUD + state machine + report, backend flow + mobile page, map/GIS + multi-table aggregation + advanced analytics.
-3. Max 8 executable tasks per batch and max 5 full PRDs per batch; plan all batches, not only P0/P1.
-4. High complexity tasks must be split into low/medium tasks or require `design.md` + `implement.md` + JSONL.
+2. Split tasks that combine multiple primary entities, multiple CRUD sets, CRUD + state machine + report, backend flow + mini-app page, map/GIS + multi-table aggregation + advanced analytics.
+3. Max 8 executable tasks per batch and max 5 full PRDs per batch. If over limit, plan a complete batch index first. P0/P1 is priority, not completion of full planning.
+4. High complexity tasks must be split into low/medium tasks or require `design.md` + `implement.md` + JSONL context.
+
+Existing implementation rules:
+
+1. Do not create child tasks for `DONE` requirements.
+2. Create `test` tasks for `UNTESTED` requirements only when tests are missing.
+3. Create gap-closing tasks for `PARTIAL` requirements; task title must name the missing behavior, not the already implemented behavior.
+4. When a task depends on existing capability, write it as `existing:src/auth/session.ts` or equivalent in Baseline Dependencies.
+5. Do not disguise existing baseline dependencies as new Trellis tasks.
 
 ## Subtask Planning Ledger
 
@@ -215,7 +262,19 @@ The ledger is the only state source for progressive planning. Every MVP Coverage
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | T01 | REQ-001 | <title> | P0 | B01 | none | G01 | main/agent-a | CANDIDATE/DRAFTED/READY_TO_CONFIRM/USER_CONFIRMED/CREATED/ARTIFACTS_WRITTEN/GATED_PASS/BLOCKED/OUT_OF_SCOPE | missing/draft/ready/written | not-needed/draft/ready/written | PENDING/PASS/FAIL/N/A | <task.py output dir or pending> | <next action> |
 
-Before confirmation, all MVP `TASK` child tasks must be `READY_TO_CONFIRM`, `BLOCKED`, or `OUT_OF_SCOPE`. If any are `CANDIDATE` or `DRAFTED`, output `BATCH_INCOMPLETE` and continue planning.
+Status rules:
+
+- `CANDIDATE`: candidate task identified, but boundary, dependencies, or artifacts are not frozen.
+- `DRAFTED`: draft exists, but Full MVP Planning Gate has not passed.
+- `READY_TO_CONFIRM`: task boundary, REQ coverage, dependencies, acceptance, PRD draft, and artifact needs are frozen and can enter user confirmation.
+- `USER_CONFIRMED`: user confirmed this task belongs to the current creation scope.
+- `CREATED`: real directory was created through `task.py create` and ledger was backfilled.
+- `ARTIFACTS_WRITTEN`: all declared planning artifacts were written.
+- `GATED_PASS`: Artifact Gate passed.
+- `BLOCKED`: clear blocker, owner, and recovery condition exist.
+- `OUT_OF_SCOPE`: entered Backlog; not created for current MVP.
+
+Before confirmation, all MVP `TASK` child tasks must be `READY_TO_CONFIRM`, `BLOCKED`, or `OUT_OF_SCOPE`. If any are `CANDIDATE` or `DRAFTED`, output `BATCH_INCOMPLETE` and continue planning the next batch.
 
 ## Batch Completion Rollup
 
@@ -228,8 +287,11 @@ Completion rule:
 - `all_mvp_task_count` equals current MVP `TASK` rows in Subtask Planning Ledger.
 - `ready_or_terminal_count = READY_TO_CONFIRM + BLOCKED + OUT_OF_SCOPE`.
 - Only when `ready_or_terminal_count == all_mvp_task_count` may output `ALL_SUBTASK_PLANNING_COMPLETE`.
+- Otherwise output `BATCH_INCOMPLETE`, list next-batch Task IDs, unfinished reasons, and the main agent's next action.
 
 ## Agent Dispatch Plan (if triggered)
+
+When candidate child tasks exceed batch limits, business domains exceed 3, full PRD drafts exceed 5, or the user requests multi-agent planning, output this according to `subagent-planning-template.md`:
 
 | Agent | Input Scope | Output Scope | Status | Failure Code |
 | --- | --- | --- | --- | --- |
@@ -239,7 +301,7 @@ Completion rule:
 
 ## Planning Artifact Matrix
 
-Fill this before creating Trellis tasks. `task.py create` does not automatically fill `design.md` or `implement.md`.
+Fill this before creating Trellis tasks. This matrix is the basis for post-creation file existence checks; `task.py create` does not automatically fill `design.md` or `implement.md`.
 
 | Task ID | Real Directory | Title | Complexity | prd.md | design.md | implement.md | implement.jsonl | check.jsonl | jsonl_mode | Write Status | Gate Result | Reason |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -249,12 +311,13 @@ Rules:
 
 - Every child task has `prd.md`.
 - High complexity cannot be PRD-only; split or require `design.md` + `implement.md`.
-- JSONL mode must be `required`, `optional`, or `inline`; seed-only JSONL cannot be left unexplained.
+- If project workflow or nearby task directories contain `implement.jsonl` / `check.jsonl`, the matrix must state JSONL mode: `required` (sub-agent or stable context preload is truly required), `optional` (can delete or explain not needed), or `inline` (Codex inline, not a planning-readiness gate). Seed-only JSONL is not enough.
 - Files marked required must exist in real `task.py create` directories after creation.
+- `Write Status = WRITTEN` must mean the file exists in the real directory. `NOT_NEEDED_WITH_REASON` must explain why it is not needed. `BLOCKED` must prevent executable reporting.
 
 ## MVP Recommended Development Order
 
-Output this only after Full MVP Planning Gate passes. It must cover every current MVP `TASK` child task.
+Output this only after Full MVP Planning Gate passes. It must cover every current MVP `TASK` child task. If it covers only the created batch, rename the section to `This Batch Execution Order` and do not recommend starting development.
 
 1. `<task-id>`: `<reason>`
 2. `<task-id>`: `<reason>`
@@ -266,11 +329,12 @@ After task creation, run and report:
 | Check | Handling on Hit |
 | --- | --- |
 | `_example` JSONL | Fill real context, delete and explain not needed, or block |
-| `{Entity}` / `<path>` / `TBD` / `depends` / `as needed` | Replace with concrete values |
+| `{Entity}` / `<path>` / `TBD` / `to be provided` / `as needed` | Replace with concrete values |
 | `YOUR_KEY` / `API_KEY_HERE` / unresolved external config | Mark `FIXED`, `BASELINE`, `BLOCKED`, or `OUT_OF_SCOPE` |
-| Contract mismatch or forbidden token | Fix to Contract Snapshot |
+| Contract mismatch or forbidden token | Fix to Contract Snapshot; do not let model-invented names override README/spec |
 | High complexity missing `design.md` / `implement.md` | Add artifacts or split task |
 | PRD/design/implement semantic anchors disagree | Stop and fix |
+| Task impact surface is `yes` but design/implementation section is missing | Fill the matching `design.md` / `implement.md` sections or fix the Task Impact Matrix |
 
 Recommended command:
 
@@ -282,14 +346,15 @@ python <skill-dir>/scripts/trellis_zero_gate.py \
   --jsonl-mode <required|optional|inline>
 ```
 
-Add `--forbidden-token`, `--forbidden-regex`, or `--contract-mismatch-regex` as needed. Do not hand-fill PASS.
+Add `--forbidden-token` or `--forbidden-regex` if Contract Snapshot has forbidden tokens. Do not hand-fill PASS before running mechanical scan.
 
 ## Artifact Gate Output Fields
+
+After creating tasks, output these fields. `result` can only be `PASS` or `FAIL`; do not report executable readiness with `PENDING`.
 
 | Field | Meaning | PASS Condition |
 | --- | --- | --- |
 | scanned_tasks | New tasks scanned | Equals parent + child count |
-| jsonl_mode | JSONL mode | Matches dispatch/workflow |
 | placeholder_hits | Template/unresolved expression hits | 0 |
 | angle_placeholder_hits | Generic `<...>` placeholder hits | 0 |
 | jsonl_seed_hits | Blocking `_example` JSONL hits | 0 |
@@ -298,11 +363,15 @@ Add `--forbidden-token`, `--forbidden-regex`, or `--contract-mismatch-regex` as 
 | coverage_count_mismatch_hits | Coverage statistics mismatch | 0 |
 | high_complexity_missing_artifacts | Missing design/implement for complex task | 0 |
 | missing_declared_artifacts | Declared required but missing files | 0 |
+| design_surface_prd_without_matrix | Child PRD missing Task Impact Matrix | 0 |
+| design_surface_missing_hits | Task Impact Matrix says a surface is involved but matching design/implementation sections are missing | 0 |
 | declared_gate_mismatch_hits | Parent PRD Gate values differ from scan | 0 |
 | external_config_hits | Unresolved external config/key placeholders | 0 |
 | result | Overall result | PASS only when all blocking counts are 0 |
 
 ## Pre-Confirmation Gate
+
+Fill this before outputting a confirmation request. If any item fails, do not ask for confirmation; continue planning or fix.
 
 | Check | Result | Evidence / Next Step |
 | --- | --- | --- |
@@ -324,7 +393,7 @@ planning_status:
   development_ready: false
   failure_codes:
     - <code>
-  next_action: <next batch or fix>
+  next_action: <next batch or fix action>
 ```
 
 ## Parent Task PRD Draft

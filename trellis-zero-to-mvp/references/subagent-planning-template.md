@@ -10,6 +10,7 @@ Use this when candidate child tasks exceed batch limits, business domains exceed
 | `contract-audit-agent` | Review Project Contract Lock and Contract Snapshot | Conflicts, forbidden tokens, missing evidence paths |
 | `batch-split-agent` | Split all MVP child tasks by Small Model Mode and assign batches | Task rows, B01/B02/..., dependency layers, parallel groups |
 | `child-prd-agent` | Draft up to 5 high-quality child PRD drafts for one batch | PRD points, acceptance, contract reference, implementation-plan location |
+| `design-surface-agent` | Determine each child task's design-surface impact and required sections | Task Impact Matrix, required design/implement sections, missing-risk notes |
 | `artifact-planner-agent` | Plan design, implementation, and JSONL needs for medium/high tasks | `design.md` / `implement.md` / JSONL needs and reasons |
 | `gate-check-agent` | Independently scan for Gate failures | Failure codes, evidence rows, fix actions |
 
@@ -46,14 +47,16 @@ Your task:
 1. Check that inputs follow Project Contract Lock.
 2. Split tasks small enough for a capability-limited execution model.
 3. For each task, output PRD draft points, complexity, dependencies, unlocks, and artifact needs.
-4. Mark parallel groups and reasons tasks cannot run in parallel.
-5. Identify conflicts that should block, move out of the batch, or return to the main agent for decision.
+4. Determine each task's design-surface impact, output a `Task Impact Matrix`, and list required `design.md` / `implement.md` sections.
+5. Mark parallel groups and reasons tasks cannot run in parallel.
+6. Identify conflicts that should block, move out of the batch, or return to the main agent for decision.
 
 Output must include:
 - agent_role
 - batch_id
 - task_rows
 - prd_draft_notes
+- design_surface_matrix
 - planning_artifact_needs
 - dependency_and_parallel_groups
 - contract_risks

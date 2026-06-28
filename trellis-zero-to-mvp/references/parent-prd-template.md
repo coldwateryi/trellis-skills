@@ -149,6 +149,8 @@ python <skill-dir>/scripts/trellis_zero_gate.py \
 | coverage_count_mismatch_hits | <0/n> | Requirement coverage statistics mismatch |
 | high_complexity_missing_artifacts | <0/n> | High complexity missing `design.md` / `implement.md` |
 | missing_declared_artifacts | <0/n> | Declared required but missing files |
+| design_surface_prd_without_matrix | <0/n> | Child PRDs missing `Task Impact Matrix` |
+| design_surface_missing_hits | <0/n> | Task Impact Matrix says a surface is involved but matching design/implementation sections are missing |
 | declared_gate_mismatch_hits | <0/n> | Parent PRD declared values differ from scan |
 | external_config_hits | <0/n> | `YOUR_KEY`, pending external config |
 | result | PASS/FAIL | <fix action or blocker on FAIL> |
