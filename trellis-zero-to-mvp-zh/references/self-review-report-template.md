@@ -16,11 +16,14 @@
 
 | 维度 | 评分 | 说明 |
 | --- | --- | --- |
+| 0. 项目契约与工作流 | ✅ 通过 / ❌ 不通过 | [Project Contract Profile、Contract Lock、工作流和产物要求] |
 | A. 需求完整性 | ✅ 通过 / ❌ 不通过 | [简述] |
 | B. 任务拆分质量 | ✅ 通过 / ❌ 不通过 | [简述] |
 | C. PRD 质量 | ✅ 通过 / ❌ 不通过 | [简述] |
 | D. 小模型执行友好性 | ✅ 通过 / ❌ 不通过 | [简述] |
 | E. 风险识别 | ✅ 通过 / ❌ 不通过 | [简述] |
+| F. Artifact Gate 准备 | ✅ 通过 / ❌ 不通过 | [占位符、JSONL、契约、设计面、外部配置检查计划] |
+| G. 渐进式规划与 Gate | ✅ 通过 / ❌ 不通过 | [Subtask Planning Ledger、批次完整性、确认门槛、开发建议门槛] |
 
 **整体结论**: ✅ 达标 / ❌ 不达标
 
@@ -28,8 +31,17 @@
 
 ## 二、检查清单通过情况
 
+### 0. 项目契约与工作流检查
+- [x] 0.0 Project Contract Lock - 通过
+- [x] 0.1 工作流发现 - 通过
+- [x] 0.2 Spec 新鲜度 - 通过
+- [x] 0.3 规划产物门槛 - 通过
+- [x] 0.4 已有部分实现回填 - 通过
+- [x] 0.5 状态机与 Gate - 通过
+
 ### A. 需求完整性检查
 - [x] A1. 需求标识 - 通过
+- [x] A1.1 原始需求覆盖 - 通过
 - [x] A2. 需求描述清晰性 - 通过
 - [ ] A3. 边界条件 - **未通过**（见问题1）
 - [x] A4. 错误处理 - 通过
@@ -39,12 +51,13 @@
 - [ ] B2. 复杂度评估 - **未通过**（见问题2）
 - [x] B3. 依赖关系 - 通过
 - [x] B4. 优先级 - 通过
+- [x] B5. 渐进式规划账本 - 通过
 
 ### C. PRD 质量检查
 - [ ] C1. 占位符消除 - **未通过**（见问题3、4）
 - [x] C2. Reference Implementation - 通过
-- [ ] C3. File Manifest - **未通过**（见问题5）
-- [ ] C4. Implementation Steps - **未通过**（见问题6）
+- [ ] C3. File Manifest / implement.md 边界 - **未通过**（见问题5）
+- [ ] C4. Implementation Steps / implement.md 边界 - **未通过**（见问题6）
 - [x] C5. Acceptance Criteria - 通过
 - [x] C6. Self-Check Commands - 通过
 - [x] C7. Automated Tests Required - 通过
@@ -54,10 +67,21 @@
 - [x] D2. 照抄范例可行性 - 通过
 - [x] D3. Forbidden 清单 - 通过
 - [x] D4. 技术栈和工具约束 - 通过
+- [x] D5. 上下文与设计左移 - 通过
+- [x] D6. Artifact Gate - 通过
+- [x] D7. 开发建议门槛 - 通过
 
 ### E. 风险点检查
 - [x] E1. 风险识别 - 通过
 - [x] E2. Out of Scope 清晰性 - 通过
+
+### F. 创建后 Artifact Gate 准备
+- [x] Project Contract Check 已定义
+- [x] Small Model Grain Check 已定义
+- [x] 占位符和 JSONL 种子扫描已定义
+- [x] 外部配置扫描已定义
+- [x] `FAIL` 阻断规则已定义
+- [x] Design Surface Gate 已定义
 
 ---
 
@@ -107,7 +131,7 @@
 
 ### 问题 3：[类别: C1 占位符消除] [严重程度: 高]
 
-**位置**: REQ-005 的子任务 PRD，Implementation Steps 第2步
+**位置**: REQ-005 的子任务 `implement.md`，有序步骤第2步
 
 **问题描述**:
 - 原文："在 `<Controller类>` 中添加 `<方法>`"
@@ -138,9 +162,9 @@
 
 ---
 
-### 问题 5：[类别: C3 File Manifest] [严重程度: 高]
+### 问题 5：[类别: C3 File Manifest / implement.md 边界] [严重程度: 高]
 
-**位置**: REQ-004 的子任务 PRD，File Manifest
+**位置**: REQ-004 的子任务 `implement.md`，文件计划
 
 **问题描述**:
 - File Manifest 中写的是"修改 Service 层相关文件"
@@ -156,9 +180,9 @@
 
 ---
 
-### 问题 6：[类别: C4 Implementation Steps] [严重程度: 高]
+### 问题 6：[类别: C4 Implementation Steps / implement.md 边界] [严重程度: 高]
 
-**位置**: REQ-006 的子任务 PRD，Implementation Steps 第3步
+**位置**: REQ-006 的子任务 `implement.md`，有序步骤第3步
 
 **问题描述**:
 - 原文："实现订单状态机逻辑"
@@ -181,7 +205,7 @@
 
 ### 问题 7：[类别: D1 决策点已定死] [严重程度: 中]
 
-**位置**: REQ-008 的子任务 PRD，Implementation Steps
+**位置**: REQ-008 的子任务 `implement.md`，有序步骤
 
 **问题描述**:
 - 原文："根据业务逻辑选择合适的异常处理方式"
@@ -209,12 +233,40 @@
 - 中严重程度: 3 个
 - 低严重程度: 0 个
 
+**Artifact Gate 预期输出**:
+- `scanned_tasks`: <n>
+- `jsonl_mode`: <required/optional/inline>
+- `placeholder_hits`: <n>
+- `angle_placeholder_hits`: <n>
+- `jsonl_seed_hits`: <n>
+- `forbidden_token_hits`: <n>
+- `contract_mismatch_hits`: <n>
+- `coverage_count_mismatch_hits`: <n>
+- `high_complexity_missing_artifacts`: <n>
+- `missing_declared_artifacts`: <n>
+- `design_surface_prd_without_matrix`: <n>
+- `design_surface_missing_hits`: <n>
+- `declared_gate_mismatch_hits`: <n>
+- `external_config_hits`: <n>
+- `mechanical_gate_evidence`: <script command or equivalent command output>
+- `result`: PASS / FAIL
+
+**规划 Gate 预期输出**:
+- `requirement_ledger_gate`: PASS / FAIL
+- `contract_gate`: PASS / FAIL
+- `full_mvp_planning_gate`: PASS / FAIL
+- `batch_completeness_gate`: PASS / FAIL
+- `pre_confirmation_gate`: PASS / FAIL
+- `development_recommendation_gate`: PASS / FAIL
+- `failure_codes`: []
+
 ---
 
 ## 五、本轮结论
 
-- [ ] ✅ 达标，可进入用户确认阶段
+- [ ] ✅ 达标，可进入用户确认阶段（Full MVP Planning Gate 与 Pre-Confirmation Gate 均 PASS）
 - [x] ❌ 不达标，需进行第 N+1 轮改进
+- [ ] ⚠️ 检查项无新问题但 Gate 未通过；不得自动请求用户确认，继续规划下一批或阻塞
 
 **原因**: 存在 7 个未通过项，其中 4 个高严重程度问题必须修复。
 
@@ -222,7 +274,7 @@
 1. 修复上述 7 个问题
 2. 进行第 N+1 轮自我评审
 3. 如果第 N+1 轮仍有问题，继续改进
-4. 如果连续2轮无新问题，自动通过
+4. 如果连续2轮无新问题但任一 Gate 未通过，继续规划下一批或阻塞；不得自动通过
 
 ---
 

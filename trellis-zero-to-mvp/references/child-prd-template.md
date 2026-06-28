@@ -1,13 +1,18 @@
 # Child PRD Template
 
-## Authoring Rules (read during planning)
+## Authoring Rules
 
-This PRD is filled in by a strong model during the **planning phase** and may be implemented by a capability-limited local model (e.g. offline qwen) during the **execution phase**. Therefore:
+This PRD is filled during planning and may be implemented by a capability-limited local model. It must pin requirements, contracts, boundaries, acceptance, and dependencies, but it must not replace Trellis 0.6+ `design.md` / `implement.md`.
 
-- Replace every `<...>` placeholder with a **concrete value**. Never leave a placeholder or "TBD / depends" for the execution phase.
-- Do not just describe "what behavior to build". State "which file to touch, which existing example to copy, in what order, and how to self-check".
-- Anything requiring reasoning (which annotation, which branch, naming, table schema) must be decided during planning. The execution phase only performs mechanical copying.
-- If a point cannot be pinned down during planning, put it in `Out of Scope` or split it into a separate task. Do not leave it to the execution model's discretion.
+- Replace every `<...>` placeholder with a concrete value.
+- Do not leave `{Entity}`, `{domain}`, `{entity}`, `<PageComponent>`, `TBD`, `depends`, or equivalent template residue.
+- By default, PRD contains requirements, constraints, scope, dependencies, and acceptance. Technical design goes in `design.md`; file plan, ordered steps, self-check commands, rollback, and review gates go in `implement.md`.
+- Only low-complexity tasks may keep a compact execution appendix in PRD, and only when the local workflow permits PRD-only and the artifact matrix says `implement.md: not required`.
+- Every reasoning decision (naming, paths, API/command/route, schema, state branch, external config) must be pinned during planning; PRD pins behavior contract, `design.md` / `implement.md` pin technical placement.
+- Child tasks must reference the parent Project Contract Lock. Do not invent names, paths, APIs, commands, packages/modules, routes, tables, or permission models.
+- Copy relevant Contract Snapshot adopted values and forbidden tokens. PRD, `design.md`, `implement.md`, and JSONL must not hit forbidden tokens.
+- In Small Model Mode, one child task covers only one primary entity CRUD, one endpoint group, one state transition, one frontend page, or one backend aggregate query.
+- External config and third-party keys must be `FIXED`, `BASELINE`, `BLOCKED`, or `OUT_OF_SCOPE`. Do not leave `YOUR_KEY`, `API_KEY_HERE`, or "to be provided".
 
 ## Template
 
@@ -21,7 +26,49 @@ This PRD is filled in by a strong model during the **planning phase** and may be
 
 ## Goal
 
-Implement or validate this independently verifiable capability for the MVP.
+Implement or validate this independently verifiable MVP capability.
+
+## Project Contract Reference
+
+Copy the contract items this task must follow from the parent Project Contract Lock. If this task needs a different name/path/API, update the parent contract first and explain why.
+
+| Contract Item | Profile Field | This Task Uses | Parent Evidence Path |
+| --- | --- | --- | --- |
+| <item> | <profile field> | <specific path/name/API/command/module or not-applicable> | <path> |
+
+### Contract Snapshot Check
+
+| Check | Value |
+| --- | --- |
+| Required adopted values | <paths/names/APIs/commands/modules/routes/tables/permissions> |
+| Forbidden tokens for this task | <tokens; none if none> |
+| Scan scope | This PRD, design.md, implement.md, implement.jsonl, check.jsonl |
+| Handling | Any hit makes Artifact Gate FAIL; fix before execution |
+
+## Semantic Anchors
+
+Use concrete values. Keep these consistent with Project Contract Reference, acceptance criteria, `design.md`, and `implement.md`. Write `not-applicable` for irrelevant fields instead of applying another tech stack.
+
+| Item | Value |
+| --- | --- |
+| Project Contract Profile | <selected profile> |
+| Business / Capability Domain | <e.g. site / cli-task-create / workflow-template / auth-page> |
+| Primary Object / Entity / Interface | <specific name or not-applicable> |
+| User-Visible Entry | <page path / CLI command / API endpoint / SDK function / workflow section> |
+| Data or State Object | <table / schema / config key / state block / not-applicable> |
+| Code Landing Summary | <module, package, workspace, template, or not-applicable> |
+| Permission / Auth Model | <permission prefix / guard / config / not-applicable> |
+| Adjacent Domains This Task Must Not Touch | <domains unless listed as dependencies> |
+
+## Small Model Granularity Check
+
+| Check | Result |
+| --- | --- |
+| Task granularity | <one entity CRUD / endpoint group / state transition / frontend page / backend aggregate query> |
+| Primary object count | <n, usually 1 in Small Model Mode> |
+| Independent capability count | <n, usually 1 in Small Model Mode> |
+| Includes high-complexity combination | <yes/no; if yes, explain why not split> |
+| Needs split | <no/yes; yes unless user explicitly approved merge> |
 
 ## Gap Source
 
@@ -41,15 +88,20 @@ Implement or validate this independently verifiable capability for the MVP.
 
 ## Complexity and Planning Artifacts
 
-- Complexity: <low/medium/high, assessed against the execution model capability>
-- Execution model assumption: <e.g. qwen3.6 35b local / GPT-5.5 / Opus 4.8>
+- Complexity: <low/medium/high, assessed against execution model capability>
+- Execution model assumption: <qwen3.6 35b local / GPT-5.5 / Opus 4.8>
+- Batch: <B01/B02/...>
+- Parallel group: <G01/G02/...; none if not parallel>
+- Ledger status: <must match parent Subtask Planning Ledger>
+- Artifact matrix row: <copy this task's row from planning artifact matrix>
 - Required artifacts:
   - `prd.md`: required
   - `design.md`: <required/not required and reason>
   - `implement.md`: <required/not required and reason>
-  - `implement.jsonl`: <required/not required and reason>
-  - `check.jsonl`: <required/not required and reason>
-- Spec freshness: <which `.trellis/spec/` files were read; if stale, name the spec-refresh task>
+  - `implement.jsonl`: <required/not required and reason; jsonl_mode=required/optional/inline>
+  - `check.jsonl`: <required/not required and reason; jsonl_mode=required/optional/inline>
+- Trellis 0.6+ artifact boundary: <file plan, steps, and self-check commands are in implement.md; or low-complexity PRD-only appendix>
+- Spec freshness: <which `.trellis/spec/` files were read; if stale, name refresh task>
 
 ## Context Manifest
 
@@ -63,78 +115,87 @@ The execution model must read these before editing:
 
 ## Decision Table
 
-Pin every decision that would otherwise require reasoning during execution:
+Pin every decision that would otherwise require execution-time reasoning:
 
-| Decision | Selected Option | Reason | Affected Files |
+| Decision | Selected Option | Reason | Affected File or Artifact |
 | --- | --- | --- | --- |
-| <annotation/naming/schema/branch/API choice> | <exact choice> | <why> | <paths> |
+| <naming/schema/state branch/API/command choice> | <exact choice> | <reason> | <prd/design/implement or paths> |
+
+## External Config and Open Items
+
+All external config must be fixed or excluded. Do not leave placeholders.
+
+If a `BLOCKED` external config is required for implementation, this task must be `BLOCKED` or the dependent behavior must be out of scope. Executable tasks can only implement behavior that does not depend on unresolved config.
+
+| Config / External Dependency | Status | Planning Handling | Execution Behavior |
+| --- | --- | --- | --- |
+| <map key / third-party API / hardware protocol> | FIXED/BASELINE/BLOCKED/OUT_OF_SCOPE | <config name, evidence, or exclusion reason> | <exact behavior> |
 
 ## Reference Implementation
 
-During execution, prefer copying the existing examples below, replacing only the entity/fields/naming for this task:
+During execution, prefer copying these examples and replacing only this task's names/fields:
 
-- Backend example: <path to an existing file to copy, e.g. .../XxxController.java; if none, write "none, build from scratch per Technical Notes">
-- Data-layer example: <path to existing Mapper / SQL / interface contract>
-- Frontend example: <path to existing page/component to copy>
-- Replacement notes: <replace Xxx in the example with this task's Yyy; field mapping in File Manifest>
+- Business/interface example: <path or "none, build from design.md / implement.md">
+- Data/state/config example: <schema / mapper / template / config / workflow path or none>
+- UI/CLI/SDK example: <page, component, command, SDK API, or template path or none>
+- Replacement notes: <replace Xxx with Yyy; detailed file replacement is in implement.md>
 
-## File Manifest
+## Implementation Plan Location
 
-List every file this task touches, marking new/modified, with exact paths:
+Trellis 0.6+ stores detailed file plans in `implement.md` by default. This section only states where execution planning lives, to avoid PRD and `implement.md` drifting.
+
+| Item | Value |
+| --- | --- |
+| File plan location | `implement.md` / this PRD compact appendix |
+| Ordered steps location | `implement.md` / this PRD compact appendix |
+| Self-check commands location | `implement.md` / this PRD compact appendix |
+| PRD-only evidence | <low complexity + local workflow permits + artifact matrix says implement.md not required; otherwise not-applicable> |
+
+### PRD-only Compact Execution Appendix (low complexity only)
+
+Delete this subsection for non-PRD-only tasks and fill `implement.md` instead.
 
 | Action | File Path | Notes |
 | --- | --- | --- |
-| New | <path> | <what this file does> |
-| Modify | <path> | <where to add what, e.g. "append Y after method X"> |
+| New/Modify | <path> | <what this file does; do not fill for non-PRD-only tasks> |
 
-If a data structure is involved, attach a field table:
+1. <only for PRD-only: concrete action; otherwise write "see implement.md">
 
-| Field | Type | Constraint | Notes |
+```bash
+<only for PRD-only: self-check command; otherwise write "see implement.md">
+```
+
+## Mount Points
+
+These make the capability visible. Rule: "if this line disappears, the feature disappears from the user/system point of view."
+
+| Mount Point | Type | Location | Exact Wiring Action |
 | --- | --- | --- | --- |
-| <name> | <type> | <not-null/unique/default> | <meaning> |
-
-## Implementation Steps
-
-Execute in order; each step is independently verifiable. Steps must be concrete actions, not abstract goals:
-
-1. <e.g. create data structure / run DDL>
-2. <e.g. copy the Reference Implementation example, replace entity and fields per File Manifest>
-3. <e.g. add <specific validation/branch> in <specific method>; pin which branch is taken>
-4. <e.g. compile passes>
+| <name> | route registration / config entry / event subscription / DI binding / menu entry / CLI registration / SDK export | <path> | <exact action> |
 
 ## Behavior Constraints
 
-- <required behavior, written as a decidable assertion>
-- <boundary condition: exact behavior for empty/oversized/duplicate input>
-- <error handling: exact error code/message returned on failure>
+- <required behavior as a decidable assertion>
+- <boundary condition behavior for empty/oversized/duplicate input>
+- <error handling: exact error code/message>
 - <compatibility requirement: behavior that must not break>
 
 ## Acceptance Criteria
 
-Write as machine-checkable or individually tickable assertions; avoid subjective phrasing like "correctly implemented":
+Use machine-checkable or individually tickable assertions:
 
 - [ ] REQ-001 is fully implemented for this task scope.
 - [ ] <build/compile command> passes.
-- [ ] <specific call + input> returns <exact expectation>.
-- [ ] <failure path, e.g. duplicate/invalid input> returns <exact error code and message>.
+- [ ] <specific call/command/page action + input> returns <exact expectation>.
+- [ ] <failure path> returns <exact error code/message>.
 - [ ] Existing MVP behavior is not broken.
 - [ ] Required tests pass.
-
-## Self-Check Commands
-
-Commands the execution phase can run after each step to confirm locally, no human judgment needed:
-
-```bash
-<e.g. mvn -pl <module> compile>
-<e.g. mvn -pl <module> test -Dtest=<TestClass>>
-<e.g. curl -X POST <url> -d '<payload>'  # expect ...>
-```
 
 ## Automated Tests Required
 
 ### Unit Tests
 
-- <test point: method under test + input + expected output>
+- <test point: method + input + expected output>
 
 ### Integration Tests
 
@@ -164,15 +225,17 @@ Commands the execution phase can run after each step to confirm locally, no huma
 ## Out of Scope
 
 - <explicit exclusions>
-- <any point that cannot be pinned down during planning and must not be left to the execution model>
+- <anything that cannot be pinned during planning and must not be left to execution model discretion>
 
 ## Forbidden
 
-Negative constraints for the execution model, to stop it improvising:
-
-- Do not create base/utility classes that already exist; reuse the existing ones the Reference Implementation points to.
-- Do not touch files outside the File Manifest.
-- Do not introduce new dependencies or frameworks not listed in Technical Notes.
+- Do not create base/utility classes that already exist; reuse the existing ones referenced above.
+- Do not touch files outside the `implement.md` file plan; PRD-only low-complexity tasks must stay inside the compact appendix file list.
+- Do not introduce dependencies or frameworks not listed in `design.md` / `implement.md`.
+- Do not change Project Contract Reference names, paths, APIs, commands, packages/modules, routes, tables, or permission models.
+- Do not use Contract Snapshot forbidden tokens.
+- Do not implement adjacent domains opportunistically; adjacent work needs dependency or separate task.
+- Do not leave `YOUR_KEY`, `API_KEY_HERE`, `TBD`, `depends`, `as needed`, or unresolved placeholders.
 - <other project-specific red lines>
 
 ## Technical Notes

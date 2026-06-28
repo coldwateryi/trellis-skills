@@ -1,209 +1,125 @@
 # Self-Review Checklist
 
-This checklist evaluates whether read-only analysis output meets the requirements for execution by small parameter models (e.g., qwen3.6 35b).
+Use this checklist to evaluate whether read-only planning is executable by small/local models such as qwen3.6 35b.
 
 ## Usage
 
-1. After completing each round of read-only analysis, check against this list item by item
-2. All check items must pass (or be marked "N/A") before proceeding to user confirmation
-3. If any items fail, mark specific issues and perform targeted improvements
+1. After each read-only analysis round, check this list item by item.
+2. All applicable checks must pass, and Full MVP Planning Gate plus Pre-Confirmation Gate must be `PASS`, before user confirmation.
+3. Failed items become precise issues with targeted fixes.
 
----
+## 0. Trellis 0.6+ Workflow Fit
 
-## 0. Trellis 0.6 Beta Workflow Fit Check
+### 0.0 Project Contract
+- [ ] User requirements, README/module README, AGENTS.md, `.trellis/spec/`, and code conventions were read.
+- [ ] Project Contract Profile is selected with evidence and rejected-profile reasons.
+- [ ] Project Contract Lock exists; applicable profile fields have adopted values and evidence paths.
+- [ ] Non-applicable fields are `not-applicable`; RuoYi/Java fields are not applied to unrelated projects.
+- [ ] `CONTRACT_CONFLICT` blocks confirmation until resolved.
+- [ ] Child candidates follow Project Contract Lock.
+- [ ] No task mixes two naming/path/API/command systems.
+- [ ] Contract Snapshot and forbidden tokens exist, with evidence.
+- [ ] Draft PRD/design/implement/JSONL are clean of forbidden tokens.
 
 ### 0.1 Workflow Discovery
-- [ ] `.trellis/workflow.md` was read when present
-- [ ] `.trellis/config.yaml`, `.trellis/.version`, and `.trellis/.developer` were checked when present
-- [ ] The analysis states whether the project uses legacy PRD-only tasks or Trellis 0.6 beta planning artifacts
-- [ ] Developer identity setup uses `trellis init -u <name>` as the primary instruction, with `init_developer.py` only as legacy fallback
+- [ ] `.trellis/workflow.md` was read when present.
+- [ ] `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer` were checked when present.
+- [ ] Analysis states legacy PRD-only vs Trellis 0.6+ artifact workflow.
+- [ ] `codex.dispatch_mode` was read; inline/sub-agent/optional JSONL Gate mode is distinguished.
+- [ ] Developer identity setup uses `trellis init -u <name>` first; `init_developer.py` is legacy fallback only.
 
 ### 0.2 Spec Freshness
-- [ ] Relevant `.trellis/spec/` files are listed
-- [ ] Spec freshness is marked fresh/stale/missing/unknown
-- [ ] Stale or missing specs become a spec-refresh/bootstrap task or blocking note
+- [ ] Relevant `.trellis/spec/` files are listed.
+- [ ] Spec freshness is fresh/stale/missing/unknown.
+- [ ] Stale or missing specs become spec-refresh/bootstrap task or blocker.
 
-### 0.3 Planning Artifact Gate
-- [ ] Every task states required artifacts (`prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`)
-- [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller
-- [ ] JSONL context manifests are required when stable specs, research notes, or external context must be preloaded before implementation/checking
+### 0.3 Planning Artifacts
+- [ ] Every task states required artifacts: `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`.
+- [ ] Planning artifact matrix exists and supports post-creation file existence checks.
+- [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller.
+- [ ] High complexity is not PRD-only.
+- [ ] Stable-context preload needs JSONL context manifests.
+- [ ] Detailed file plan, ordered steps, self-check commands, failure recovery, and review gates are in `implement.md`; low-complexity PRD-only exception has evidence.
 
-### 0.4 Partial Implementation Retrofit
-- [ ] If the repository is not empty, Existing Implementation Baseline is present
-- [ ] Baseline entries list exact code evidence and test evidence, or explicitly state test evidence is missing
-- [ ] Source requirements remain the source of truth; `.trellis/spec/` is not treated as the only requirement source
-- [ ] `DONE` requirements do not create implementation tasks
-- [ ] `UNTESTED` requirements create test-only tasks, not duplicated implementation tasks
-- [ ] `PARTIAL` requirements create gap-closing tasks scoped only to missing behavior
-- [ ] `MISSING` requirements create new implementation tasks
-- [ ] Every traceability row has a Task Action matching its Current Status (`none`, `test-only`, `gap-task`, `new-task`, or `clarify`)
-- [ ] Existing capabilities used as dependencies are listed as baseline dependencies such as `existing:<path-or-capability>`
+### 0.4 Existing Implementation Retrofit
+- [ ] Existing Implementation Baseline exists for non-empty repos.
+- [ ] Baseline entries include exact code and test evidence, or explicitly state missing tests.
+- [ ] Source requirements remain source of truth.
+- [ ] `DONE` requirements do not create implementation tasks.
+- [ ] `UNTESTED` requirements create only test coverage tasks.
+- [ ] `PARTIAL` requirements create only gap-closing tasks.
+- [ ] `MISSING` requirements create new implementation tasks.
+- [ ] Requirement rows have matching actions: `none`, `test-only`, `gap-task`, `new-task`, `clarify`.
+- [ ] Existing dependencies use `existing:<path-or-capability>`.
+- [ ] Task paths use real `task.py create` directories, not logical IDs/slugs.
 
----
+### 0.5 State Machine and Gates
+- [ ] `workflow-state-machine.md` and `gate-definitions.md` were read.
+- [ ] Current output names state S0-S10 and next state.
+- [ ] Requirement Ledger Gate, Contract Gate, Full MVP Planning Gate, Batch Completeness Gate, and Pre-Confirmation Gate have PASS/FAIL, failure codes, and evidence.
+- [ ] If any Gate fails, there is no user confirmation request, no task creation, and no development recommendation.
 
-## A. Requirements Completeness Check
+## A. Requirement Completeness
 
-### A1. Requirement Identification
-- [ ] Every requirement has a unique REQ-xxx ID
-- [ ] Every acceptance criterion has a unique AC-xxx ID
-- [ ] ID numbering is sequential with no gaps
-- [ ] Every requirement has clear status (DONE/PARTIAL/MISSING/UNTESTED/UNCLEAR)
+- [ ] Every source requirement has unique stable REQ-xxx.
+- [ ] Every acceptance criterion has AC-xxx.
+- [ ] Full Requirement Matrix and MVP Coverage Matrix are separate.
+- [ ] MVP coverage counts are not reported as source requirement count.
+- [ ] Parent PRD coverage summary comes from mechanical MVP Coverage Matrix counts.
+- [ ] Every `REQ-xxx` has coverage status: TASK/MERGED/BASELINE/OUT_OF_SCOPE/BLOCKED.
+- [ ] `MERGED`, `BASELINE`, and `OUT_OF_SCOPE` rows have target/evidence/reason.
+- [ ] All `OUT_OF_SCOPE` rows are in Backlog.
+- [ ] No source requirement disappears from traceability.
+- [ ] Requirements avoid vague terms: TBD, as needed, depends, etc.
+- [ ] Boundary conditions, error cases, and response/error structures are concrete.
 
-### A2. Requirement Description Clarity
-- [ ] No vague terms like "TBD", "as needed", "depending on situation"
-- [ ] No incomplete enumerations like "etc.", "such as"
-- [ ] All uncertain words eliminated or clarified
+## B. Task Split Quality
 
-### A3. Boundary Conditions
-- [ ] Behavior for empty input is specified
-- [ ] Behavior for oversized input is specified
-- [ ] Behavior for duplicate input is specified
-- [ ] Behavior for concurrent scenarios (if applicable) is specified
-- [ ] Behavior for invalid format input is specified
+- [ ] Each child task is an independently verifiable capability.
+- [ ] No file-based or time-based task split.
+- [ ] Task merge/split record is complete.
+- [ ] Full platform scope vs MVP boundary is explicit.
+- [ ] Small Model Mode: one entity CRUD / endpoint group / state transition / page / aggregate query per task.
+- [ ] No overlarge task is kept merely because it is "coupled" unless user explicitly approved.
+- [ ] Batch limits are respected; all MVP `TASK` children are planned, not just P0/P1.
+- [ ] Every task has complexity, dependencies, priority, batch, and parallel group.
+- [ ] No circular dependencies; baseline dependencies are separate from Trellis tasks.
+- [ ] Subtask Planning Ledger and Batch Completion Rollup exist and all rows are terminal before confirmation.
 
-### A4. Error Handling
-- [ ] Every failure scenario defines specific error code
-- [ ] Every failure scenario defines specific error message
-- [ ] Error response data structure is specified
+## C. PRD and Artifact Quality
 
----
+- [ ] PRD/design/implement/JSONL contain no unresolved placeholders or forbidden tokens.
+- [ ] Child PRD Project Contract Reference matches parent Contract Lock.
+- [ ] Child PRD semantic anchors match `design.md` and `implement.md`.
+- [ ] Reference implementation paths are concrete or explicitly none.
+- [ ] File Manifest lives in `implement.md` for Trellis 0.6+; PRD only points to implementation plan location unless PRD-only low complexity is justified.
+- [ ] Implementation steps live in `implement.md` or PRD-only compact appendix.
+- [ ] Self-check commands live in `implement.md`; PRD may keep acceptance-level command summary.
+- [ ] Acceptance criteria are decidable and include normal, failure, and boundary paths.
+- [ ] Automated test requirements are concrete.
 
-## B. Task Split Quality Check
+## D. Small Model Friendliness
 
-### B1. Split Principles
-- [ ] Each subtask corresponds to independently verifiable capability
-- [ ] No tasks split by file
-- [ ] No tasks split by time
-- [ ] Each subtask can be completed independently
+- [ ] All naming/path/API/command/package decisions are pinned.
+- [ ] Table/schema/state/config structures are pinned.
+- [ ] External config, third-party keys, maps, hardware, and protocols are fixed, baseline, blocked, or out of scope.
+- [ ] Example-to-task mapping is clear.
+- [ ] Forbidden list constrains files, dependencies, and contract changes.
+- [ ] Build/test/lint commands are concrete.
+- [ ] Context Manifest lists exact files to read before editing.
+- [ ] `implement.jsonl` and `check.jsonl` contain stable context, not steps or edited source files.
+- [ ] JSONL mode is `required`, `optional`, or `inline` and matches config/artifact matrix.
+- [ ] Artifact Gate uses `scripts/trellis_zero_gate.py` or equivalent mechanical scan, never hand-filled.
+- [ ] Artifact Gate output includes `jsonl_mode`, `forbidden_token_hits`, `contract_mismatch_hits`, `coverage_count_mismatch_hits`, `missing_declared_artifacts`, `angle_placeholder_hits`, `declared_gate_mismatch_hits`, and `external_config_hits`.
 
-### B2. Complexity Assessment
-- [ ] Every task annotated with complexity (low/medium/high)
-- [ ] Complexity based on small model capability
-- [ ] High complexity tasks split or have very detailed steps
-- [ ] Low: has example to copy or standard CRUD
-- [ ] Medium: has business logic, PRD has clear steps
-- [ ] High: split or every step pinned down
+## E. Development Recommendation Threshold
 
-### B3. Dependencies
-- [ ] Dependencies clearly listed
-- [ ] No circular dependencies
-- [ ] "Parallelizable" tasks truly have no dependencies
-- [ ] Blocking tasks (P0) identified and prioritized
-- [ ] Baseline dependencies are separated from Trellis task dependencies
-- [ ] Existing code dependencies are not represented as new Trellis child tasks
-
-### B4. Priority
-- [ ] Every task assigned priority (P0/P1/P2/P3)
-- [ ] P0: blocks other modules or core correctness
-- [ ] P1: core business loop
-- [ ] P2: experience, reports, notifications, enhancements
-- [ ] P3: non-essential optimization
-
----
-
-## C. PRD Quality Check (Critical!)
-
-### C1. Placeholder Elimination
-- [ ] No `<...>` placeholders in PRD
-- [ ] No abstract terms like "specific path", "related files"
-- [ ] No reasoning gaps like "as needed"
-
-### C2. Reference Implementation
-- [ ] If example exists, points to specific file with full path
-- [ ] If no example, states "None, implement from scratch"
-- [ ] Replacement instructions specific
-- [ ] Not vague like "refer to related code"
-
-### C3. File Manifest
-- [ ] Lists all files, precise to full path
-- [ ] Each file annotated with operation type
-- [ ] Modify operations specify exact location
-- [ ] If data structure involved, includes complete field table
-
-### C4. Implementation Steps
-- [ ] Steps are ordered
-- [ ] Each step is concrete action, not abstract goal
-- [ ] Each step independently verifiable
-- [ ] Reasoning decisions pinned down
-
-### C5. Acceptance Criteria
-- [ ] Criteria are decidable assertions
-- [ ] Includes normal path acceptance
-- [ ] Includes exception path acceptance
-- [ ] Includes boundary condition acceptance
-
-### C6. Self-Check Commands
-- [ ] Provides directly executable commands
-- [ ] Commands are specific
-- [ ] Commands include expected result
-- [ ] No human judgment required
-
-### C7. Automated Tests Required
-- [ ] Lists required test types
-- [ ] Each test point specific
-- [ ] Not abstract like "add necessary tests"
-
----
-
-## D. Small Model Execution Friendliness Check
-
-### D1. Decision Points Pinned
-- [ ] All annotation choices specified
-- [ ] All branch choices specified
-- [ ] All naming rules specified
-- [ ] All table structure specified
-
-### D2. Copy-Example Feasibility
-- [ ] If pointing to example, highly similar to task
-- [ ] Mapping from example to task is clear
-- [ ] If cannot copy, from-scratch steps very detailed
-
-### D3. Forbidden List
-- [ ] Lists what not to do
-- [ ] Specifies file modification scope
-- [ ] Specifies dependency constraints
-
-### D4. Tech Stack and Tool Constraints
-- [ ] Frameworks/libraries listed
-- [ ] Build commands specified
-- [ ] Test commands specified
-
-### D5. Context and Design Shift-left
-- [ ] Context Manifest lists exact files the execution model must read before editing
-- [ ] Decision Table pins naming, branch, schema, API, and validation choices
-- [ ] Contract snapshots define API/interface/data/state behavior before coding
-- [ ] `implement.jsonl` entries list stable implementation context files, not source files or step actions, when used
-- [ ] `check.jsonl` entries list stable verification context files, not test commands, when used
-
----
-
-## E. Risk Point Check
-
-### E1. Risk Identification
-- [ ] High-risk modules annotated
-- [ ] Cross-team dependencies specified
-- [ ] Technical debt recorded in Out of Scope
-
-### E2. Out of Scope Clarity
-- [ ] Lists explicitly excluded features
-- [ ] Lists points that cannot be pinned (if any)
-- [ ] Not vague like "other features"
-
----
+- [ ] No development recommendation until Pre-Confirmation Gate, Task Creation Gate, Artifact Gate, and Development Recommendation Gate pass.
+- [ ] Any `FAIL` or `PENDING` Gate blocks executable-claim output.
+- [ ] Recommended first task has satisfied dependencies or only existing baselines.
 
 ## Pass Criteria
 
-- All applicable check items are marked ✅
-- Non-applicable items are marked `N/A` with a reason
-
-## Failure Handling
-
-- Failed check items become explicit issues
-- Generate an issue list (location, description, impact, improvement suggestion)
-- Apply targeted improvements and continue to the next review round
-
-## Convergence Conditions
-
-- All check items pass → proceed to user confirmation
-- 2 consecutive rounds with no new issues → auto-pass
-- Still have issues after 5 rounds → prompt user choice
+- All applicable checks pass or are marked `N/A` with reason.
+- Full MVP Planning Gate and Pre-Confirmation Gate are `PASS`.
+- If tasks were created, Artifact Gate and Development Recommendation Gate are `PASS`.

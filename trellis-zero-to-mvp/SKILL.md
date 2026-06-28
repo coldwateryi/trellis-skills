@@ -1,150 +1,233 @@
 ---
 name: trellis-zero-to-mvp
-description: Create a Trellis MVP task tree from a full requirements document. Use when Codex receives a product brief, requirements document, PRD, or large feature request for a new or partially implemented project and needs to do read-only analysis, assign stable REQ/AC IDs, build a traceability matrix, recognize existing implementation evidence, split only remaining MVP scope into parent and child Trellis tasks, draft PRDs, and plan dependency-ordered MVP delivery before coding continues.
+description: |
+  Create a Trellis MVP task tree from a full requirements document. Use when Codex receives a product brief, requirements document, PRD, zero-to-MVP request, large capability-building request, or partially implemented project and must do read-only analysis, assign stable REQ/AC IDs, build full requirement and MVP coverage matrices, lock project contracts, identify existing implementation evidence, use progressive batch and sub-agent planning to form a complete MVP parent/child task tree, draft PRD/design/implementation artifacts, and create Trellis tasks only after user confirmation; do not write application code.
 ---
 
 # Trellis Zero to MVP
 
 ## Overview
 
-Turn a raw requirements document into an MVP-sized Trellis delivery plan. The input may be a blank project or a project where the user already implemented part of the requirements manually before initializing Trellis. The output is a confirmed parent task plus independently verifiable child tasks for the remaining MVP scope, not application code.
+Turn a raw requirements document into an MVP-sized Trellis delivery plan. The output is a user-confirmed parent task, child tasks covering the complete MVP scope, PRDs, and any required planning artifacts. It is not application code.
 
-## Guardrails
+Treat this skill as a planning compiler:
+
+1. Source requirements plus local README/spec/code are inputs.
+2. Full Requirement Matrix, MVP Coverage Matrix, and Subtask Planning Ledger are the only intermediate representation.
+3. Trellis task, `prd.md`, `design.md`, `implement.md`, and JSONL files are outputs.
+4. Gates are compile checks. If a gate fails, stop and fix before moving forward.
+5. For small/local models and long planning runs, advance through Stage State Packets; after every phase boundary or context recovery, rebuild state from matrices, ledgers, and real directories instead of relying on natural-language memory.
+
+## Core Invariants
 
 - Do not write business code.
-- Do not create Trellis tasks until the user confirms the read-only analysis.
+- Do not create Trellis tasks until the user confirms the complete read-only plan.
 - Do not split tasks by files. Split by independently verifiable business or technical capability.
-- Size tasks to the execution model's capability: if the execution phase may use a capability-limited local model (e.g. offline qwen), split finer — one child task per entity's CRUD set or per endpoint — and annotate complexity.
-- Assign stable requirement IDs before task planning: `REQ-001`, `REQ-002`, `AC-001`.
-- Every child task must include requirement IDs, acceptance criteria, tests, dependencies, unlocks, out-of-scope items, and technical notes.
-- A PRD is an execution spec the execution model copies from, not an intent description. During planning, replace every `<...>` placeholder with a concrete value (exact file paths, copyable existing examples, ordered implementation steps, machine-checkable acceptance assertions, self-check commands). Never leave reasoning to the execution phase.
-- Every decision requiring reasoning (which annotation, which branch, naming, table schema, which example to copy) must be pinned down during planning. Points that cannot be pinned go to out-of-scope or a separate task, never to the execution model's discretion.
-- If existing code already satisfies a requirement, do not create an implementation task for that satisfied scope. Use existing evidence as a baseline dependency instead.
-- In partially implemented projects, task creation follows this rule: `DONE` -> no task; `UNTESTED` -> test-only task; `PARTIAL` -> gap-closing task for the missing behavior only; `MISSING` -> new implementation task; `UNCLEAR` -> blocking question or clarification task.
-- For Trellis 0.6 beta projects, treat `.trellis/workflow.md` as the active local workflow contract when present. Do not assume older task-only behavior if the project declares `design.md`, `implement.md`, `implement.jsonl`, or `check.jsonl` artifacts.
-- Treat Trellis parent/child links as task structure only. Write strict dependencies in each child `prd.md`.
-- If `task.py create` fails because the developer identity is not initialized, stop and tell the user to run `trellis init -u <name>` (with the platform flag used by the project, such as `--codex`) or provide an explicit assignee. Keep `python ./.trellis/scripts/init_developer.py <name>` only as a legacy fallback when the Trellis CLI is unavailable.
+- Extract complete source requirements before planning the MVP. Every source requirement must enter the Full Requirement Matrix; if it is not in the current MVP, mark it `OUT_OF_SCOPE` or `BLOCKED` and put it in Backlog.
+- `REQ-xxx` is the stable identity of a source requirement, not delivery order. Task merge/split/reorder can only change `Txx`.
+- Maintain Full Requirement Matrix and MVP Coverage Matrix separately; never report MVP coverage count as the original source requirement count.
+- Before task planning, choose a Project Contract Profile, then form Project Contract Lock and Contract Snapshot. Later parent/child PRDs, `design.md`, `implement.md`, and JSONL may only use names, paths, commands, APIs, packages/modules, routes, tables, permission prefixes, and evidence paths from that contract.
+- Local context priority is fixed: explicit user request > source requirement behavior > README/module README/AGENTS.md > `.trellis/spec/` > existing code structure > framework defaults > model common sense.
+- Small/local models or long tasks must read `references/small-model-safety.md` and output Stage State Packet at each phase. If counts, contracts, or gate results drift from scans, do Drift Reset immediately.
+- In Small Model Mode, one child task covers only one primary entity CRUD, one endpoint group, one state transition, one front-end page, or one backend aggregate query. Split further unless the user explicitly permits a merge.
+- In Small Model Mode, create at most 8 executable child tasks per batch and fully draft at most 5 high-quality child PRDs per batch. Batching controls capacity; it is not scope trimming.
+- Batch planning must maintain Subtask Planning Ledger. Completing only P0/P1 is not complete planning. Do not ask the user to confirm until every MVP `TASK` child task is `READY_TO_CONFIRM`, `BLOCKED`, or `OUT_OF_SCOPE`.
+- When candidate child tasks exceed batch limits, business domains exceed 3, full PRD drafts exceed 5, or the user requests multi-agent planning, read `references/subagent-planning-template.md` and prefer sub-agents. If the platform has no sub-agent support, serially simulate the same Agent Packets.
+- Respect Trellis planning artifact boundaries: `prd.md` contains requirements, constraints, scope, dependencies, and acceptance; technical design goes in `design.md`; file plan, implementation steps, self-check commands, rollback points, and review gates go in `implement.md`. Only when the local workflow permits PRD-only and the task is low complexity may a compact execution appendix remain in `prd.md`.
+- Small-model execution still needs narrow paths fixed during planning, but put them primarily in `design.md` / `implement.md` rather than overloading PRD.
+- External configuration, third-party keys, maps, hardware, and external interfaces must be classified as `FIXED`, `BASELINE`, `BLOCKED`, or `OUT_OF_SCOPE`.
+- For partially implemented projects, task creation rules are fixed: `DONE` -> no task; `UNTESTED` -> test-only task; `PARTIAL` -> gap-closing task for missing behavior only; `MISSING` -> new implementation task; `UNCLEAR` -> blocking question or clarification task.
+- If a Trellis 0.6+ project has `.trellis/workflow.md`, treat it as the local workflow contract. If the project declares `design.md`, `implement.md`, `implement.jsonl`, or `check.jsonl`, do not use an old PRD-only workflow.
+- Codex projects must read `.trellis/config.yaml` `codex.dispatch_mode`: in `inline` mode JSONL is not a planning-readiness gate, and seed JSONL may be deleted or marked `NOT_NEEDED_WITH_REASON`; in sub-agent mode, fill real `implement.jsonl` / `check.jsonl`; seed-only cannot pass.
+- `task.py create` only creates task directories and seed files. Any artifacts declared in matrices or PRDs must be written by this skill into the real task directories after creation.
+- Create task directories only through `task.py create`. Afterward, write files only to the real directory returned by `task.py create`; do not build paths from logical Task IDs or slugs.
+- Each task PRD goes only to `<task-dir>/prd.md`, and that directory must contain `task.json`.
+- Artifact Gate must not be hand-filled by the model. After task creation and artifact writing, run `scripts/trellis_zero_gate.py` or an equivalent mechanical scan. Final Gate counts must come from tool output.
+
+## Stop Gates
+
+If any condition below is true, stop the current phase and output a `FAIL` report, failure codes, and fix list. Do not continue task creation or claim the task tree is executable.
+
+- Project Contract Lock, Contract Snapshot, or evidence paths are missing.
+- Full Requirement Matrix, MVP Coverage Matrix, or Subtask Planning Ledger is missing.
+- Any source requirement lacks coverage status, or coverage statistics differ from mechanical matrix statistics.
+- Subtask Planning Ledger and MVP Coverage Matrix disagree.
+- `UNASSIGNED_MVP_REQ`, `UNBATCHED_TASK`, `P0P1_ONLY_PLAN`, or `DEFERRED_PRD_WITHOUT_PLAN` exists.
+- A child task violates Small Model Mode granularity without explicit user confirmation.
+- Before user confirmation, any MVP `TASK` child task is not `READY_TO_CONFIRM`, `BLOCKED`, or `OUT_OF_SCOPE`.
+- PRD declares `design.md`, `implement.md`, `implement.jsonl`, or `check.jsonl` as required, but the real task directory lacks that file.
+- In sub-agent dispatch mode or when the artifact matrix declares JSONL required, `implement.jsonl` or `check.jsonl` contains `_example`; in Codex inline mode, seed JSONL must be deleted or explained as `NOT_NEEDED_WITH_REASON`, and Gate must run with `--jsonl-mode inline`.
+- Artifacts contain `{Entity}`, `{domain}`, `{entity}`, `<PageComponent>`, `<path>`, `TBD`, `depends`, `as needed`, `YOUR_KEY`, `API_KEY_HERE`, `to be provided`, `pending config`, or equivalent unresolved placeholders.
+- Contract Snapshot forbidden tokens appear in parent/child PRD, `design.md`, `implement.md`, or JSONL.
+- Gate result lacks mechanical scan evidence, or parent PRD declared Gate counts differ from mechanical scan results.
+- Artifact Gate result is not `PASS`.
 
 ## Workflow
+
+### 0. Read Workflow Contracts
+
+At startup read:
+
+- `references/workflow-state-machine.md`
+- `references/gate-definitions.md`
+- `references/project-contract-profiles.md`
+- `references/small-model-safety.md` when using a local/small model, long complex task, or more than 8 candidate child tasks
+
+Every later phase must advance through the state machine and cannot skip Gates.
 
 ### 1. Discover Inputs
 
 Locate and read:
 
 - The source requirements document.
-- README or project overview files.
-- Existing code structure and tests, if the repo is not empty.
-- Existing `.trellis/tasks/` and `.trellis/spec/` material relevant to the project.
-- Trellis 0.6 beta workflow metadata when present: `.trellis/workflow.md`, `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, and `.trellis/workspace/`.
+- README, module README, AGENTS.md, or project overview files.
+- Existing code structure and tests if the repo is not empty.
+- Relevant `.trellis/tasks/` and `.trellis/spec/` material.
+- Trellis 0.6+ metadata: `.trellis/workflow.md`, `.trellis/config.yaml`, `.trellis/.version`, `.trellis/.developer`, `.trellis/workspace/`.
 
-If the repository is not empty, or if source requirements mention functionality that appears partially implemented, produce an Existing Implementation Baseline before splitting tasks. Treat the original requirements document as the source of truth; use `.trellis/spec/` and code only as implementation evidence and context.
+Inspect the repository before asking questions. Ask only blocking questions that cannot be answered from local context.
 
-Before drafting tasks, check whether `.trellis/spec/` is current enough to support implementation. If specs are missing, generic, or clearly stale, add a spec-refresh/bootstrap task or blocking note before planning code-heavy work.
+### 2. Complete Requirement Ledger and Project Contract
 
-Use repository inspection before asking the user questions. Ask only blocking questions that cannot be answered from local context.
+The first read-only pass may only output the requirement ledger. Do not create tasks or draft full child PRDs yet. It must include:
 
-### 2. Perform Read-only Analysis (Enhanced - Self-Review Loop)
+- Project Contract Profile selection with evidence; if no default profile fits, use `custom` and list project-specific contract fields.
+- Project Contract Lock and Contract Snapshot.
+- Existing Implementation Baseline.
+- Source requirement list with stable `REQ-xxx` / `AC-xxx`.
+- Full Requirement Matrix.
+- MVP Coverage Matrix.
+- Backlog.
+- Small Model Candidate Split table.
 
-Loop through the following steps until small model execution standards are met:
+If the source docs mention broad scopes such as PC, IOC, data integrations, mobile applets, reports, or external systems but the Full Requirement Matrix does not cover them, mark `MATRIX_INCOMPLETE` and keep extracting.
 
-#### Round N Analysis
+### 3. Progressive Parent/Child Task Planning
 
-**2.1 Generate Analysis Output**
+Read `references/analysis-output-template.md` and produce the complete planning output:
 
-Load `references/analysis-output-template.md` and produce:
-
-- Project goal summary.
-- Existing Implementation Baseline when the repo contains manually implemented functionality.
-- Requirements Traceability Matrix.
+- Task merge/split records.
+- Full platform scope vs current MVP boundary.
 - Module dependency graph.
-- Task split by capability.
-- Recommended dependency-ordered MVP development sequence.
-- Draft parent PRD.
-- Draft child PRDs.
-- For medium/high complexity child tasks, draft shift-left design, implementation-plan, and context-manifest artifacts using `references/planning-artifacts-template.md`: `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when the project workflow supports them.
+- Complete capability-based MVP child task list.
+- Subtask Planning Ledger.
+- Batch Completion Rollup.
+- Small Model Mode granularity check.
+- Planning artifact matrix.
+- Parent PRD draft.
+- Child PRD drafts.
+- Draft `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` for medium/high complexity tasks, or explicit not-needed reasons.
 
-Use these statuses in the traceability matrix: `DONE`, `PARTIAL`, `MISSING`, `UNTESTED`, `UNCLEAR`.
+If sub-agent triggers apply, read `references/subagent-planning-template.md`. The main agent owns dispatch, merge, conflict resolution, and final Gate. Sub-agents only produce read-only planning drafts.
 
-When any requirement is `DONE`, `PARTIAL`, or `UNTESTED`, include code/test evidence and ensure the task split creates only the remaining work. Existing capabilities may appear in dependency fields as `existing:<capability-or-file>` when no Trellis task slug exists for them.
+### 4. Self-Review and Gate Loop
 
-**2.2 Self-Review**
+After each analysis round:
 
-Load `references/self-review-checklist.md` and check analysis output quality against the checklist item by item.
+1. Read `references/self-review-checklist.md`.
+2. Use `references/self-review-report-template.md` for the review report.
+3. Execute Requirement Ledger Gate, Contract Gate, Full MVP Planning Gate, Batch Completeness Gate, and Pre-Confirmation Gate from `references/gate-definitions.md`.
+4. For small/local models or long plans, rebuild Stage State Packet from `references/small-model-safety.md`; if it disagrees with matrices or ledgers, fix state before moving forward.
 
-Use `references/self-review-report-template.md` to generate review report including:
-- Overall score (5 dimensions)
-- Checklist pass status
-- Issue list (location, description, impact, improvement suggestion)
-- Statistics
-- Conclusion for this round
+Decision:
 
-**2.3 Determine if Standards Met**
+- All checks pass and Full MVP Planning Gate plus Pre-Confirmation Gate are `PASS` -> ask for user confirmation.
+- Checks pass but any MVP child task remains non-terminal -> output `BATCH_INCOMPLETE` and continue planning the next batch; do not ask for confirmation.
+- Any Gate fails -> output failure codes and fixes, then improve and rerun.
+- More than 5 rounds still failing -> ask the user to choose stronger model, manual review, or risk acceptance.
 
-- ✅ All check items pass → proceed to Step 3 (Confirm Scope)
-- ✅ 2 consecutive rounds with no new issues → auto-pass, proceed to Step 3
-- ❌ Has failed check items → proceed to Step 2.4 (Targeted Improvements)
-- ⚠️ Still has issues after 5 rounds → prompt user to choose:
-  - Option A: Use stronger model to re-analyze
-  - Option B: Manual review of current analysis
-  - Option C: Accept current version (at own risk)
+### 5. User Confirmation of Complete Plan
 
-**2.4 Targeted Improvements**
-
-Based on issue list in review report, make targeted improvements:
-- Only modify parts marked as issues, do not re-analyze entire requirements document
-- Keep passed parts unchanged
-- After completing improvements, return to Step 2.1 for Round N+1 review
-
-**Review Loop Principles**:
-- Converge iteratively, do not redo everything
-- Issue location must be precise (to specific REQ-xxx, Task ID, PRD section)
-- Improvements must be targeted (fix issues, don't introduce new ones)
-
-### 3. Confirm Scope
-
-Present the analysis and ask for one confirmation before creating files:
+Only when Pre-Confirmation Gate is `PASS`, ask:
 
 ```text
-Confirm this task split and MVP boundary? If yes, I will create the Trellis parent task, child tasks, and PRDs without writing application code.
+Please confirm the complete MVP task tree, all batch plans, Backlog boundary, Blocked items, and first creation scope. If confirmed, I will create the Trellis parent task, all planned child tasks, and their required PRD/design/implement/JSONL artifacts without writing application code.
 ```
 
-If the user changes scope, update the analysis first. Do not create tasks from stale assumptions.
+The confirmation summary must include Project Contract Lock, source requirement count, MVP Coverage mechanical statistics, Subtask Planning Ledger summary, Batch Completion Rollup, Backlog, Blocked items, high-risk merges/trims, and Small Model Mode batch strategy.
 
-### 4. Create Trellis Task Tree
+If the user changes scope, update matrices, ledgers, batches, and Gates before creating tasks.
 
-After confirmation:
+### 6. Create Trellis Task Tree and Write Artifacts
+
+After user confirmation, read `references/task-creation-checklist.md`, then:
 
 1. Create one parent task for the overall project.
-2. Create child tasks with `--parent <parent-task-dir>`.
-3. Write the parent `prd.md` using `references/parent-prd-template.md`.
-4. Write each child `prd.md` using `references/child-prd-template.md`.
-5. For medium/high complexity child tasks, write or draft `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` when `.trellis/workflow.md` or existing tasks show those artifacts are expected. Do not overwrite existing artifacts without reading them first.
-6. Preserve requirement IDs and dependencies exactly.
-7. Do not start implementation.
+2. Record the real parent task directory from `task.py create`.
+3. Create child tasks with `--parent <parent-task-dir>`; record each real directory and backfill Subtask Planning Ledger.
+4. Before writing any artifact, verify the target directory contains `task.json`.
+5. Write parent `<task-dir>/prd.md` using `references/parent-prd-template.md`.
+6. Write each child `<task-dir>/prd.md` using `references/child-prd-template.md`.
+7. Write required `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` from the planning artifact matrix. Read existing artifacts before overwriting.
+8. Do not start implementation.
 
-Use:
+Commands:
 
 ```bash
 python ./.trellis/scripts/task.py create "<parent title>" --slug <parent-slug>
 python ./.trellis/scripts/task.py create "<child title>" --slug <child-slug> --parent "<parent-task-dir>"
 ```
 
-### 5. Report Next Actions
+If `task.py create` fails because developer identity is uninitialized, stop and tell the user to run `trellis init -u <name>` with project platform flags such as `--codex`, or provide an explicit assignee. Use `python ./.trellis/scripts/init_developer.py <name>` only as a legacy fallback when Trellis CLI is unavailable.
 
-Output:
+### 7. Artifact Gate and Next Step
+
+After task creation and artifact writing, run:
+
+```bash
+python <skill-dir>/scripts/trellis_zero_gate.py \
+  --tasks .trellis/tasks \
+  --parent-task-json <parent-task-dir>/task.json \
+  --parent-prd <parent-task-dir>/prd.md \
+  --jsonl-mode <required|optional|inline>
+```
+
+Use `--jsonl-mode inline` when `codex.dispatch_mode: inline`; use `--jsonl-mode required` for sub-agent dispatch or JSONL-required tasks. If Contract Snapshot defines forbidden tokens, add `--forbidden-token` or `--forbidden-regex`; if contract conflicts cannot be simplified to forbidden tokens, add `--contract-mismatch-regex`.
+
+Only when the mechanical scan returns `result = PASS` and Development Recommendation Gate is `PASS`, output:
 
 - Task tree.
 - Recommended execution order.
 - Blocked tasks.
 - Parallelizable tasks.
-- First task to start and why.
+- Backlog / later scope.
+- Artifact Gate result.
+- First recommended task to start and why.
+
+If any Gate fails, output:
+
+```yaml
+planning_status:
+  development_ready: false
+  failure_codes:
+    - <code>
+  next_action: <continue_planning | write_artifacts | fix_gate_failure | ask_user_confirmation>
+```
+
+Do not recommend starting development.
+
+## Delivery Phase Handoff
+
+This skill stops after creating the task tree and planning artifacts. For implementation, use execution-phase skills by dependency order:
+
+1. `trellis-implement-tdd` - implement each child AC with red/green TDD loops.
+2. `trellis-debug-systematic` - isolate and fix failing checks.
+3. `trellis-review-twostage` - run spec compliance and code-quality review before completion.
+
+Recommended role split: strong model for planning, small model for implementation, strong model for Review Stage 2.
 
 ## References
 
-- `references/analysis-output-template.md` - read before producing the initial analysis.
+- `references/workflow-state-machine.md` - read at startup; defines planning states and legal transitions.
+- `references/gate-definitions.md` - read at startup; defines Gates, failure codes, and pass conditions.
+- `references/project-contract-profiles.md` - read at startup; select project contract fields and avoid applying RuoYi/Java assumptions to CLI, SDK, frontend, or other projects.
+- `references/small-model-safety.md` - read for small/local model or long planning; defines Stage State Packet, context budget, evidence discipline, and Drift Reset.
+- `references/analysis-output-template.md` - read before generating initial analysis and progressive planning output.
+- `references/subagent-planning-template.md` - read when multi-agent or batch planning is triggered.
 - `references/self-review-checklist.md` - read for self-review after each analysis round.
 - `references/self-review-report-template.md` - read when generating review reports.
-- `references/planning-artifacts-template.md` - read when drafting Trellis 0.6 beta design, implementation, and context manifest artifacts for medium/high complexity tasks.
+- `references/planning-artifacts-template.md` - read when drafting Trellis 0.6+ design, implementation, and context manifest artifacts for medium/high complexity tasks.
 - `references/parent-prd-template.md` - read when drafting or writing the parent task PRD.
 - `references/child-prd-template.md` - read when drafting or writing child task PRDs.
 - `references/task-creation-checklist.md` - read before creating the task tree.
+- `scripts/trellis_zero_gate.py` - run after task creation and artifact writing to produce non-handwritten Artifact Gate counts.
