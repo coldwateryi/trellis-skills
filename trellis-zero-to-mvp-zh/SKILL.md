@@ -18,31 +18,41 @@ description: |
 4. Gate 是编译检查。Gate 未通过时停止并修复，不要继续下一阶段。
 5. 小模型长程规划按 Stage State Packet 推进；每次跨阶段或恢复上下文时从矩阵、账本和真实目录重建状态，不依赖上一轮自然语言记忆。
 
-## 核心不变量
+## 核心不变量（分阶段标签）
 
-- 不要编写业务代码。
-- 在用户确认完整只读规划前，不要创建 Trellis task。
-- 不要按文件拆任务。按可独立验收的业务能力或技术能力拆任务。
-- 先完整抽取源需求，再规划 MVP。所有源需求功能点都必须进入 Full Requirement Matrix；若不进入当前 MVP，必须标记 `OUT_OF_SCOPE` 或 `BLOCKED` 并进入 Backlog。
-- `REQ-xxx` 是源需求功能点的稳定身份，不是交付顺序编号；任务合并、拆分或重排只能改变 `Txx`。
-- 必须分开维护 Full Requirement Matrix 和 MVP Coverage Matrix；禁止把 MVP 覆盖数量写成原始功能点总数。
-- 规划任务前必须先选择 Project Contract Profile，再形成 Project Contract Lock 和 Contract Snapshot；后续父/子 PRD、`design.md`、`implement.md`、JSONL 只能采用其中的命名、路径、命令、API、包/模块、路由、表名、权限前缀和证据路径。
-- 本地上下文优先级固定为：用户明确要求 > 源需求业务功能 > README/模块 README/AGENTS.md > `.trellis/spec/` > 现有代码结构 > 框架默认习惯 > 模型常识。
-- 小模型或长程任务必须读取 `references/small-model-safety.md`，并在每个阶段输出 Stage State Packet；出现计数漂移、契约漂移或 Gate 与扫描不一致时立即 Drift Reset。
-- Small Model Mode 下，一个子任务只覆盖一个主实体 CRUD、一个接口组、一个状态流转、一个前端页面或一个后端聚合查询；违反时继续拆分，除非用户明确点名允许合并。
-- Small Model Mode 下单批最多创建 8 个可执行子任务，单批最多完整写入 5 个高质量子任务 PRD。分批是容量控制，不是范围裁剪。
-- 分批规划必须维护 Subtask Planning Ledger。只完成 P0/P1 不等于完成规划；所有 MVP `TASK` 子任务都达到 `READY_TO_CONFIRM`、`BLOCKED` 或 `OUT_OF_SCOPE` 前，不得请求用户确认。
-- 当候选子任务超过单批上限、业务域超过 3 个、完整 PRD 草案超过 5 个，或用户要求多 agent 规划时，优先读取 `references/subagent-planning-template.md` 并唤起子代理；若当前平台不支持子代理，按同一 Agent Packet 串行模拟。
+> **小模型指引**：每个阶段只需关注本阶段标签下的不变量。进入下一阶段时再读对应的新规则。不要在 S0 试图记住全部 25 条规则。
+
+### S0-S2 通用（发现与需求阶段）
+- S0-S2: 不要编写业务代码。
+- S0-S2: 在用户确认完整只读规划前，不要创建 Trellis task。
+- S0-S2: 不要按文件拆任务。按可独立验收的业务能力或技术能力拆任务。
+- S0-S2: 先完整抽取源需求，再规划 MVP。所有源需求功能点都必须进入 Full Requirement Matrix；若不进入当前 MVP，必须标记 `OUT_OF_SCOPE` 或 `BLOCKED` 并进入 Backlog。
+- S0-S2: `REQ-xxx` 是源需求功能点的稳定身份，不是交付顺序编号；任务合并、拆分或重排只能改变 `Txx`。
+- S0-S2: 必须分开维护 Full Requirement Matrix 和 MVP Coverage Matrix；禁止把 MVP 覆盖数量写成原始功能点总数。
+
+### S2-S4 专用（契约与任务规划阶段）
+- S2-S4: 规划任务前必须先选择 Project Contract Profile，再形成 Project Contract Lock 和 Contract Snapshot；后续父/子 PRD、`design.md`、`implement.md`、JSONL 只能采用其中的命名、路径、命令、API、包/模块、路由、表名、权限前缀和证据路径。
+- S2-S4: 本地上下文优先级固定为：用户明确要求 > 源需求业务功能 > README/模块 README/AGENTS.md > `.trellis/spec/` > 现有代码结构 > 框架默认习惯 > 模型常识。
+- S2-S4: 小模型或长程任务必须读取 `references/small-model-safety.md`，并在每个阶段输出 Stage State Packet；出现计数漂移、契约漂移或 Gate 与扫描不一致时立即 Drift Reset。
+- S3-S4: Small Model Mode 下，一个子任务只覆盖一个主实体 CRUD、一个接口组、一个状态流转、一个前端页面或一个后端聚合查询；违反时继续拆分，除非用户明确点名允许合并。
+- S3-S4: Small Model Mode 下单批最多创建 8 个可执行子任务，单批最多完整写入 5 个高质量子任务 PRD。分批是容量控制，不是范围裁剪。
+- S3-S4: 分批规划必须维护 Subtask Planning Ledger。只完成 P0/P1 不等于完成规划；所有 MVP `TASK` 子任务都达到 `READY_TO_CONFIRM`、`BLOCKED` 或 `OUT_OF_SCOPE` 前，不得请求用户确认。
+
+### 全阶段通用（S0-S10）
 - 遵守 Trellis 规划产物边界：`prd.md` 只承载需求、约束、范围、依赖和验收；技术设计放 `design.md`；文件计划、实现步骤、自检命令、回滚点和评审门放 `implement.md`。只有本地工作流允许 PRD-only 且任务为低复杂度时，才能把精简执行附录留在 `prd.md`。
-- 小模型执行需要的窄路径仍必须在规划期定死；但优先写入 `design.md` / `implement.md`，不要用重型 PRD 破坏 Trellis artifact boundary。
 - 外部配置、第三方 key、地图/硬件/外部接口等不确定项必须归类为 `FIXED`、`BASELINE`、`BLOCKED` 或 `OUT_OF_SCOPE`。
 - 对已有部分实现的项目，任务创建规则固定为：`DONE` -> 不建任务；`UNTESTED` -> 只建测试补齐任务；`PARTIAL` -> 只为缺失行为创建补缺任务；`MISSING` -> 创建新实现任务；`UNCLEAR` -> 阻塞问题或澄清任务。
-- Trellis 0.6+ 项目存在 `.trellis/workflow.md` 时，必须把它当作本地工作流契约；项目声明 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl` 时，不要按旧 PRD-only 工作流执行。
-- Codex 项目必须读取 `.trellis/config.yaml` 的 `codex.dispatch_mode`：`inline` 模式下 JSONL 不作为规划就绪门槛，创建任务后可删除 seed JSONL 或标记 `NOT_NEEDED_WITH_REASON`；`sub-agent` 模式下必须填真实 `implement.jsonl` / `check.jsonl`，seed-only 不可通过。
+- 小模型执行需要的窄路径仍必须在规划期定死；但优先写入 `design.md` / `implement.md`，不要用重型 PRD 破坏 Trellis artifact boundary。
+- 当候选子任务超过单批上限、业务域超过 3 个、完整 PRD 草案超过 5 个，或用户要求多 agent 规划时，优先读取 `references/subagent-planning-template.md` 并唤起子代理；若当前平台不支持子代理，按同一 Agent Packet 串行模拟。
 - `task.py create` 只负责创建任务目录和基础种子文件；规划产物矩阵或 PRD 声明需要的文件，创建任务后必须由本技能写入真实任务目录。
 - 创建任务目录只能通过 `task.py create`。后续写文件必须使用 `task.py create` 输出的真实目录；不要按逻辑 Task ID 或 slug 自行拼路径。
 - 每个任务的 PRD 只能写到真实任务目录根部的 `<task-dir>/prd.md`，且该目录必须包含 `task.json`。
 - Artifact Gate 不能由模型手填。创建任务并写入产物后，必须运行 `scripts/trellis_zero_gate.py` 或等价机械扫描；最终 Gate 数值必须来自工具输出。
+
+### S5-S6 专用（门控与确认阶段）
+- S5-S6: Trellis 0.6+ 项目存在 `.trellis/workflow.md` 时，必须把它当作本地工作流契约；项目声明 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl` 时，不要按旧 PRD-only 工作流执行。
+- S5-S6: Codex 项目必须读取 `.trellis/config.yaml` 的 `codex.dispatch_mode`：`inline` 模式下 JSONL 不作为规划就绪门槛，创建任务后可删除 seed JSONL 或标记 `NOT_NEEDED_WITH_REASON`；`sub-agent` 模式下必须填真实 `implement.jsonl` / `check.jsonl`，seed-only 不可通过。
+- S6-S7: Artifact Gate 结果不是 `PASS` 时，不得汇报任务树可执行。
 
 ## Stop Gates
 
@@ -65,18 +75,36 @@ description: |
 
 ## 工作流
 
-### 0. 读取流程契约
+### 0. 读取流程契约（渐进式加载）
 
-开始后先读取：
+> **小模型指引**：不要一次性读完所有参考文件。Level 1 必须在开始前读完，Level 2 在进入对应阶段时再读。当前只需读 Level 1。
 
-- `references/workflow-state-machine.md`
-- `references/gate-definitions.md`
-- `references/project-contract-profiles.md`
-- `references/small-model-safety.md`（本地小/中参数模型、长程复杂任务或候选子任务超过 8 个时必须读取）
+**Level 1 — 必读（S0 开始前通读，~10 分钟注意预算内可完成）**：
+1. `references/small-model-safety.md` — 小模型安全规范（Stage State Packet、Context Budget、Evidence Discipline、Drift Reset）
+2. `references/gate-definitions.md` — Gate 与失败码定义（通读，了解 45 种失败码的分类和含义）
+3. 本节（0. 读取流程契约）和 **Stop Gates** 节
 
-后续每个阶段必须按状态机推进，不得跳过 Gate。
+**Level 2 — 阶段进入时读取**：
+| 进入阶段前 | 读取的参考文件 |
+|---|---|
+| S1 前 | `references/project-contract-profiles.md`（契约画像选择） |
+| S2 前 | `references/analysis-output-template.md`（Contract Lock 部分 + Contract Snapshot 部分） |
+| S3 前 | `references/analysis-output-template.md`（任务拆分部分 + Small Model Mode 粒度规则） |
+| S4 前 | `references/subagent-planning-template.md`（仅在触发子代理条件时读） |
+| S5 前 | `references/analysis-output-template.md`（Pre-Confirmation Gate 部分 + Artifact Gate 计划部分） |
+| S7 前 | `references/task-creation-checklist.md` |
+| S8 前 | `references/parent-prd-template.md`、`references/child-prd-template.md`、`references/planning-artifacts-template.md`、`references/design-surface-template.md` |
 
-### 1. 发现输入
+**Level 3 — 门控/修复时读取**：
+| 场景 | 读取的参考文件 |
+|---|---|
+| 每轮自审后 | `references/self-review-checklist.md`（当前阶段对应部分即可） |
+| 自审报告 | `references/self-review-report-template.md` |
+| Gate 检查 | `scripts/trellis_planning_gate.py` — 在每阶段转换前运行机械扫描 |
+
+后续每个阶段必须按状态机推进，不得跳过 Gate。每个阶段转换前运行 `scripts/trellis_planning_gate.py`（见各阶段的具体命令）。
+
+### 1. 发现输入（S0_DISCOVER_CONTEXT）
 
 定位并读取：
 
@@ -87,6 +115,12 @@ description: |
 - Trellis 0.6+ 工作流元数据：`.trellis/workflow.md`、`.trellis/config.yaml`、`.trellis/.version`、`.trellis/.developer`、`.trellis/workspace/`。
 
 先检查仓库再提问。只问无法从本地上下文判断的阻塞性问题。
+
+**→ S0 Gate：** 确认输入路径和上下文清单明确后，运行：
+```bash
+python <skill-dir>/scripts/trellis_planning_gate.py --phase S1_REQUIREMENT_LEDGER --state-file .trellis/planning/planning-state.yaml
+```
+Gate 结果为 `PASS` 才能进入 S1。
 
 ### 2. 完整需求账本与项目契约
 
@@ -100,6 +134,12 @@ description: |
 - MVP Coverage Matrix。
 - Backlog。
 - Small Model Candidate Split 表。
+
+**→ S1 Gate：** 完成需求账本后，运行：
+```bash
+python <skill-dir>/scripts/trellis_planning_gate.py --phase S2_CONTRACT_LOCK --state-file .trellis/planning/planning-state.yaml --matrix .trellis/planning/full-requirement-matrix.md --mvp-matrix .trellis/planning/mvp-coverage-matrix.md
+```
+Gate 结果为 `PASS` 且 `Requirement Ledger Gate = PASS` 才能进入 S2。
 
 若源文档目录显示 PC、IOC、数据对接、小程序、报表等范围，但 Full Requirement Matrix 未覆盖这些范围，标记 `MATRIX_INCOMPLETE` 并继续抽取。
 
@@ -122,14 +162,32 @@ description: |
 
 如果触发子代理条件，读取 `references/subagent-planning-template.md`。主代理负责分派、合并、冲突裁决和最终 Gate；子代理只做只读规划草案。
 
-### 4. 自我评审与 Gate 循环
+**→ S3 Gate：** 完成全部 MVP 候选任务拆分后，运行：
+```bash
+python <skill-dir>/scripts/trellis_planning_gate.py --phase S3_FULL_MVP_TASK_CANDIDATES --state-file .trellis/planning/planning-state.yaml --ledger .trellis/planning/subtask-ledger.yaml
+```
+Gate 结果为 `PASS` 才能进入 S4 批次规划。
+
+### 4. 自我评审与 Gate 循环（S4_PROGRESSIVE_BATCH_PLANNING → S5_FULL_MVP_PLANNING_GATE）
 
 每轮分析后：
 
-1. 读取 `references/self-review-checklist.md`。
+1. 读取 `references/self-review-checklist.md`（当前批次对应部分即可，无需通读全文）。
 2. 使用 `references/self-review-report-template.md` 输出评审报告。
 3. 按 `references/gate-definitions.md` 执行 Requirement Ledger Gate、Contract Gate、Full MVP Planning Gate、Batch Completeness Gate 和 Pre-Confirmation Gate。
 4. 对小模型或长程规划，按 `references/small-model-safety.md` 重建 Stage State Packet；若状态包与矩阵/账本不一致，先修复状态，不进入下一阶段。
+
+**→ S4 Gate（批次完成时）：** 每批完成后运行：
+```bash
+python <skill-dir>/scripts/trellis_planning_gate.py --phase S4_PROGRESSIVE_BATCH_PLANNING --state-file .trellis/planning/planning-state.yaml --ledger .trellis/planning/subtask-ledger.yaml
+```
+输出 `BATCH_INCOMPLETE` 时继续规划下一批，不请求用户确认。
+
+**→ S5 Gate（完整规划 Gate 时）：** 所有批次完成后运行：
+```bash
+python <skill-dir>/scripts/trellis_planning_gate.py --phase S5_FULL_MVP_PLANNING_GATE --state-file .trellis/planning/planning-state.yaml --ledger .trellis/planning/subtask-ledger.yaml --parent-prd .trellis/planning/parent-prd-draft.md
+```
+Gate 结果为 `PASS` 才能进入用户确认阶段。
 
 判断：
 
@@ -218,17 +276,18 @@ planning_status:
 
 ## 参考文件
 
-- `references/workflow-state-machine.md` - 开始任务后先读取，定义阶段状态和合法跳转。
-- `references/gate-definitions.md` - 开始任务后先读取，定义 Gate、失败码和通过条件。
-- `references/project-contract-profiles.md` - 开始任务后先读取，按项目类型选择契约字段，避免把 RuoYi/Java 假设套到 CLI、SDK、前端或其他项目。
-- `references/small-model-safety.md` - 小模型/长程任务必须读取，定义 Stage State Packet、上下文预算、证据纪律和 Drift Reset。
-- `references/analysis-output-template.md` - 生成初始分析和渐进式规划输出前读取。
-- `references/subagent-planning-template.md` - 触发多 agent / 子代理批次规划时读取。
-- `references/self-review-checklist.md` - 每轮分析后进行自我评审时读取。
-- `references/self-review-report-template.md` - 生成评审报告时读取。
+- `references/workflow-state-machine.md` - 开始任务后先读取（Level 1），定义阶段状态和合法跳转。
+- `references/gate-definitions.md` - 开始任务后先读取（Level 1），定义 Gate、失败码和通过条件。
+- `references/small-model-safety.md` - 小模型/长程任务必须读取（Level 1），定义 Stage State Packet、上下文预算、证据纪律和 Drift Reset。
+- `references/project-contract-profiles.md` - S1 进入前读取（Level 2），按项目类型选择契约字段，避免把 RuoYi/Java 假设套到 CLI、SDK、前端或其他项目。
+- `references/analysis-output-template.md` - S2/S3/S5 前分段读取（Level 2），生成初始分析和渐进式规划输出。
+- `references/subagent-planning-template.md` - 触发多 agent / 子代理批次规划时读取（Level 2）。
+- `references/self-review-checklist.md` - 每轮分析后进行自我评审时读取（Level 3，只读当前阶段对应的部分）。
+- `references/self-review-report-template.md` - 生成评审报告时读取（Level 3）。
 - `references/planning-artifacts-template.md` - 为中/高复杂度任务起草 Trellis 0.6+ 的设计、实现和上下文清单产物时读取。
 - `references/design-surface-template.md` - 当子任务涉及数据库、API、模块交互、外部系统、UI、权限、状态、校验、事务、测试等设计面时读取，提供 `design.md` 与 `implement.md` 必填章节模板。
 - `references/parent-prd-template.md` - 起草或写入父任务 PRD 时读取。
 - `references/child-prd-template.md` - 起草或写入子任务 PRD 时读取。
 - `references/task-creation-checklist.md` - 创建任务树前读取。
-- `scripts/trellis_zero_gate.py` - 创建任务并写入产物后运行，生成不可手填的 Artifact Gate 机械扫描结果。
+- `scripts/trellis_zero_gate.py` - 创建任务并写入产物后运行（S9），生成不可手填的 Artifact Gate 机械扫描结果。
+- `scripts/trellis_planning_gate.py` - **新增**：规划期阶段转换前运行（S0→S1→S2→S3→S4→S5），强制状态机合法转换、验证计数一致性和契约完整性，检测小模型漂移。

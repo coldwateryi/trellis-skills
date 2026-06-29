@@ -1,12 +1,26 @@
 # 从 0 到 MVP 分析输出模板
 
-此模板用于只读分析阶段。在此阶段不要创建任务，也不要编写代码。
+> **小模型指引**：此模板覆盖了 S1-S10 的所有输出格式。不要试图一次填完。下方标记了每个章节适用的阶段：
+> - `[S1]` 需求账本阶段填写
+> - `[S2]` 合约锁定阶段填写
+> - `[S3]` 任务候选阶段填写
+> - `[S4]` 批次规划阶段填写
+> - `[S5]` 门控阶段填写
+> - `[S6]` 用户确认阶段填写
+> - `[S7]` 任务创建阶段填写
+> - `[S8]` 产物写入阶段填写
+> - `[S9]` Artifact Gate 阶段填写
+> - `[ALL]` 全阶段引用
+>
+> **关键规则**：每个节中的 `___` 标记必须填具体数字，禁止留空。
 
-## 项目目标摘要
+## [S0] 项目目标摘要
 
 用 5-10 条说明需求文档最终要求交付什么。
 
-## Project Contract Profile（项目契约画像）
+## [S2] Project Contract Profile（项目契约画像）
+
+> **S2 阶段：** 在需求账本（S1）完成后进入。此时已了解项目全貌，可以锁定契约。
 
 先读取 `project-contract-profiles.md`，基于仓库证据选择 profile。不要把 RuoYi/Java CRUD 字段套到 CLI、SDK、前端、Python 服务或自定义框架项目。
 
@@ -22,7 +36,7 @@ project_contract_profile:
       reason: <why not applicable>
 ```
 
-## Project Contract Lock（项目契约锁定）
+## [S2] Project Contract Lock（项目契约锁定）
 
 先从用户要求、README、模块 README、AGENTS.md、`.trellis/spec/` 和现有代码中锁定项目实现契约。后续任务产物必须遵守此表，不得由模型自行换命名体系。
 
@@ -55,7 +69,7 @@ project_contract_profile:
 
 冲突阻塞时，不要创建任务；先让用户确认采用哪个契约。
 
-## Existing Implementation Baseline（已有实现基线）
+## [S1] Existing Implementation Baseline（已有实现基线）
 
 当仓库已经包含手工实现功能，或 Trellis/spec 是在开发开始后才初始化时，使用本节。
 
@@ -71,7 +85,7 @@ project_contract_profile:
 - 如果需求是 `PARTIAL`，只为缺失行为创建补缺任务。
 - 如果需求是 `MISSING`，创建新实现任务。
 
-## Trellis 工作流上下文
+## [S0] Trellis 工作流上下文
 
 | 项目 | 值 | 备注 |
 | --- | --- | --- |
@@ -82,7 +96,7 @@ project_contract_profile:
 | Developer identity | <来自 `.trellis/.developer` 或 "not initialized"> | <缺失时要做什么> |
 | Spec 新鲜度 | <fresh/stale/missing/unknown> | <已读 spec 文件或需要的刷新任务> |
 
-## 执行模型画像
+## [ALL] 执行模型画像
 
 | 项目 | 值 |
 | --- | --- |
@@ -93,7 +107,9 @@ project_contract_profile:
 | 单批创建上限 | <如最多 8 个可执行子任务、最多 5 个完整 PRD> |
 | 分批规划要求 | <若候选任务超过上限，写明全部 B01/B02/... 批次；不得只写 P0/P1> |
 
-## Stage State Packet
+## [ALL] Stage State Packet
+
+> **必填字段**：`___` 标记必须填具体数字。`unknown` 只允许在 S0 发现阶段出现。
 
 小模型、长程复杂任务、候选子任务超过 8 个或恢复上下文后必须先填写本节。字段来自矩阵、账本和真实目录；未知值只能出现在发现阶段。
 
@@ -128,7 +144,7 @@ stage_state:
 - `stop_gate_failures` 非空时，不得请求用户确认、创建任务或建议开发。
 - Stage State Packet 与 Full Requirement Matrix、MVP Coverage Matrix、Subtask Planning Ledger 或真实目录不一致时，输出 `STATE_DRIFT` 并 Drift Reset。
 
-## 原始需求功能点清单
+## [S1] 原始需求功能点清单
 
 从源需求文档抽取所有可验收功能点。`REQ-xxx` 是源需求功能点的稳定身份，后续任务合并、拆分、重排不得改变其语义。
 
@@ -136,7 +152,7 @@ stage_state:
 | --- | --- | --- | --- | --- |
 | <章节/页码/标题> | <原始功能点> | REQ-001 | <一句话摘要> | <必要上下文> |
 
-## Full Requirement Matrix（完整源需求矩阵）
+## [S1] Full Requirement Matrix（完整源需求矩阵）
 
 本表只表达源需求真相，不做 MVP 裁剪。源需求中每个可验收功能点都必须有一行。
 
@@ -152,7 +168,9 @@ stage_state:
 - `UNTESTED`：已实现但缺少足够测试。
 - `UNCLEAR`：需求不够清楚，无法实现。
 
-## MVP Coverage Matrix（当前 MVP 覆盖矩阵）
+## [S1] MVP Coverage Matrix（当前 MVP 覆盖矩阵）
+
+> **机械统计约束**：`TASK` + `MERGED` + `BASELINE` + `OUT_OF_SCOPE` + `BLOCKED` = ___ = Full Requirement Matrix 行数
 
 本表表达当前 MVP 对完整需求的处理方式。禁止把 MVP 覆盖数量写成原始功能点总数。
 
@@ -178,13 +196,13 @@ stage_state:
 - `new-task`：需求是 `MISSING`，创建新实现任务。
 - `clarify`：需求是 `UNCLEAR`，实现前先提出阻塞问题或创建澄清任务。
 
-## 完整平台范围与 MVP 边界
+## [S1-S2] 完整平台范围与 MVP 边界
 
 | 范围块 | 完整平台要求 | 当前 MVP 处理 | 差异/风险 |
 | --- | --- | --- | --- |
 | <PC/IOC/数据对接/小程序/报表等> | <源需求范围> | <TASK/MERGED/OUT_OF_SCOPE> | <风险> |
 
-## 任务合并/拆分记录
+## [S3] 任务合并/拆分记录
 
 当源需求功能点和 Trellis 子任务不是一对一关系时必须填写。没有被单独建任务的功能点必须能在此表中找到去向。
 
@@ -208,7 +226,16 @@ stage_state:
 | --- | --- | --- | --- | --- |
 |  |  |  |  |  |
 
-## 任务拆分
+## [S3] 任务拆分
+
+Small Model Mode 规则：
+
+0. 模型不得自行用"强耦合""同一流程""拆分会增加依赖"为理由保留超大任务；只有用户显式确认合并的任务可例外，并必须在风险列写明。
+
+1. 一个子任务最多包含一个主实体的一套 CRUD、一个接口组、一个状态流转、一个前端页面或一个后端聚合查询。
+2. 候选任务同时包含两个以上主实体、两套独立 CRUD、CRUD+状态机+报表、后端流程+小程序页面、地图/GIS+多表聚合+高级分析时，必须拆分。
+3. 单批最多创建 8 个可执行子任务，单批最多完整写入 5 个高质量 PRD；超出时先排完整批次索引。P0/P1 只是优先级，不是完整规划完成条件。
+4. 高复杂度任务必须拆成低/中复杂度，或要求 `design.md` + `implement.md` + JSONL 上下文。
 
 | Task ID | 标题 | 目标 | 类型 | 需求 ID | 来源状态 | 依赖 | 基线依赖 | 优先级 | 复杂度 | Small Model 粒度 | 规划产物 | 是否可并行 | 验收标准 | 可能涉及区域 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -254,7 +281,7 @@ Small Model Mode 规则：
 4. 任务依赖已有能力时，在 `基线依赖` 中写明，例如 `existing:src/auth/session.ts`。
 5. 不要把已有基线依赖伪装成新的 Trellis task。
 
-## Subtask Planning Ledger（子任务规划账本）
+## [S4] Subtask Planning Ledger（子任务规划账本）
 
 本表是渐进式完成所有 MVP 子任务规划的唯一状态源。每个 MVP Coverage Matrix 中覆盖状态为 `TASK` 的子任务都必须有一行；分批规划时不得只保留当前批次。
 
@@ -276,7 +303,7 @@ Small Model Mode 规则：
 
 进入用户确认前，所有 MVP `TASK` 子任务必须是 `READY_TO_CONFIRM`、`BLOCKED` 或 `OUT_OF_SCOPE`。存在 `CANDIDATE` 或 `DRAFTED` 时，输出 `BATCH_INCOMPLETE`，继续规划下一批。
 
-## Batch Completion Rollup（批次完成汇总）
+## [S4] Batch Completion Rollup（批次完成汇总）
 
 | 批次 | 包含 Task ID | 目标 | 状态 | READY_TO_CONFIRM | BLOCKED | OUT_OF_SCOPE | 剩余非终态 | 下一批动作 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -289,7 +316,7 @@ Small Model Mode 规则：
 - 只有 `ready_or_terminal_count == all_mvp_task_count` 时，才能输出 `ALL_SUBTASK_PLANNING_COMPLETE`。
 - 否则输出 `BATCH_INCOMPLETE`，并列出下一批 Task ID、未完成原因和主代理下一步动作。
 
-## Agent 分派计划（如触发）
+## [S4] Agent 分派计划（如触发）
 
 当候选子任务超过单批上限、业务域超过 3 个、完整 PRD 草案超过 5 个，或用户要求多 agent 规划时，按 `subagent-planning-template.md` 输出：
 
@@ -299,7 +326,7 @@ Small Model Mode 规则：
 | batch-split-agent | <MVP TASK 范围> | <批次拆分> | planned/running/done/blocked | <none/code> |
 | gate-check-agent | <全部草案> | <Gate FAIL/PASS> | planned/running/done/blocked | <none/code> |
 
-## 规划产物矩阵
+## [S5] 规划产物矩阵
 
 创建 Trellis 任务前必须填写。本矩阵是创建后核验文件存在性的依据；`task.py create` 不会自动补齐 `design.md` 或 `implement.md`。
 
@@ -315,14 +342,14 @@ Small Model Mode 规则：
 - 创建完成后，矩阵中标为"需要"的文件必须真实存在于 `task.py create` 返回的任务目录。
 - `写入状态` 为 `WRITTEN` 时必须能在真实目录找到文件；`NOT_NEEDED_WITH_REASON` 必须写明为什么不需要；`BLOCKED` 必须阻止汇报可执行。
 
-## MVP 推荐开发顺序
+## [S5] MVP 推荐开发顺序
 
 本节只能在 Full MVP Planning Gate 通过后输出。顺序必须覆盖全部当前 MVP `TASK` 子任务；若只覆盖已创建批次，标题必须改为“本批执行顺序”，并禁止建议开始开发。
 
 1. `<task-id>`：`<原因>`
 2. `<task-id>`：`<原因>`
 
-## Artifact Gate 计划
+## [S5] Artifact Gate 计划
 
 任务创建后必须运行并汇报：
 
@@ -348,7 +375,7 @@ python <skill-dir>/scripts/trellis_zero_gate.py \
 
 如有 Contract Snapshot forbidden tokens，追加 `--forbidden-token` 或 `--forbidden-regex`。不得在未运行机械扫描时手填 PASS。
 
-## Artifact Gate 输出字段
+## [S9] Artifact Gate 输出字段
 
 创建任务后必须输出以下字段，`result` 只能是 `PASS` 或 `FAIL`，不能用 `PENDING` 汇报可执行：
 
@@ -369,7 +396,7 @@ python <skill-dir>/scripts/trellis_zero_gate.py \
 | external_config_hits | 未决外部配置或占位 key | 0 |
 | result | 总结果 | 全部为 0 时 PASS |
 
-## Pre-Confirmation Gate
+## [S6] Pre-Confirmation Gate
 
 输出确认请求前必须填写。任一项不通过时，不得请求用户确认，只能继续规划或修复。
 
