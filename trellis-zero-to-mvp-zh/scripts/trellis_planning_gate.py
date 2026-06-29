@@ -220,7 +220,7 @@ def check_placeholder_in_text(text: str, sample_limit: int) -> tuple[int, list[s
 def check_angle_placeholder(text: str, sample_limit: int) -> tuple[int, list[str]]:
     """Scan for generic angle-bracket placeholders like <ControllerClass>."""
     hits = []
-    generic_re = re.compile(r"<[A-Za-z一-鿿_./: -]{2,40}>")
+    generic_re = re.compile(r"<[A-Za-z0-9_.:/ -]+>")
     for line_no, line in enumerate(text.splitlines(), 1):
         for m in generic_re.finditer(line):
             hits.append(f"line {line_no}: {m.group()}")
