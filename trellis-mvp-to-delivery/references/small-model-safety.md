@@ -1,10 +1,10 @@
-# 小模型长程安全规范（MVP 到交付）
+# Small Model Long-Run Safety (MVP to Delivery)
 
-用于本地小/中参数模型执行多轮 MVP 交付审计时降低幻觉、漂移和自证通过。
+Use this when local/small or medium parameter models run multi-round MVP delivery audits. The goal is to reduce hallucination, state drift, and self-certified PASS results.
 
 ## Stage State Packet
 
-每次进入新阶段、恢复上下文、调用子代理、写入 `delivery-state.md` 前，都先输出并复核本状态包：
+Before entering a new phase, recovering context, calling a sub-agent, or writing `delivery-state.md`, output and verify:
 
 ```yaml
 stage_state:
@@ -23,94 +23,94 @@ stage_state:
     - <none or condition>
 ```
 
-规则：
-- `next_legal_action` 只能有一个。
-- `stop_conditions` 非空时停止 loop。
+Rules:
+- `next_legal_action` must be exactly one action.
+- If `stop_conditions` is non-empty, stop the loop.
 
 ## Context Budget Table
 
-| 阶段 | 预算 | 策略 |
+| Phase | Budget | Strategy |
 |:---|:---|:---|
-| S0 加载状态 | ≤4K tokens | 读 `.trellis/delivery-state.md` + `delivery-loop-policy.md` |
-| S1 判断 Loop | ≤4K tokens | 只判断 full/delta/early-exit，不读取代码 |
-| S2 发现证据 | ≤12K tokens | 读源需求 + 关键代码结构 + `.trellis/tasks/` |
-| S3 差距审计 | ≤15K tokens | 输出 RTM + 自我评审，写完即写文件 |
-| S4 更新状态 | ≤4K tokens | 写 `delivery-state.md` |
-| S5 选择批次 | ≤4K tokens | 读 `delivery-batch-template.md` |
-| S6 确认 | ≤4K tokens | 只展示汇总 |
-| S7 创建任务 | ≤6K tokens | 一次一个任务 |
-| S8 运行日志 | ≤2K tokens | 追加一行 JSON |
-| S9 测试规划 | ≤8K tokens | 读 `test-coverage-matrix-template.md` |
-| S10 验收 | ≤8K tokens | 读 `final-acceptance-template.md` |
+| S0 Load State | ≤4K tokens | Read `.trellis/delivery-state.md` + `delivery-loop-policy.md` |
+| S1 Determine Loop | ≤4K tokens | Determine full/delta/early-exit only; do not read code |
+| S2 Discover Evidence | ≤12K tokens | Read source requirements + key code structure + `.trellis/tasks/` |
+| S3 Gap Audit | ≤15K tokens | Output RTM + self-review; write to file immediately after |
+| S4 Update State | ≤4K tokens | Write `delivery-state.md` |
+| S5 Pick Batch | ≤4K tokens | Read `delivery-batch-template.md` |
+| S6 Confirm | ≤4K tokens | Show summary only |
+| S7 Create Tasks | ≤6K tokens | One task at a time |
+| S8 Run Log | ≤2K tokens | Append one JSON line |
+| S9 Plan Tests | ≤8K tokens | Read `test-coverage-matrix-template.md` |
+| S10 Acceptance | ≤8K tokens | Read `final-acceptance-template.md` |
 
-### 阶段满载警告
+### Phase Capacity Warning
 
-- S3 审计超过 8 个需求且中间结果未写入文件 → 先写文件再继续
-- 单轮审计后存在超过 5 个 open gap 但未选批次 → 先冻结批次
-- 自审连续 2 轮相同问题未修复 → `STALLED_CONVERGENCE`，停止
+- S3 audit exceeds 8 requirements without writing intermediate results → write to file before continuing
+- More than 5 open gaps after a single round without batch selection → freeze the batch first
+- 2 consecutive self-review rounds with the same unfixed issues → `STALLED_CONVERGENCE`, stop
 
 ## Evidence Discipline
 
-以下结论必须有证据路径或命令输出摘要：
-- 需求追踪矩阵中每条需求的状态判定
-- DONE 需求的代码和测试证据
-- MVP 完成度百分比
-- 依赖关系和阻塞原因
+The following conclusions require evidence paths or command output summaries:
+- Status determination for each requirement in the traceability matrix
+- Code and test evidence for DONE requirements
+- MVP completion percentage
+- Dependencies and blocking reasons
 
-禁止：
-- 用"已检查""看起来一致""应当没问题"作为证据
-- 无本地证据时自创完成度百分比
-- 在存在 critical review issue 时继续推进
+Forbidden:
+- Using "checked", "looks consistent", or "should be fine" as evidence
+- Inventing completion percentages without local evidence
+- Continuing while a critical review issue exists
 
 ## Drift Reset
 
-出现以下情况时立即重建 Stage State Packet：
-- 需求状态在未修改时变化
-- carry-over count 与上次不一致
-- loop_mode 在无用户确认时变化
-- 任务创建数可 batch 规则不一致
+Immediately rebuild Stage State Packet when:
+- Requirement status changes without modification
+- Carry-over count differs from the previous round
+- Loop_mode changes without user confirmation
+- Task creation count is inconsistent with batch rules
 
-重建时只读取：`delivery-state.md`、`delivery-run-log.jsonl`、源需求、已有任务目录。
+During reset, read only: `delivery-state.md`, `delivery-run-log.jsonl`, source requirements, and existing task directories.
 
-## 阶段原子检查清单
+## Per-Phase Atomic Checklists
 
-### S0 加载状态
-- [ ] `.trellis/delivery-state.md` 已读取（存在时）或计划初始化
-- [ ] `delivery-loop-policy.md` 已读取
-- [ ] Level 1 参考文件已读取
+### S0 Load State
+- [ ] `.trellis/delivery-state.md` read (if exists) or planned for initialization
+- [ ] `delivery-loop-policy.md` read
+- [ ] Level 1 reference files read
 
-### S1 判断 Loop 模式
-- [ ] loop_mode 已确定（L1/L2/L3）
-- [ ] audit_scope 已确定（full/delta/early-exit）
-- [ ] 首次运行始终为 L1 + full audit
+### S1 Determine Loop Mode
+- [ ] loop_mode determined (L1/L2/L3)
+- [ ] audit_scope determined (full/delta/early-exit)
+- [ ] First run is always L1 + full audit
 
-### S2 发现证据
-- [ ] 源需求文档已定位
-- [ ] `.trellis/tasks/` 已完成任务已读取
-- [ ] 已有 `.trellis/delivery-state.md` 和 `.trellis/delivery-run-log.jsonl` 已读取（存在时）
+### S2 Discover Evidence
+- [ ] Source requirements document located
+- [ ] Completed tasks in `.trellis/tasks/` read
+- [ ] Existing `.trellis/delivery-state.md` and `.trellis/delivery-run-log.jsonl` read (if present)
 
-### S3 差距审计（重点）
-- [ ] RTM 中每条需求有明确状态（DONE/PARTIAL/MISSING/UNTESTED/UNCLEAR）
-- [ ] DONE 需求有代码和测试证据
-- [ ] 覆盖率百分比由机械统计得出
-- [ ] 所有 open gap 有精准描述
-- [ ] 累计 carry-over 有计数
-- [ ] 不存在未解占位符
+### S3 Gap Audit (Critical)
+- [ ] Every requirement in RTM has a clear status (DONE/PARTIAL/MISSING/UNTESTED/UNCLEAR)
+- [ ] DONE requirements have code and test evidence
+- [ ] Coverage percentage derived from mechanical statistics
+- [ ] All open gaps have precise descriptions
+- [ ] Cumulative carry-over count recorded
+- [ ] No unresolved placeholders
 
-### S4 更新状态
-- [ ] `delivery-state.md` 已写入/更新
-- [ ] `current_round` 已递增
-- [ ] `Next Loop Recommendation` 已设置
+### S4 Update State
+- [ ] `delivery-state.md` written/updated
+- [ ] `current_round` incremented
+- [ ] `Next Loop Recommendation` set
 
-### S5 选择批次
-- [ ] 每轮最多 3 个补缺任务
-- [ ] 每轮最多 1 个高风险任务
-- [ ] 未创建未经确认的任务
+### S5 Pick Batch
+- [ ] At most 3 gap tasks per round
+- [ ] At most 1 high-risk task per round
+- [ ] No unconfirmed tasks created
 
-## 单调收敛保护
+## Monotonic Convergence Protection
 
-如果审计循环连续 2 轮发现完全相同的问题且未修复：
-1. 输出 `STALLED_CONVERGENCE`
-2. 停止当前路径
-3. 建议用户换强模型或人工介入
-4. 记录已在哪些轮次尝试修复
+If the audit loop finds the exact same unfixed issues for 2 consecutive rounds:
+1. Output `STALLED_CONVERGENCE`
+2. Stop the current path
+3. Recommend the user switch to a stronger model or manual intervention
+4. Record which rounds attempted fixes and what was tried
