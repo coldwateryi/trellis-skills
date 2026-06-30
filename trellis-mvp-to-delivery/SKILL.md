@@ -9,28 +9,63 @@ description: Audit an existing MVP against a source requirements document and ru
 
 Move an existing MVP toward complete delivery by returning to the source requirements, auditing evidence, maintaining a delivery state file, planning bounded gap-closing batches, and driving final acceptance. The first pass is always read-only and must produce a full requirements-vs-MVP gap matrix; later passes may use delta audit or early-exit when nothing relevant changed.
 
-## Guardrails
+## Guardrails (Phase-Tagged)
 
-- Do not "just continue development" after MVP. Audit requirements first.
+> **Small model note:** Focus only on guardrails tagged for your current phase. Read new rules when entering the next phase.
+
+### All Phases (S0-S10)
 - Do not mark a requirement `DONE` without implementation evidence and test evidence.
-- Do not create delivery tasks until the user confirms the gap audit.
 - Do not mix unrelated gaps into one task.
 - Size tasks to the execution model's capability: if the execution phase may use a capability-limited local model (e.g. offline qwen), split finer and annotate complexity.
 - A delivery task PRD is an execution spec the execution model copies from. During planning, replace every `<...>` placeholder with a concrete value (exact file paths, copyable existing examples, ordered implementation steps, machine-checkable acceptance assertions, self-check commands). Never leave reasoning — including which branch a bug fix takes — to the execution phase.
-- For Trellis 0.6 beta projects, treat `.trellis/workflow.md` as the active local workflow contract when present. Preserve and extend `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` artifacts if existing tasks use them.
 - Do not put all testing into a final catch-all task. Each feature task must include its own basic tests.
 - Create a final validation task only after functional gap tasks are planned.
 - If a bug does not block the current requirement acceptance, classify it and create or propose a separate bug task.
 - Treat this skill as the delivery controller, not the implementer. Implementation belongs to `trellis-implement-tdd`; debugging belongs to `trellis-debug-systematic`; completion review belongs to `trellis-review-twostage`.
-- For L2/L3 gap-closing work, every implementation task must require an isolated worktree and verifier/review gate. Never let the implementer mark its own task complete.
-- Keep `.trellis/delivery-state.md` and `.trellis/delivery-run-log.jsonl` current when running as a repeated delivery loop.
-- Early-exit when there are no relevant changes since `last_audited_commit`; do not burn a full audit on a no-op run.
+
+### S0-S2 Dedicated (Load State & Audit Scope)
+- S0-S2: Do not "just continue development" after MVP. Audit requirements first.
+- S0-S2: Do not create delivery tasks until the user confirms the gap audit.
+- S0-S2: For Trellis 0.6 beta projects, treat `.trellis/workflow.md` as the active local workflow contract when present. Preserve and extend `design.md`, `implement.md`, `implement.jsonl`, and `check.jsonl` artifacts if existing tasks use them.
+
+### S4-S7 Dedicated (Batch Planning & Task Creation)
+- S4-S7: For L2/L3 gap-closing work, every implementation task must require an isolated worktree and verifier/review gate. Never let the implementer mark its own task complete.
+- S4-S7: Keep `.trellis/delivery-state.md` and `.trellis/delivery-run-log.jsonl` current when running as a repeated delivery loop.
+- S4-S7: Early-exit when there are no relevant changes since `last_audited_commit`; do not burn a full audit on a no-op run.
 
 ## Workflow
 
-### 0. Load Delivery Loop State
+### 0. Load Delivery Loop State (Graduated Loading)
 
-Load `references/delivery-loop-policy.md`.
+> **Small model note:** Do not read all reference files at once. Level 1 must be read before starting. Level 2 is read when entering the corresponding phase.
+
+**Level 1 — Required (read before S0):**
+1. `references/delivery-loop-policy.md` — loop modes, audit scope, batch limits, stop conditions
+2. `references/small-model-safety.md` — small model safety (Stage State Packet, Context Budget, Evidence Discipline, Drift Reset, monotonic convergence)
+
+**Level 2 — Read when entering each phase:**
+| Before phase | Reference files |
+|---|---|
+| Before S1 | `references/delivery-loop-state-template.md` (delivery state format) |
+| Before S3 | `references/gap-audit-template.md` + `references/self-review-checklist.md` |
+| Before S5 | `references/delivery-batch-template.md` |
+| Before S7 | `references/delivery-task-prd-template.md` |
+| Before S7 (med/high complexity) | `references/planning-artifacts-template.md` |
+| Before S9 | `references/test-coverage-matrix-template.md` |
+| Before S10 | `references/final-acceptance-template.md` + `references/bug-classification-rules.md` |
+
+**Level 3 — Read for gating/fixing:**
+| Scenario | Reference files |
+|---|---|
+| After self-review | `references/self-review-checklist.md` (current-phase section only) |
+| Review report | `references/self-review-report-template.md` |
+| Run log | `references/delivery-run-log-template.md` |
+| State validation | `scripts/trellis_delivery_gate.py` |
+
+**Gate rules:**
+- Run `scripts/trellis_delivery_gate.py` before each phase transition.
+- If a Gate fails, stop and fix before moving forward.
+- If 2 consecutive self-review rounds find the exact same unfixed issues, output `STALLED_CONVERGENCE`, stop the current path, and recommend a stronger model or manual intervention.
 
 If `.trellis/delivery-state.md` exists, read it before auditing. If it is missing, this is the first run:
 
@@ -130,6 +165,12 @@ Based on issue list in review report, make targeted improvements:
 - Improvements must be targeted (fix issues, don't introduce new ones)
 - Emphasize MVP compatibility (all gap-closing tasks must not break MVP behavior)
 
+**→ S3 Gate:** After completing the gap audit, run:
+```bash
+python <skill-dir>/scripts/trellis_delivery_gate.py --phase S4_UPDATE_STATE --state-file .trellis/delivery-state.md
+```
+Only proceed to S4 if Gate result is `PASS`.
+
 ### 4. Update Delivery State
 
 Update or initialize `.trellis/delivery-state.md` from `references/delivery-loop-state-template.md`:
@@ -140,6 +181,12 @@ Update or initialize `.trellis/delivery-state.md` from `references/delivery-loop
 - Increment carry-over count when a requirement remains open without progress.
 - Mark requirements that must pause because carry-over count exceeded policy.
 - Set `Next Loop Recommendation` to one of: `continue-next-batch`, `early-exit`, `pause-human-needed`, `run-final-acceptance`, or `rebaseline-required`.
+
+**→ S4 Gate:** After updating delivery state, run:
+```bash
+python <skill-dir>/scripts/trellis_delivery_gate.py --phase S5_PICK_BATCH --state-file .trellis/delivery-state.md
+```
+Only proceed to S5 if Gate result is `PASS`.
 
 ### 5. Select Delivery Batch
 
@@ -212,17 +259,27 @@ This skill audits, controls batches, and plans gap-closing tasks; it does not wr
 
 Role-layered model assignment: use a strong model for planning, a small model for mechanical implementation, and a strong model for review Stage 2 when available.
 
+### Monotonic Convergence Protection
+
+If the audit loop finds the exact same unfixed issues for 2 consecutive rounds:
+1. Output `STALLED_CONVERGENCE`
+2. Stop the current path
+3. Recommend the user switch to a stronger model or manual intervention
+4. Record which rounds attempted fixes and what was tried
+
 ## References
 
-- `references/delivery-loop-policy.md` - read before each repeated delivery run to choose loop mode, full/delta/early-exit audit scope, batch limits, and stop conditions.
-- `references/delivery-loop-state-template.md` - read when initializing or updating `.trellis/delivery-state.md`.
-- `references/delivery-batch-template.md` - read when selecting the one gap-closing batch for a run.
-- `references/delivery-run-log-template.md` - read when appending `.trellis/delivery-run-log.jsonl`.
-- `references/gap-audit-template.md` - read for the full or delta MVP gap audit.
-- `references/self-review-checklist.md` - read for self-review after each audit round.
-- `references/self-review-report-template.md` - read when generating review reports.
-- `references/planning-artifacts-template.md` - read when drafting Trellis 0.6 beta design, implementation, and context manifest artifacts for medium/high complexity tasks.
-- `references/delivery-task-prd-template.md` - read before creating gap-closing task PRDs.
-- `references/test-coverage-matrix-template.md` - read when planning or adding test coverage.
-- `references/final-acceptance-template.md` - read for final delivery acceptance.
-- `references/bug-classification-rules.md` - read when validation finds defects.
+- `references/delivery-loop-policy.md` - Level 1; read before each repeated delivery run to choose loop mode, full/delta/early-exit audit scope, batch limits, and stop conditions.
+- `references/delivery-loop-state-template.md` - Level 2; read when initializing or updating `.trellis/delivery-state.md`.
+- `references/delivery-batch-template.md` - Level 2; read when selecting the one gap-closing batch for a run.
+- `references/delivery-run-log-template.md` - Level 3; read when appending `.trellis/delivery-run-log.jsonl`.
+- `references/gap-audit-template.md` - Level 2; read for the full or delta MVP gap audit.
+- `references/self-review-checklist.md` - Level 3; read for self-review after each audit round (current-phase section only).
+- `references/self-review-report-template.md` - Level 3; read when generating review reports.
+- `references/planning-artifacts-template.md` - Level 2; read when drafting Trellis 0.6 beta design, implementation, and context manifest artifacts for medium/high complexity tasks.
+- `references/delivery-task-prd-template.md` - Level 2; read before creating gap-closing task PRDs.
+- `references/test-coverage-matrix-template.md` - Level 2; read when planning or adding test coverage.
+- `references/final-acceptance-template.md` - Level 2; read for final delivery acceptance.
+- `references/bug-classification-rules.md` - Level 3; read when validation finds defects.
+- `references/small-model-safety.md` - **new** Level 1; small model safety (Stage State Packet, context budget, evidence discipline, Drift Reset, monotonic convergence).
+- `scripts/trellis_delivery_gate.py` - **new** Level 3; validates delivery-state.md state machine transitions and count consistency; detects small-model drift.

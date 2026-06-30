@@ -1,16 +1,32 @@
-# Self-Review Checklist (MVP to Delivery Phase)
+# Self-Review Checklist (MVP to Delivery Phase) — Phase-Sliced
 
 This checklist evaluates whether MVP gap audit output meets the requirements for execution by small parameter models (e.g., qwen3.6 35b).
 
 ## Usage
 
-1. After completing each round of gap audit, check against this list item by item
-2. All check items must pass (or be marked "N/A") before proceeding to user confirmation
-3. If any items fail, mark specific issues and perform targeted improvements
+**Key change:** Read only the section matching your current phase. Do not read the full document.
+
+### Phase Quick Entry
+
+| Current phase | Check section |
+|---|---|
+| S0-S2 Load State / Determine Loop | 0.1-0.3 Workflow Fit |
+| S3 Gap Audit | A + B (RTM + MVP Completeness) |
+| S4 Update State | Run `trellis_delivery_gate.py` instead |
+| S5 Pick Batch | C + D (Task Split + PRD Quality) |
+| S7 Create Tasks | D + E (PRD + Test Plan) |
+| S10 Acceptance | F (Final Acceptance) |
+
+### Workflow
+
+1. Identify your current phase.
+2. Read only the corresponding checklist section.
+3. All checks must pass (or be marked "N/A") before proceeding.
+4. If any items fail, mark specific issues and perform targeted improvements.
 
 ---
 
-## 0. Trellis 0.6 Beta Workflow Fit Check
+## 0. Trellis 0.6 Beta Workflow Fit Check ([S0-S2] Load State & Determine Loop)
 
 ### 0.1 Workflow Discovery
 - [ ] `.trellis/workflow.md` was read when present
@@ -31,7 +47,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## A. Requirements Traceability Matrix Quality Check
+## A. Requirements Traceability Matrix Quality Check ([S3] Gap Audit)
 
 ### A1. Status Determination Accuracy
 - [ ] Every requirement has clear status (DONE/PARTIAL/MISSING/UNTESTED/UNCLEAR)
@@ -55,7 +71,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## B. MVP Completion Assessment Check
+## B. MVP Completion Assessment Check ([S3] Gap Audit)
 
 ### B1. Statistics Accuracy
 - [ ] Completed requirements count accurate
@@ -72,7 +88,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## C. Gap-Closing Task Split Quality Check
+## C. Gap-Closing Task Split Quality Check ([S5] Pick Batch)
 
 ### C1. Split Principles
 - [ ] One task closes one group of tightly related gaps
@@ -102,7 +118,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## D. Delivery Task PRD Quality Check (Critical!)
+## D. Delivery Task PRD Quality Check (Critical!) ([S5][S7] Batch Plan + Create Tasks)
 
 ### D1. Placeholder Elimination
 - [ ] No `<...>` placeholders in PRD
@@ -162,7 +178,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## E. Small Model Execution Friendliness Check
+## E. Small Model Execution Friendliness Check ([S5] Pick Batch)
 
 ### E1. Decision Points Pinned
 - [ ] All annotation choices specified
@@ -197,7 +213,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## F. Test Coverage Planning Check
+## F. Test Coverage Planning Check ([S9] Plan Tests)
 
 ### F1. Test Mapping Completeness
 - [ ] Each requirement (REQ-xxx) maps to at least one test
@@ -211,7 +227,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## G. Bug Classification and Handling Check
+## G. Bug Classification and Handling Check ([S10] Acceptance/Validation)
 
 ### G1. Bug Classification Accuracy
 - [ ] Each discovered bug has clear classification
@@ -227,7 +243,7 @@ This checklist evaluates whether MVP gap audit output meets the requirements for
 
 ---
 
-## H. Risk Point Check
+## H. Risk Point Check ([S3] Gap Audit — lightweight)
 
 ### H1. Risk Identification
 - [ ] High-risk modules annotated
