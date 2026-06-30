@@ -10,28 +10,63 @@ description: |
 
 通过回到源需求文档、审计证据、维护交付状态文件、规划有边界的补缺批次和最终验收，将已有 MVP 推进到完整交付。第一轮始终是只读审计，并且必须输出完整的"需求 vs MVP"差异矩阵；后续轮次在没有相关变化时可以 delta audit 或 early-exit。若使用 `trellis-delivery-controller-zh`，阶段路由和安全门由控制器负责，本技能执行控制器选定的交付阶段。
 
-## 约束
+## 约束（分阶段标签）
 
-- MVP 之后不要直接“继续开发”，必须先做需求审计。
+> **小模型指引**：每个阶段只关注本阶段标签下的约束。进入下一阶段时再读对应的新规则。
+
+### 全阶段通用（S0-S10）
 - 没有实现证据和测试证据时，不要把需求标记为 `DONE`。
-- 在用户确认差距审计前，不要创建交付任务。
 - 不要把无关缺口混进同一个任务。
 - 任务粒度按执行模型能力分级：若执行阶段可能用能力有限的本地模型（如离线 qwen），把任务拆得更碎并标注复杂度。
 - 交付任务 PRD 是给执行模型照着做的执行规格。规划阶段必须把所有 `<...>` 占位符替换为具体值（具体文件路径、可照抄的现有范例、有序实现步骤、可机器校验的验收断言、自检命令），禁止把推理判断（含 bug 修复走哪条分支）留给执行阶段。
-- 对 Trellis 0.6 beta 项目，如果存在 `.trellis/workflow.md`，必须把它当作当前项目的本地工作流契约。如果已有任务使用 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl`，补缺任务应保留并延续这些产物。
 - 不要把所有测试都推到最终兜底任务。每个功能任务必须包含自己的基础测试。
 - 最终验证任务只能在功能补缺任务规划完成后创建。
 - 如果 bug 不阻塞当前需求验收，先分类，再创建或建议独立 bug task。
 - 将本技能视为交付审计和状态维护者，而不是实现者。阶段路由优先交给 `trellis-delivery-controller-zh`；实现交给 `trellis-implement-tdd-zh`；调试交给 `trellis-debug-systematic-zh`；完成前评审交给 `trellis-review-twostage-zh`。
-- 对 L2/L3 补缺实现任务，必须要求隔离 worktree 和 verifier/review 门。禁止实现者自行标记任务完成。
-- 作为重复运行的 delivery loop 时，必须持续更新 `.trellis/delivery-state.md` 和 `.trellis/delivery-run-log.jsonl`。
-- 当自 `last_audited_commit` 后没有相关变化时 early-exit，禁止无意义 full audit 消耗 token。
+
+### S0-S2 专用（加载状态与审计范围）
+- S0-S2: MVP 之后不要直接”继续开发”，必须先做需求审计。
+- S0-S2: 在用户确认差距审计前，不要创建交付任务。
+- S0-S2: 对 Trellis 0.6 beta 项目，如果存在 `.trellis/workflow.md`，必须把它当作当前项目的本地工作流契约。如果已有任务使用 `design.md`、`implement.md`、`implement.jsonl` 或 `check.jsonl`，补缺任务应保留并延续这些产物。
+
+### S4-S7 专用（批次规划与任务创建）
+- S4-S7: 对 L2/L3 补缺实现任务，必须要求隔离 worktree 和 verifier/review 门。禁止实现者自行标记任务完成。
+- S4-S7: 作为重复运行的 delivery loop 时，必须持续更新 `.trellis/delivery-state.md` 和 `.trellis/delivery-run-log.jsonl`。
+- S4-S7: 当自 `last_audited_commit` 后没有相关变化时 early-exit，禁止无意义 full audit 消耗 token。
 
 ## 工作流
 
-### 0. 加载交付 Loop 状态
+### 0. 加载交付 Loop 状态（渐进式加载）
 
-读取 `references/delivery-loop-policy.md`。
+> **小模型指引**：不要一次性读完所有参考文件。Level 1 必须在开始前读完，Level 2 在进入对应阶段时再读。
+
+**Level 1 — 必读（开始前通读）**：
+1. `references/delivery-loop-policy.md` — Loop 模式、审计范围、批次限制和停止条件
+2. `references/small-model-safety.md` — 小模型安全规范（Stage State Packet、Context Budget、Evidence Discipline、Drift Reset、单调收敛保护）
+
+**Level 2 — 阶段进入时读取**：
+| 进入阶段前 | 读取的参考文件 |
+|---|---|
+| S1 前 | `references/delivery-loop-state-template.md`（交付状态文件格式） |
+| S3 前 | `references/gap-audit-template.md` + `references/self-review-checklist.md`（差距审计输出模板） |
+| S5 前 | `references/delivery-batch-template.md`（批次选择） |
+| S7 前 | `references/delivery-task-prd-template.md`（补缺任务 PRD 模板） |
+| S7 前（中/高复杂度） | `references/planning-artifacts-template.md` |
+| S9 前 | `references/test-coverage-matrix-template.md` |
+| S10 前 | `references/final-acceptance-template.md` + `references/bug-classification-rules.md` |
+
+**Level 3 — 门控/修复时读取**：
+| 场景 | 读取的参考文件 |
+|---|---|
+| 每轮自审后 | `references/self-review-checklist.md`（当前阶段对应部分） |
+| 自审报告 | `references/self-review-report-template.md` |
+| 运行日志 | `references/delivery-run-log-template.md` |
+| 状态校验 | `scripts/trellis_delivery_gate.py`（校验 delivery state 合法性） |
+
+**Gate 规则**：
+- 每个阶段转换前运行 `scripts/trellis_delivery_gate.py`（见各阶段的具体命令）。
+- Gate 未通过时停止并修复，不要继续下一阶段。
+- 连续 2 轮自审发现完全相同的问题且未修复 → 输出 `STALLED_CONVERGENCE` → 停止当前路径 → 建议换强模型或人工介入。
 
 如果 `.trellis/delivery-state.md` 存在，审计前先读取它。如果不存在，说明这是首次运行：
 
@@ -131,6 +166,12 @@ description: |
 - 改进要针对性（修复问题，不引入新问题）
 - 强调 MVP 兼容性（所有补缺任务不能破坏 MVP 行为）
 
+**→ S3 Gate：** 完成差距审计后，运行：
+```bash
+python <skill-dir>/scripts/trellis_delivery_gate.py --phase S4_UPDATE_STATE --state-file .trellis/delivery-state.md
+```
+Gate 结果为 `PASS` 才能进入 S4。
+
 ### 4. 更新交付状态
 
 使用 `references/delivery-loop-state-template.md` 初始化或更新 `.trellis/delivery-state.md`：
@@ -141,6 +182,12 @@ description: |
 - 当某需求仍未关闭且没有进展时，增加 carry-over count。
 - 对超过策略上限的需求标记暂停。
 - 将 `Next Loop Recommendation` 设置为：`continue-next-batch`、`early-exit`、`pause-human-needed`、`run-final-acceptance` 或 `rebaseline-required`。
+
+**→ S4 Gate:** 完成交付状态更新后，运行：
+```bash
+python <skill-dir>/scripts/trellis_delivery_gate.py --phase S5_PICK_BATCH --state-file .trellis/delivery-state.md
+```
+Gate 结果为 `PASS` 才能进入 S5。
 
 ### 5. 选择交付批次
 
@@ -213,17 +260,27 @@ full audit、delta audit、创建任务、暂停、final-acceptance-ready 和 ea
 
 角色分层模型分配：规划用强模型、实现用小模型、评审 Stage 2 用强模型（Trellis 可按 agent 配 `model`）。
 
+### 单调收敛保护
+
+如果审计循环连续 2 轮发现完全相同的问题且未修复：
+1. 输出 `STALLED_CONVERGENCE`
+2. 停止当前路径
+3. 建议用户换强模型或人工介入
+4. 记录已在哪些轮次尝试修复（列出轮次号和尝试的方案）
+
 ## 参考文件
 
-- `references/delivery-loop-policy.md` - 单独调用本技能或校验控制器路由时读取，用于 loop mode、full/delta/early-exit 审计范围、批次限制和停止条件。
-- `references/delivery-loop-state-template.md` - 初始化或更新 `.trellis/delivery-state.md` 时读取。
-- `references/delivery-batch-template.md` - 为每轮选择唯一补缺批次时读取。
-- `references/delivery-run-log-template.md` - 追加 `.trellis/delivery-run-log.jsonl` 时读取。
-- `references/gap-audit-template.md` - full 或 delta MVP 差距审计时读取。
-- `references/self-review-checklist.md` - 每轮审计后进行自我评审时读取。
-- `references/self-review-report-template.md` - 生成评审报告时读取。
-- `references/planning-artifacts-template.md` - 为中/高复杂度任务起草 Trellis 0.6 beta 的设计、实现和上下文清单产物时读取。
-- `references/delivery-task-prd-template.md` - 创建补缺任务 PRD 前读取。
-- `references/test-coverage-matrix-template.md` - 规划或补齐测试覆盖时读取。
-- `references/final-acceptance-template.md` - 最终交付验收时读取。
-- `references/bug-classification-rules.md` - 验证发现缺陷时读取。
+- `references/delivery-loop-policy.md` - Level 1；单独调用本技能或校验控制器路由时读取，用于 loop mode、full/delta/early-exit 审计范围、批次限制和停止条件。
+- `references/delivery-loop-state-template.md` - Level 2；初始化或更新 `.trellis/delivery-state.md` 时读取。
+- `references/delivery-batch-template.md` - Level 2；为每轮选择唯一补缺批次时读取。
+- `references/delivery-run-log-template.md` - Level 3；追加 `.trellis/delivery-run-log.jsonl` 时读取。
+- `references/gap-audit-template.md` - Level 2；full 或 delta MVP 差距审计时读取。
+- `references/self-review-checklist.md` - Level 3；每轮审计后进行自我评审时读取（当前阶段对应部分）。
+- `references/self-review-report-template.md` - Level 3；生成评审报告时读取。
+- `references/planning-artifacts-template.md` - Level 2；为中/高复杂度任务起草 Trellis 0.6 beta 的设计、实现和上下文清单产物时读取。
+- `references/delivery-task-prd-template.md` - Level 2；创建补缺任务 PRD 前读取。
+- `references/test-coverage-matrix-template.md` - Level 2；规划或补齐测试覆盖时读取。
+- `references/final-acceptance-template.md` - Level 2；最终交付验收时读取。
+- `references/bug-classification-rules.md` - Level 3；验证发现缺陷时读取。
+- `references/small-model-safety.md` - **新增** Level 1；小模型安全规范（Stage State Packet、上下文预算、证据纪律、Drift Reset、单调收敛保护）。
+- `scripts/trellis_delivery_gate.py` - **新增** Level 3；校验 delivery-state.md 状态机转换、计数一致性，检测小模型漂移。
