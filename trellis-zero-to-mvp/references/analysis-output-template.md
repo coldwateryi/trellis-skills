@@ -1,12 +1,23 @@
 # Zero to MVP Analysis Output Template
 
-Use this template during read-only analysis. Do not create tasks or write code in this phase.
+> **Small model note:** This template covers output formats for S1-S10. Do not attempt to fill everything at once. Each section is tagged with its applicable phase:
+> - `[S0]` Discovery Phase
+> - `[S1]` Requirement Ledger Phase
+> - `[S2]` Contract Lock Phase
+> - `[S3]` Task Candidate Phase
+> - `[S4]` Batch Planning Phase
+> - `[S5]` Gating Phase
+> - `[S6]` User Confirmation Phase
+> - `[S7]` Task Creation Phase
+> - `[S8]` Artifact Writing Phase
+> - `[S9]` Artifact Gate Phase
+> - `[ALL]` All Phases
 
-## Project Goal Summary
+## [S0] Project Goal Summary
 
 Write 5-10 bullets describing what the requirements document asks the project to deliver.
 
-## Project Contract Profile
+## [S2] Project Contract Profile
 
 Read `project-contract-profiles.md` first and select a profile from repository evidence. Do not apply RuoYi/Java CRUD fields to CLI, SDK, frontend, Python service, or custom framework projects.
 
@@ -22,7 +33,7 @@ project_contract_profile:
       reason: <why not applicable>
 ```
 
-## Project Contract Lock
+## [S2] Project Contract Lock
 
 Lock implementation contracts from user requirements, README, module README, AGENTS.md, `.trellis/spec/`, and existing code. Later artifacts must follow this table and cannot switch naming systems.
 
@@ -55,7 +66,7 @@ Rule: if parent/child PRDs, `design.md`, `implement.md`, or JSONL hit a forbidde
 
 If a conflict blocks planning, do not create tasks; ask the user to confirm the adopted contract first.
 
-## Existing Implementation Baseline
+## [S1] Existing Implementation Baseline
 
 Use this section when the repository already contains manually implemented functionality or Trellis/spec was initialized after development started.
 
@@ -71,7 +82,7 @@ Rules:
 - If a requirement is `PARTIAL`, create a gap-closing task for missing behavior only.
 - If a requirement is `MISSING`, create a new implementation task.
 
-## Trellis Workflow Context
+## [S0] Trellis Workflow Context
 
 | Item | Value | Notes |
 | --- | --- | --- |
@@ -82,7 +93,7 @@ Rules:
 | Developer identity | <from `.trellis/.developer` or "not initialized"> | <action needed if missing> |
 | Spec freshness | <fresh/stale/missing/unknown> | <spec files read or refresh task needed> |
 
-## Execution Model Profile
+## [ALL] Execution Model Profile
 
 | Item | Value |
 | --- | --- |
@@ -93,7 +104,7 @@ Rules:
 | Batch limit | <e.g. max 8 executable tasks, max 5 full PRDs per batch> |
 | Batch planning requirement | <if over limit, list all B01/B02/... batches; never stop at P0/P1> |
 
-## Stage State Packet
+## [ALL] Stage State Packet
 
 Required for small/local models, long complex tasks, more than 8 candidates, or context recovery. Values come from matrices, ledger, and real directories; unknown values are allowed only during discovery.
 
@@ -128,7 +139,7 @@ Rules:
 - If `stop_gate_failures` is non-empty, do not ask for user confirmation, create tasks, or recommend development.
 - If Stage State Packet disagrees with Full Requirement Matrix, MVP Coverage Matrix, Subtask Planning Ledger, or real directories, output `STATE_DRIFT` and do Drift Reset.
 
-## Source Requirement List
+## [S1] Source Requirement List
 
 Extract every verifiable source requirement. `REQ-xxx` is the stable identity; task merge/split/reorder cannot change its meaning.
 
@@ -136,7 +147,7 @@ Extract every verifiable source requirement. `REQ-xxx` is the stable identity; t
 | --- | --- | --- | --- | --- |
 | <chapter/page/title> | <source point> | REQ-001 | <one-line summary> | <context> |
 
-## Full Requirement Matrix
+## [S1] Full Requirement Matrix
 
 This table reflects source truth only. Every source-verifiable requirement must have one row.
 
@@ -152,7 +163,9 @@ Allowed statuses:
 - `UNTESTED`: implemented but lacks enough tests.
 - `UNCLEAR`: requirement is too unclear to implement.
 
-## MVP Coverage Matrix
+## [S1] MVP Coverage Matrix
+
+> **Mechanical constraint:** `TASK + MERGED + BASELINE + OUT_OF_SCOPE + BLOCKED` = Full Requirement Matrix row count
 
 This table describes how the current MVP handles each full requirement. Do not report MVP coverage count as the original source requirement count.
 
@@ -178,13 +191,13 @@ Task actions:
 - `new-task`: requirement is `MISSING`; create a new implementation task.
 - `clarify`: requirement is `UNCLEAR`; ask a blocking question or create a clarification task before implementation.
 
-## Full Platform Scope vs MVP Boundary
+## [S1-S2] Full Platform Scope vs MVP Boundary
 
 | Scope Block | Full Platform Requirement | Current MVP Handling | Difference/Risk |
 | --- | --- | --- | --- |
 | <PC/IOC/integration/mobile/report/etc.> | <source scope> | <TASK/MERGED/OUT_OF_SCOPE> | <risk> |
 
-## Task Merge/Split Record
+## [S3] Task Merge/Split Record
 
 Every source requirement that is not an independent task must have a destination here.
 
@@ -208,7 +221,15 @@ Every `OUT_OF_SCOPE` requirement must appear here and must not disappear from tr
 | --- | --- | --- | --- | --- |
 |  |  |  |  |  |
 
-## Task Split
+## [S3] Task Split
+
+Small Model Mode rules:
+
+0. The model must not self-exempt oversized tasks using "strongly coupled", "same flow", or "splitting would increase dependencies" as justification. Only user-confirmed merges are allowed, with explicit risk notes.
+1. Each child task covers at most one entity's CRUD, one endpoint group, one state transition, one front-end page, or one backend aggregate query.
+2. A candidate containing multiple primary entities, multiple CRUD sets, CRUD + state machine + report, backend flow + mini-app page, or map/GIS + multi-table aggregation + advanced analytics must be split.
+3. Max 8 executable tasks per batch, max 5 full PRDs per batch. P0/P1 is priority, not completeness.
+4. High-complexity tasks must be split to low/medium, or require `design.md` + `implement.md` + JSONL.
 
 | Task ID | Title | Goal | Type | Requirement IDs | Source Status | Depends On | Baseline Dependencies | Priority | Complexity | Small Model Granularity | Planning Artifacts | Parallelizable | Acceptance Criteria | Likely Areas |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -254,7 +275,7 @@ Existing implementation rules:
 4. When a task depends on existing capability, write it as `existing:src/auth/session.ts` or equivalent in Baseline Dependencies.
 5. Do not disguise existing baseline dependencies as new Trellis tasks.
 
-## Subtask Planning Ledger
+## [S4] Subtask Planning Ledger
 
 The ledger is the only state source for progressive planning. Every MVP Coverage Matrix row with `TASK` status must have a row. Do not keep only the current batch.
 
@@ -276,7 +297,7 @@ Status rules:
 
 Before confirmation, all MVP `TASK` child tasks must be `READY_TO_CONFIRM`, `BLOCKED`, or `OUT_OF_SCOPE`. If any are `CANDIDATE` or `DRAFTED`, output `BATCH_INCOMPLETE` and continue planning the next batch.
 
-## Batch Completion Rollup
+## [S4] Batch Completion Rollup
 
 | Batch | Task IDs | Goal | Status | READY_TO_CONFIRM | BLOCKED | OUT_OF_SCOPE | Remaining Non-Terminal | Next Batch Action |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -289,7 +310,7 @@ Completion rule:
 - Only when `ready_or_terminal_count == all_mvp_task_count` may output `ALL_SUBTASK_PLANNING_COMPLETE`.
 - Otherwise output `BATCH_INCOMPLETE`, list next-batch Task IDs, unfinished reasons, and the main agent's next action.
 
-## Agent Dispatch Plan (if triggered)
+## [S4] Agent Dispatch Plan (if triggered)
 
 When candidate child tasks exceed batch limits, business domains exceed 3, full PRD drafts exceed 5, or the user requests multi-agent planning, output this according to `subagent-planning-template.md`:
 
@@ -299,7 +320,7 @@ When candidate child tasks exceed batch limits, business domains exceed 3, full 
 | batch-split-agent | <MVP TASK range> | <batch split> | planned/running/done/blocked | <none/code> |
 | gate-check-agent | <all drafts> | <Gate PASS/FAIL> | planned/running/done/blocked | <none/code> |
 
-## Planning Artifact Matrix
+## [S5] Planning Artifact Matrix
 
 Fill this before creating Trellis tasks. This matrix is the basis for post-creation file existence checks; `task.py create` does not automatically fill `design.md` or `implement.md`.
 
@@ -315,14 +336,14 @@ Rules:
 - Files marked required must exist in real `task.py create` directories after creation.
 - `Write Status = WRITTEN` must mean the file exists in the real directory. `NOT_NEEDED_WITH_REASON` must explain why it is not needed. `BLOCKED` must prevent executable reporting.
 
-## MVP Recommended Development Order
+## [S5] MVP Recommended Development Order
 
 Output this only after Full MVP Planning Gate passes. It must cover every current MVP `TASK` child task. If it covers only the created batch, rename the section to `This Batch Execution Order` and do not recommend starting development.
 
 1. `<task-id>`: `<reason>`
 2. `<task-id>`: `<reason>`
 
-## Artifact Gate Plan
+## [S5] Artifact Gate Plan
 
 After task creation, run and report:
 
@@ -348,7 +369,7 @@ python <skill-dir>/scripts/trellis_zero_gate.py \
 
 Add `--forbidden-token` or `--forbidden-regex` if Contract Snapshot has forbidden tokens. Do not hand-fill PASS before running mechanical scan.
 
-## Artifact Gate Output Fields
+## [S9] Artifact Gate Output Fields
 
 After creating tasks, output these fields. `result` can only be `PASS` or `FAIL`; do not report executable readiness with `PENDING`.
 
@@ -369,7 +390,7 @@ After creating tasks, output these fields. `result` can only be `PASS` or `FAIL`
 | external_config_hits | Unresolved external config/key placeholders | 0 |
 | result | Overall result | PASS only when all blocking counts are 0 |
 
-## Pre-Confirmation Gate
+## [S6] Pre-Confirmation Gate
 
 Fill this before outputting a confirmation request. If any item fails, do not ask for confirmation; continue planning or fix.
 

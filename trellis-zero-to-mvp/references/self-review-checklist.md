@@ -1,55 +1,87 @@
-# Self-Review Checklist
+# Self-Review Checklist (Phase-Sliced)
 
 Use this checklist to evaluate whether read-only planning is executable by small/local models such as qwen3.6 35b.
 
 ## Usage
 
-1. After each read-only analysis round, check this list item by item.
-2. All checks must pass or be explicitly marked `N/A`, and Full MVP Planning Gate plus Pre-Confirmation Gate must be `PASS`, before user confirmation.
-3. Failed items become precise issues with targeted fixes.
+**Key change:** Do not read the full document. Read only the section matching your current phase. Items use the following markers:
+
+- `[S0]` check at S0 (Discovery)
+- `[S1]` check at S1 (Requirements)
+- `[S2]` check at S2 (Contract Lock)
+- `[S3]` check at S3 (Task Candidates)
+- `[S4]` check at S4 (Batch Planning)
+- `[S5]` check at S5 (Gating)
+- `[S7]` check at S7 (Task Creation)
+- `[S8]` check at S8 (Artifact Writing)
+- `[ALL]` check at all phases
+- `[auto]` can be automated (already in `trellis_planning_gate.py` or `trellis_zero_gate.py`)
+- `[manual]` requires model judgment
+
+### Phase Quick Entry
+
+| Current phase | Check only this section |
+|---|---|
+| S0 Discovery | 0.1 Workflow Discovery + A1 Requirements |
+| S1 Requirements | A1-A4 (Requirement Completeness) |
+| S2 Contract Lock | 0.0 Project Contract Lock |
+| S3 Task Candidates | B1-B5 (Task Split Quality) |
+| S4 Batch Planning | B5 Progressive Ledger + D1-D7 (Small Model Friendliness) |
+| S5 Gating | 0.5 State Machine & Gates + F (Artifact Gate Prep) |
+| S7 Task Creation | 0.4 Existing Implementation + G (TDD Readiness) |
+| S8 Artifact Writing | C1-C7 (PRD Quality) |
+
+### Workflow
+
+1. Identify your current phase.
+2. Read only the corresponding checklist section (≤10 items/phase).
+3. For `[auto]` items, prefer running the mechanical script over manual judgment.
+4. All checks must pass or be explicitly marked `N/A`, and Full MVP Planning Gate plus Pre-Confirmation Gate must be `PASS`, before user confirmation.
+5. Failed items become precise issues with targeted fixes.
 
 ---
 
 ## 0. Trellis 0.6+ Workflow Fit
 
-### 0.0 Project Contract Lock
-- [ ] User requirements, README/module README, AGENTS.md, `.trellis/spec/`, and existing code conventions were read.
-- [ ] Project Contract Profile is selected with evidence and rejected-profile reasons.
-- [ ] Project Contract Lock exists; applicable selected-profile fields have adopted values and evidence paths.
-- [ ] Non-applicable fields are `not-applicable`; RuoYi/Java fields are not applied to CLI, SDK, frontend, Python service, or custom projects.
-- [ ] If README/spec/code conflict, a `CONTRACT_CONFLICT` table is output.
-- [ ] If `CONTRACT_CONFLICT` exists, confirmation is blocked and tasks are not created.
-- [ ] Child task candidates follow Project Contract Lock for names, paths, APIs, commands, routes, data/state objects, and packages/modules.
-- [ ] No task mixes two naming systems, path systems, API/command systems, or package/module structures.
-- [ ] Contract Snapshot and forbidden tokens exist, with evidence for each forbidden token.
-- [ ] Parent/child PRDs, `design.md`, `implement.md`, and JSONL were scanned for forbidden-token hits.
+### 0.0 Project Contract Lock ([S2] Contract Lock Phase)
+- [S2] [manual] [ ] User requirements, README/module README, AGENTS.md, `.trellis/spec/`, and existing code conventions were read.
+- [S2] [manual] [ ] Project Contract Profile is selected with evidence and rejected-profile reasons.
+- [S2] [auto] [ ] Project Contract Lock exists; applicable selected-profile fields have adopted values and evidence paths.
+- [S2] [manual] [ ] Non-applicable fields are `not-applicable`; RuoYi/Java fields are not applied to CLI, SDK, frontend, Python service, or custom projects.
+- [S2] [manual] [ ] If README/spec/code conflict, a `CONTRACT_CONFLICT` table is output.
+- [S2] [auto] [ ] If `CONTRACT_CONFLICT` exists, confirmation is blocked and tasks are not created.
+- [S2] [manual] [ ] Child task candidates follow Project Contract Lock for names, paths, APIs, commands, routes, data/state objects, and packages/modules.
+- [S2] [manual] [ ] No task mixes two naming systems, path systems, API/command systems, or package/module structures.
+- [S2] [manual] [ ] Contract Snapshot and forbidden tokens exist, with evidence for each forbidden token.
+- [S2] [auto] [ ] Parent/child PRDs, `design.md`, `implement.md`, and JSONL were scanned for forbidden-token hits.
 
-### 0.1 Workflow Discovery
-- [ ] `.trellis/workflow.md` was read when present.
-- [ ] `.trellis/config.yaml`, `.trellis/.version`, and `.trellis/.developer` were checked when present.
-- [ ] Analysis states whether the project is legacy PRD-only or Trellis 0.6+ artifact workflow.
-- [ ] `codex.dispatch_mode` was read; inline, sub-agent, and optional JSONL Gate modes are distinguished.
-- [ ] Developer identity setup uses `trellis init -u <name>` first; `init_developer.py` is legacy fallback only.
+### 0.1 Workflow Discovery ([S0] Discovery Phase)
+- [S0] [manual] [ ] `.trellis/workflow.md` was read when present.
+- [S0] [auto] [ ] `.trellis/config.yaml`, `.trellis/.version`, and `.trellis/.developer` were checked when present.
+- [S0] [manual] [ ] Analysis states whether the project is legacy PRD-only or Trellis 0.6+ artifact workflow.
+- [S0] [manual] [ ] `codex.dispatch_mode` was read; inline, sub-agent, and optional JSONL Gate modes are distinguished.
+- [S0] [manual] [ ] Developer identity setup uses `trellis init -u <name>` first; `init_developer.py` is legacy fallback only.
 
-### 0.2 Spec Freshness
-- [ ] Relevant `.trellis/spec/` files are listed.
-- [ ] Spec freshness is marked fresh/stale/missing/unknown.
-- [ ] Stale or missing specs become a spec-refresh/bootstrap task or blocker.
+### 0.2 Spec Freshness ([S0] Discovery Phase)
+- [S0] [auto] [ ] Relevant `.trellis/spec/` files are listed.
+- [S0] [manual] [ ] Spec freshness is marked fresh/stale/missing/unknown.
+- [S0] [manual] [ ] Stale or missing specs become a spec-refresh/bootstrap task or blocker.
 
-### 0.3 Planning Artifacts
-- [ ] Every task states required artifacts: `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`.
-- [ ] Planning artifact matrix exists and supports post-creation file existence checks.
-- [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller.
-- [ ] High complexity is not PRD-only; if no `design.md` and `implement.md` are generated, the task has been split to low/medium complexity.
-- [ ] Stable specs, research notes, or external context that must be preloaded before implementation/checking are represented by JSONL context manifests.
-- [ ] Detailed file plan, ordered steps, self-check commands, failure recovery, and review gates are in `implement.md`; low-complexity PRD-only exception has evidence.
-- [ ] Every child task has a `Task Impact Matrix`.
-- [ ] If any surface is `yes`, `design.md` contains the matching design section and `implement.md` contains the matching implementation-plan section.
-- [ ] RuoYi/Vue CRUD or fullstack tasks do not mark common surfaces such as database, API, UI, permissions, query, validation, and tests all `no` without reason.
+### 0.3 Planning Artifacts ([S2][S3] Contract & Candidate phases)
+- [S2-S3] [manual] [ ] Every task states required artifacts: `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`.
+- [S2-S3] [auto] [ ] Planning artifact matrix exists and supports post-creation file existence checks.
+- [S2-S3] [auto] [ ] Medium/high complexity tasks include design and implementation artifacts or are split smaller.
+- [S2-S3] [manual] [ ] High complexity is not PRD-only; if no `design.md` and `implement.md` are generated, the task has been split to low/medium complexity.
+- [S2-S3] [manual] [ ] Stable specs, research notes, or external context that must be preloaded before implementation/checking are represented by JSONL context manifests.
+- [S2-S3] [manual] [ ] Detailed file plan, ordered steps, self-check commands, failure recovery, and review gates are in `implement.md`; low-complexity PRD-only exception has evidence.
+- [S2-S3] [manual] [ ] Every child task has a `Task Impact Matrix`.
+- [S2-S3] [manual] [ ] If any surface is `yes`, `design.md` contains the matching design section and `implement.md` contains the matching implementation-plan section.
+- [S2-S3] [manual] [ ] RuoYi/Vue CRUD or fullstack tasks do not mark common surfaces such as database, API, UI, permissions, query, validation, and tests all `no` without reason.
+- [S2-S3] [auto] [ ] High-complexity tasks missing design.md/implement.md are detected by `trellis_planning_gate.py` with `DESIGN_SURFACE_MISSING`.
 
-### 0.4 Existing Implementation Retrofit
-- [ ] Existing Implementation Baseline exists for non-empty repos.
-- [ ] Baseline entries include exact code evidence and test evidence, or explicitly state that test evidence is missing.
+### 0.4 Existing Implementation Retrofit ([S1] Requirements Phase)
+- [S1] [auto] [ ] Existing Implementation Baseline exists for non-empty repos.
+- [S1] [auto] [ ] Baseline entries include exact code evidence and test evidence, or explicitly state that test evidence is missing.
 - [ ] Source requirements remain the source of truth; `.trellis/spec/` is not treated as the only requirements source.
 - [ ] `DONE` requirements do not create implementation tasks.
 - [ ] `UNTESTED` requirements create only test-coverage tasks.
@@ -59,19 +91,19 @@ Use this checklist to evaluate whether read-only planning is executable by small
 - [ ] Existing dependencies use `existing:<path-or-capability>`.
 - [ ] Task split and PRD write-back paths use real `task.py create` directories, not logical IDs/slugs.
 
-### 0.5 State Machine and Gates
-- [ ] `workflow-state-machine.md` and `gate-definitions.md` were read.
-- [ ] Current output names state S0-S10 and next state.
-- [ ] Requirement Ledger Gate outputs PASS/FAIL, failure codes, and evidence.
-- [ ] Contract Gate outputs PASS/FAIL, failure codes, and evidence.
-- [ ] Full MVP Planning Gate outputs PASS/FAIL, failure codes, and evidence.
-- [ ] Batch Completeness Gate outputs PASS/FAIL, failure codes, and evidence.
-- [ ] Pre-Confirmation Gate outputs PASS/FAIL, failure codes, and evidence.
-- [ ] If any Gate fails, there is no user confirmation request, no task creation, and no development recommendation.
+### 0.5 State Machine and Gates ([S5] Gating Phase)
+- [S5] [manual] [ ] `workflow-state-machine.md` and `gate-definitions.md` were read.
+- [S5] [auto] [ ] Current output names state S0-S10 and next state.
+- [S5] [auto] [ ] Requirement Ledger Gate outputs PASS/FAIL, failure codes, and evidence.
+- [S5] [auto] [ ] Contract Gate outputs PASS/FAIL, failure codes, and evidence.
+- [S5] [auto] [ ] Full MVP Planning Gate outputs PASS/FAIL, failure codes, and evidence.
+- [S5] [auto] [ ] Batch Completeness Gate outputs PASS/FAIL, failure codes, and evidence.
+- [S5] [auto] [ ] Pre-Confirmation Gate outputs PASS/FAIL, failure codes, and evidence.
+- [S5] [auto] [ ] If any Gate fails, there is no user confirmation request, no task creation, and no development recommendation.
 
 ---
 
-## A. Requirement Completeness
+## A. Requirement Completeness ([S1] Requirements Phase)
 
 ### A1. Requirement Identity
 - [ ] Every requirement has a unique `REQ-xxx` ID.
@@ -99,21 +131,21 @@ Use this checklist to evaluate whether read-only planning is executable by small
 - [ ] No incomplete lists such as "etc.", "such as", or "similar" remain unless fully bounded.
 - [ ] Uncertain words such as "may", "perhaps", or "recommended" are eliminated or made concrete.
 
-### A3. Boundary Conditions
-- [ ] Empty input behavior is specified.
-- [ ] Oversized input behavior is specified.
-- [ ] Duplicate input/submission behavior is specified.
-- [ ] Concurrency behavior is specified when applicable.
-- [ ] Invalid format behavior is specified.
+### A3. Boundary Conditions ([S8] Artifact Writing)
+- [S8] [ ] Empty input behavior is specified.
+- [S8] [ ] Oversized input behavior is specified.
+- [S8] [ ] Duplicate input/submission behavior is specified.
+- [S8] [ ] Concurrency behavior is specified when applicable.
+- [S8] [ ] Invalid format behavior is specified.
 
-### A4. Error Handling
-- [ ] Every failure scenario has a concrete error code.
-- [ ] Every failure scenario has a concrete error message, not a generic "operation failed".
-- [ ] Error response shape is specified.
+### A4. Error Handling ([S8] Artifact Writing)
+- [S8] [ ] Every failure scenario has a concrete error code.
+- [S8] [ ] Every failure scenario has a concrete error message, not a generic "operation failed".
+- [S8] [ ] Error response shape is specified.
 
 ---
 
-## B. Task Split Quality
+## B. Task Split Quality ([S3] Task Candidate Phase)
 
 ### B1. Split Principles
 - [ ] Each child task is an independently verifiable business or technical capability.
@@ -163,7 +195,9 @@ Use this checklist to evaluate whether read-only planning is executable by small
 
 ---
 
-## C. PRD Quality
+## C. PRD Quality ([S4] Batch Planning + [S8] Artifact Writing)
+
+**Note:** This section is long. In S4, focus only on C5 (Acceptance Criteria). In S8, check C1-C7 fully.
 
 ### C1. Placeholder Elimination
 - [ ] PRD contains no `<...>` placeholders.
@@ -227,7 +261,7 @@ Use this checklist to evaluate whether read-only planning is executable by small
 
 ---
 
-## D. Small Model Friendliness
+## D. Small Model Friendliness ([S4] Batch Planning Phase)
 
 ### D1. Decision Points Pinned
 - [ ] Annotation/framework choice is explicit.
@@ -280,7 +314,9 @@ Use this checklist to evaluate whether read-only planning is executable by small
 
 ---
 
-## E. Risk Checks
+## E. Risk Checks ([S1] + [S3] cross-phase check)
+
+**Note:** Only 6 items total. Can be read at both S1 requirements and S3 task candidate phases.
 
 ### E1. Risk Identification
 - [ ] High-risk modules are marked with risk notes.
@@ -294,7 +330,7 @@ Use this checklist to evaluate whether read-only planning is executable by small
 
 ---
 
-## F. TDD Readiness
+## F. TDD Readiness ([S8] Artifact Writing)
 
 ### F1. AC Testability
 - [ ] Every acceptance criterion can become an independently runnable failing test.
@@ -308,7 +344,9 @@ Use this checklist to evaluate whether read-only planning is executable by small
 
 ---
 
-## G. Delivery Discipline Checks
+## G. Delivery Discipline Checks ([S8] Artifact Writing)
+
+**Note:** Check when writing `design.md` for medium/high complexity tasks. Skip for low complexity.
 
 ### G1. Orchestration-Computation Separation
 - [ ] Medium/high complexity task `design.md` marks orchestration and computation layers with landing files.
